@@ -6,28 +6,27 @@
     "test": "vitest",
     "test:unit": "vitest unit --run",
     "test:integration": "vitest integration run",
-    "init-db": "createdb -U postgres kanban_board && psql -U postgres -d kanban_board -f init_db.sql",
     "seed-db": "psql -U postgres -d kanban_board -f seed_db.sql",
-    "init-test-db": "createdb -U postgres kanban_board_test && psql -U postgres -d kanban_board_test -f init_test_db.sql",
     "seed-test-db": "psql -U postgres -d kanban_board_test -f seed_test_db.sql",
     "drop-test-db": "dropdb -U postgres kanban_board_test"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.1",
+    "@hono/node-server": "^1.18.2",
     "@hono/trpc-server": "^0.4.0",
-    "@pgtyped/runtime": "^2.4.2",
     "@trpc/server": "^11.4.4",
-    "hono": "^4.7.6",
-    "pg": "^8.14.1",
-    "zod": "^3.24.2"
+    "drizzle-orm": "^0.44.4",
+    "drizzle-zod": "^0.8.3",
+    "hono": "^4.9.2",
+    "pg": "^8.16.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@pgtyped/cli": "^2.4.3",
-    "@types/node": "^20.11.17",
-    "@types/pg": "^8.11.12",
-    "dotenv": "^16.5.0",
-    "tsx": "^4.7.1",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
+    "@types/node": "^20.19.11",
+    "@types/pg": "^8.15.5",
+    "dotenv": "^16.6.1",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

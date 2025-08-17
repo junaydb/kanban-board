@@ -1,11 +1,15 @@
-import type { IGetAllTasksResult as Task } from "../queries/taskQueries.queries.js";
-import type { status } from "../queries/taskQueries.queries.js";
 import { z } from "zod";
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { tasks } from "../db/schema.js";
 import {
   ByCreatedCursorSchema,
   ByDueDateCursorSchema,
   SortOrderSchema,
 } from "../routes/tasks.schemas.js";
+
+export type ITask = InferSelectModel<typeof tasks>;
+export type ICreateTask = InferInsertModel<typeof tasks>;
+export type TaskStatus = ITask["status"];
 
 export type ByCreatedCursor = z.infer<typeof ByCreatedCursorSchema>;
 export type ByDueDateCursor = z.infer<typeof ByDueDateCursorSchema>;
@@ -22,15 +26,15 @@ export interface ApiResponseWithMeta<T = any> extends ApiResponse<T> {
   meta: Cursor;
 }
 
-export interface TaskResponse extends ApiResponse<Task> {}
+export interface TaskResponse extends ApiResponse<ITask> {}
 
-export interface TaskArrayResponse extends ApiResponse<{ tasks: Task[] }> {}
+export interface TaskArrayResponse extends ApiResponse<{ tasks: ITask[] }> {}
 
 export interface TaskArrayResponseWithMeta
-  extends ApiResponseWithMeta<{ tasks: Task[] }> {}
+  extends ApiResponseWithMeta<{ tasks: ITask[] }> {}
 
-export interface TaskUpdateResponse 
-  extends ApiResponse<{ newStatus: status }> {}
+export interface TaskUpdateResponse
+  extends ApiResponse<{ newStatus: TaskStatus }> {}
 
 export interface NoContentResponse extends Omit<ApiResponse, "data"> {}
 

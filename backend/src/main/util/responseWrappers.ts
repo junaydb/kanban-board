@@ -1,7 +1,4 @@
-import type {
-  IGetAllTasksResult as Task,
-  status,
-} from "../queries/taskQueries.queries.js";
+import type { ITask as Task, TaskStatus } from "./types.js";
 import type {
   Cursor,
   NoContentResponse,
@@ -25,7 +22,7 @@ export const successResponse = {
   count: (data: number): TaskCountResponse => {
     return { success: true, data: { count: data } };
   },
-  newStatus: (data: status): TaskUpdateResponse => {
+  newStatus: (data: TaskStatus): TaskUpdateResponse => {
     return { success: true, data: { newStatus: data } };
   },
   empty: (): NoContentResponse => {

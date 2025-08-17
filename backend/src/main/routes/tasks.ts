@@ -1,4 +1,3 @@
-import type { IGetTasksByCreatedAscParams as IPageParams } from "../queries/taskQueries.queries.js";
 import Task from "../models/Task.js";
 import { successResponse } from "../util/responseWrappers.js";
 import {
@@ -22,8 +21,8 @@ import { publicProcedure, router } from "../trpc/trpc.js";
  */
 
 export const tasksRouter = router({
-  getAll: publicProcedure.query(async () => {
-    const allTasks = await Task.getAll();
+  getAllFromBoard: publicProcedure.query(async () => {
+    const allTasks = await Task.getAllFromBoard();
     return successResponse.array(allTasks);
   }),
 
@@ -39,7 +38,7 @@ export const tasksRouter = router({
 
       const sortStrat = pagination.strategies[sortBy];
 
-      let params: IPageParams;
+      let params: IPaginationParams;
 
       if (!cursor) {
         params = { status, pageSize };
@@ -64,7 +63,7 @@ export const tasksRouter = router({
 
   getById: publicProcedure.input(TaskIdParamSchema).query(async ({ input }) => {
     const { id } = input;
-    const task = await Task.findById({ taskId: id });
+    const task = await Task.findById(id);
     return successResponse.single(task);
   }),
 
@@ -72,7 +71,14 @@ export const tasksRouter = router({
     .input(CreateTaskSchema)
     .mutation(async ({ input }) => {
       const { title, status, due_date, description } = input;
-      const task = await Task.save({ title, status, due_date, description });
+      // For now, hardcode boardId to 1 until we implement boards
+      const task = await Task.save({
+        title,
+        status,
+        dueDate: due_date,
+        description,
+        boardId: 1,
+      });
       return successResponse.single(task);
     }),
 
@@ -80,7 +86,7 @@ export const tasksRouter = router({
     .input(TaskIdParamSchema.merge(UpdateStatusSchema))
     .mutation(async ({ input }) => {
       const { id, status } = input;
-      const result = await Task.updateStatus({ taskId: id, newStatus: status });
+      const result = await Task.updateStatus({ id, status });
       return successResponse.newStatus(result.status);
     }),
 
@@ -88,7 +94,7 @@ export const tasksRouter = router({
     .input(TaskIdParamSchema)
     .mutation(async ({ input }) => {
       const { id } = input;
-      await Task.delete({ taskId: id });
+      await Task.delete(id);
       return successResponse.empty();
     }),
 });

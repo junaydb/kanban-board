@@ -1,5 +1,7 @@
 import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import dotenv from "dotenv";
+import * as schema from "./schema.js";
 
 dotenv.config({ path: [".env.local", ".env"] });
 
@@ -22,4 +24,5 @@ if (process.env.DB_PROD === "true") {
   });
 }
 
+export const db = drizzle(pool, { schema });
 export { pool };
