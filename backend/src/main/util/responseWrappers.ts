@@ -1,4 +1,4 @@
-import type { ITask as Task, TaskStatus } from "./types.js";
+import type { TTask as Task, TaskStatusEnum } from "./types.js";
 import type {
   Cursor,
   NoContentResponse,
@@ -22,7 +22,7 @@ export const successResponse = {
   count: (data: number): TaskCountResponse => {
     return { success: true, data: { count: data } };
   },
-  newStatus: (data: TaskStatus): TaskUpdateResponse => {
+  newStatus: (data: TaskStatusEnum): TaskUpdateResponse => {
     return { success: true, data: { newStatus: data } };
   },
   empty: (): NoContentResponse => {

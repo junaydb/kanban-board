@@ -1,11 +1,11 @@
 import Task from "../models/Task.js";
 import { successResponse } from "../util/responseWrappers.js";
 import {
-  TaskIdParamSchema,
   CreateTaskSchema,
   UpdateStatusSchema,
   PaginationQuerySchema,
 } from "./tasks.schemas.js";
+import type { PaginationParams } from "../util/types.js";
 import * as pagination from "../util/pagination.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 
@@ -38,7 +38,7 @@ export const tasksRouter = router({
 
       const sortStrat = pagination.strategies[sortBy];
 
-      let params: IPaginationParams;
+      let params: PaginationParams;
 
       if (!cursor) {
         params = { status, pageSize };
@@ -61,7 +61,7 @@ export const tasksRouter = router({
       return successResponse.withMeta(page, { cursor: nextCursor });
     }),
 
-  getById: publicProcedure.input(TaskIdParamSchema).query(async ({ input }) => {
+  getById: publicProcedure.input(TaskIdSchema).query(async ({ input }) => {
     const { id } = input;
     const task = await Task.findById(id);
     return successResponse.single(task);
@@ -83,18 +83,16 @@ export const tasksRouter = router({
     }),
 
   updateStatus: publicProcedure
-    .input(TaskIdParamSchema.merge(UpdateStatusSchema))
+    .input(TaskIdSchema.merge(UpdateStatusSchema))
     .mutation(async ({ input }) => {
       const { id, status } = input;
       const result = await Task.updateStatus({ id, status });
       return successResponse.newStatus(result.status);
     }),
 
-  delete: publicProcedure
-    .input(TaskIdParamSchema)
-    .mutation(async ({ input }) => {
-      const { id } = input;
-      await Task.delete(id);
-      return successResponse.empty();
-    }),
+  delete: publicProcedure.input(TaskIdSchema).mutation(async ({ input }) => {
+    const { id } = input;
+    await Task.delete(id);
+    return successResponse.empty();
+  }),
 });

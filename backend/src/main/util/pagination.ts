@@ -3,7 +3,7 @@ import {
   ByCreatedCursorSchema,
   ByDueDateCursorSchema,
 } from "../routes/tasks.schemas.js";
-import type { ITask } from "./types.js";
+import type { TTask } from "./types.js";
 import type { ByCreatedCursor, ByDueDateCursor, Cursors } from "./types.js";
 
 export function decodeCursor(cursor: string) {
@@ -16,17 +16,17 @@ export function encodeCursor(cursor: Cursors) {
 
 export const strategies = {
   created: {
-    getTasks: Task.getTasksByCreatedSafe,
+    getTasks: Task.getTasksByCreated,
     cursorSchema: ByCreatedCursorSchema,
-    getNextCursor: (lastTask: ITask): ByCreatedCursor => ({
+    getNextCursor: (lastTask: TTask): ByCreatedCursor => ({
       prevId: lastTask.id,
       prevCreatedAt: lastTask.createdAt,
     }),
   },
   dueDate: {
-    getTasks: Task.getTasksByDueDateSafe,
+    getTasks: Task.getTasksByDueDate,
     cursorSchema: ByDueDateCursorSchema,
-    getNextCursor: (lastTask: ITask): ByDueDateCursor => ({
+    getNextCursor: (lastTask: TTask): ByDueDateCursor => ({
       prevId: lastTask.id,
       prevDueDate: lastTask.dueDate,
     }),

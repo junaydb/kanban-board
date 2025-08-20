@@ -5,26 +5,35 @@ import { logger } from "hono/logger";
 import type { Context } from "hono";
 import { ZodError } from "zod";
 import { errorResponse } from "./util/responseWrappers.js";
-import { TaskNotFoundError } from "./util/errors.js";
+import { NotFoundError } from "./util/errors.js";
 import { cors } from "hono/cors";
 import { appRouter } from "./trpc/appRouter.js";
 import { trpcServer } from "@hono/trpc-server";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = new Hono();
 
 app.use(logger());
+
 app.use("/favicon.ico", serveStatic({ path: "./favicon.ico" }));
-// TODO: disable cors in prod environment
+
+if (!process.env.PROD) {
+  app.use(
+    cors({
+      origin: "*",
+      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+      allowHeaders: ["Content-Type"],
+      exposeHeaders: ["Content-Length"],
+      maxAge: 600,
+      credentials: true,
+    }),
+  );
+}
+
 app.use(
   "/api/trpc/*",
-  cors({
-    origin: "*",
-    allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-    allowHeaders: ["Content-Type"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 600,
-    credentials: true,
-  }),
   trpcServer({
     endpoint: "/api/trpc",
     router: appRouter,
@@ -44,7 +53,7 @@ app.onError((err, c: Context) => {
       400,
     );
   }
-  if (err instanceof TaskNotFoundError) {
+  if (err instanceof NotFoundError) {
     return c.json(errorResponse(err.message), 404);
   }
   if (err instanceof SyntaxError) {
@@ -58,7 +67,7 @@ app.onError((err, c: Context) => {
 serve(
   {
     fetch: app.fetch,
-    port: 3000,
+    port: parseInt(process.env.PORT!),
   },
   (info) => {
     console.log(`Listening on http://localhost:${info.port}`);

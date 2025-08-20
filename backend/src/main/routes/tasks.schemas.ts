@@ -1,11 +1,11 @@
 import { z } from "zod";
+import { taskStatusEnum } from "../db/schema.js";
 
-const StatusEnum = z.enum(["TODO", "IN_PROGRESS", "DONE"]);
+const StatusEnum = z.enum(taskStatusEnum.enumValues);
 
 const IdSchema = z.coerce
   .number({ message: "ID is required and must be a number" })
-  .int({ message: "ID must be an integer" })
-  .min(1, { message: "ID must be > 0" });
+  .int({ message: "ID must be an integer" });
 
 const DateSchema = z
   .string({ message: "A date and time is required" })
@@ -14,10 +14,6 @@ const DateSchema = z
       "Invalid datetime format. Datetimes must be supplied in ISO 8601 format in UTC time.",
   })
   .transform((str) => new Date(str));
-
-export const TaskIdParamSchema = z.object({
-  id: IdSchema,
-});
 
 export const CreateTaskSchema = z.object({
   title: z
@@ -36,11 +32,12 @@ export const CreateTaskSchema = z.object({
       return typeof date === "string" || date > new Date();
     },
     { message: "Due date must be in the future" },
-  ),
+  ).optional(),
 });
 
 export const UpdateStatusSchema = z.object({
-  status: StatusEnum,
+  id: IdSchema,
+  newStatus: StatusEnum,
 });
 
 export const ByCreatedCursorSchema = z.object({

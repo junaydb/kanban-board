@@ -1,217 +1,173 @@
-import { db } from "../db/index.js";
+import db from "../db/index.js";
+import Auth from "./Auth.js";
 import { tasks } from "../db/schema.js";
-import { eq, and, lt, gt, desc, asc, count } from "drizzle-orm";
-import type { ICreateTask, TaskStatus, SortOrder } from "../util/types.js";
-import { TaskNotFoundError } from "../util/errors.js";
+import { eq, and, lt, gt, desc, asc, count, or } from "drizzle-orm";
+import type {
+  TTask,
+  SortOrder,
+  CreateTaskParams,
+  UpdateStatusParams,
+  ByDueDatePaginationParams,
+  ByCreatedPaginationParams,
+} from "../util/types.js";
+import { NotFoundError } from "../util/errors.js";
 
 class Task {
   /**
-   * Returns all tasks belonging to this board from the database, ordered by creation date in descending order.
+   * Returns all tasks belonging to this board, ordered by creation date in descending order.
    */
-  static async getAllFromBoard(boardId: number) {
+  static async getAllFromBoard(sessionToken: string, boardId: number) {
+    await Auth.verifyBoardOwnership(sessionToken, boardId);
+
     const allTasks = await db
       .select()
       .from(tasks)
-      .where(eq(boardId, tasks.boardId))
+      .where(eq(tasks.boardId, boardId))
       .orderBy(desc(tasks.createdAt));
 
     if (allTasks.length === 0) {
-      throw new TaskNotFoundError();
+      throw new NotFoundError("Tasks");
     }
 
     return allTasks;
   }
 
   /**
-   * Returns the number of tasks in the database.
+   * Returns the total number of tasks for this board.
    */
-  static async getNumTasks() {
-    const result = await db.select({ count: count() }).from(tasks);
+  static async getNumTasks(sessionToken: string, boardId: number) {
+    await Auth.verifyBoardOwnership(sessionToken, boardId);
+
+    const result = await db
+      .select({ count: count() })
+      .from(tasks)
+      .where(eq(tasks.boardId, boardId));
+
     return result[0].count;
   }
 
   /**
-   * Returns the next page of size `pageSize` from the database,
+   * Returns the next page of size `pageSize` from the database
    * where the tasks have a status equal to `pageParams.status`,
-   * ordered by creation date in ascending or descending order, based on `sortOrder`.
+   * ordered by creation date in ascending or descending order, depending on `sortOrder`.
    */
   static async getTasksByCreated(
+    sessionToken: string,
+    boardId: number,
     sortOrder: SortOrder,
-    pageParams: IPaginationParams,
+    { status, pageSize, cursor }: ByCreatedPaginationParams,
   ) {
-    let query = db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.status, pageParams.status))
-      .limit(pageParams.pageSize);
+    await Auth.verifyBoardOwnership(sessionToken, boardId);
 
-    if (pageParams.prevId && pageParams.prevCreatedAt) {
-      if (sortOrder === "DESC") {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            lt(tasks.createdAt, pageParams.prevCreatedAt),
-          ),
-        );
-      } else {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            gt(tasks.createdAt, pageParams.prevCreatedAt),
-          ),
-        );
-      }
-    }
+    let page: TTask[];
 
-    if (sortOrder === "DESC") {
-      query = query.orderBy(desc(tasks.createdAt));
+    if (sortOrder === "ASC") {
+      page = await db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.status, status),
+            cursor
+              ? or(
+                  gt(tasks.createdAt, cursor.prevCreatedAt),
+                  and(
+                    eq(tasks.createdAt, cursor.prevCreatedAt),
+                    gt(tasks.id, cursor.prevId),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(asc(tasks.createdAt), asc(tasks.id))
+        .limit(pageSize);
     } else {
-      query = query.orderBy(asc(tasks.createdAt));
+      page = await db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.status, status),
+            cursor
+              ? or(
+                  lt(tasks.createdAt, cursor.prevCreatedAt),
+                  and(
+                    eq(tasks.createdAt, cursor.prevCreatedAt),
+                    lt(tasks.id, cursor.prevId),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(desc(tasks.createdAt), desc(tasks.id))
+        .limit(pageSize);
     }
-
-    const page = await query;
 
     if (page.length === 0) {
-      throw new TaskNotFoundError();
+      throw new NotFoundError("Tasks");
     }
 
     return page;
   }
 
   /**
-   * Returns the next page of size `pageSize` from the database,
+   * Returns the next page of size `pageSize` from the database
    * where the tasks have a status equal to `pageParams.status`,
-   * ordered by creation date in ascending or descending order, based on `sortOrder`.
-   *
-   * Does not throw
-   */
-  static async getTasksByCreatedSafe(
-    sortOrder: SortOrder,
-    pageParams: IPaginationParams,
-  ) {
-    let query = db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.status, pageParams.status))
-      .limit(pageParams.pageSize);
-
-    if (pageParams.prevId && pageParams.prevCreatedAt) {
-      if (sortOrder === "DESC") {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            lt(tasks.createdAt, pageParams.prevCreatedAt),
-          ),
-        );
-      } else {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            gt(tasks.createdAt, pageParams.prevCreatedAt),
-          ),
-        );
-      }
-    }
-
-    if (sortOrder === "DESC") {
-      query = query.orderBy(desc(tasks.createdAt));
-    } else {
-      query = query.orderBy(asc(tasks.createdAt));
-    }
-
-    return await query;
-  }
-
-  /**
-   * Returns the next page of size `pageSize` from the database,
-   * where the tasks have a status equal to `pageParams.status`,
-   * ordered by due date in ascending or descending order, based on `sortOrder`.
+   * ordered by due date in ascending or descending order, depending on `sortOrder`.
    */
   static async getTasksByDueDate(
+    sessionToken: string,
+    boardId: number,
     sortOrder: SortOrder,
-    pageParams: IPaginationParams,
+    { status, pageSize, cursor }: ByDueDatePaginationParams,
   ) {
-    let query = db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.status, pageParams.status))
-      .limit(pageParams.pageSize);
+    await Auth.verifyBoardOwnership(sessionToken, boardId);
 
-    if (pageParams.prevId && pageParams.prevDueDate) {
-      if (sortOrder === "DESC") {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            lt(tasks.dueDate, pageParams.prevDueDate),
-          ),
-        );
-      } else {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            gt(tasks.dueDate, pageParams.prevDueDate),
-          ),
-        );
-      }
-    }
+    let page: TTask[];
 
-    if (sortOrder === "DESC") {
-      query = query.orderBy(desc(tasks.dueDate));
+    if (sortOrder === "ASC") {
+      page = await db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.status, status),
+            cursor
+              ? or(
+                  gt(tasks.dueDate, cursor.prevDueDate),
+                  and(
+                    eq(tasks.dueDate, cursor.prevDueDate),
+                    gt(tasks.id, cursor.prevId),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(asc(tasks.dueDate), asc(tasks.id))
+        .limit(pageSize);
     } else {
-      query = query.orderBy(asc(tasks.dueDate));
-    }
-
-    const page = await query;
-
-    if (page.length === 0) {
-      throw new TaskNotFoundError();
+      page = await db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.status, status),
+            cursor
+              ? or(
+                  lt(tasks.dueDate, cursor.prevDueDate),
+                  and(
+                    eq(tasks.dueDate, cursor.prevDueDate),
+                    lt(tasks.id, cursor.prevId),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(desc(tasks.dueDate), desc(tasks.id))
+        .limit(pageSize);
     }
 
     return page;
-  }
-
-  /**
-   * Returns the next page of size `pageSize` from the database,
-   * where the tasks have a status equal to `pageParams.status`,
-   * ordered by due date in ascending or descending order, based on `sortOrder`.
-   *
-   * Does not throw
-   */
-  static async getTasksByDueDateSafe(
-    sortOrder: SortOrder,
-    pageParams: IPaginationParams,
-  ) {
-    let query = db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.status, pageParams.status))
-      .limit(pageParams.pageSize);
-
-    if (pageParams.prevId && pageParams.prevDueDate) {
-      if (sortOrder === "DESC") {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            lt(tasks.dueDate, pageParams.prevDueDate),
-          ),
-        );
-      } else {
-        query = query.where(
-          and(
-            eq(tasks.status, pageParams.status),
-            gt(tasks.dueDate, pageParams.prevDueDate),
-          ),
-        );
-      }
-    }
-
-    if (sortOrder === "DESC") {
-      query = query.orderBy(desc(tasks.dueDate));
-    } else {
-      query = query.orderBy(asc(tasks.dueDate));
-    }
-
-    return await query;
   }
 
   /**
@@ -221,7 +177,7 @@ class Task {
     const task = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
 
     if (task.length === 0) {
-      throw new TaskNotFoundError();
+      throw new NotFoundError(`Task ${id}`);
     }
 
     return task[0];
@@ -232,16 +188,20 @@ class Task {
    * updated status.
    */
   static async updateStatus(
-    params: IUpdateTaskStatus,
-  ): Promise<{ status: TaskStatus }> {
+    sessionToken: string,
+    boardId: number,
+    params: UpdateStatusParams,
+  ) {
+    await Auth.verifyBoardOwnership(sessionToken, boardId);
+
     const result = await db
       .update(tasks)
-      .set({ status: params.status })
+      .set({ status: params.newStatus })
       .where(eq(tasks.id, params.id))
       .returning({ status: tasks.status });
 
     if (result.length === 0) {
-      throw new TaskNotFoundError();
+      throw new NotFoundError(`Task ${params.id}`);
     }
 
     return result[0];
@@ -257,7 +217,7 @@ class Task {
       .returning({ id: tasks.id });
 
     if (result.length === 0) {
-      throw new TaskNotFoundError();
+      throw new NotFoundError(`Task ${id}`);
     }
 
     return 1;
@@ -266,11 +226,10 @@ class Task {
   /**
    * Inserts the task into the database and returns the inserted task.
    */
-  static async save(params: ICreateTask) {
+  static async save(params: CreateTaskParams) {
     const result = await db.insert(tasks).values(params).returning();
     return result[0];
   }
 }
 
 export default Task;
-
