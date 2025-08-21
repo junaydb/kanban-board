@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import Task from "../../main/models/Task.js";
-import { TaskNotFoundError } from "../../main/util/errors.js";
+import { NotFoundError } from "../../main/util/errors.js";
 import type { status } from "../../main/queries/taskQueries.queries.js";
 import {
   getAllTasks,
@@ -41,7 +41,7 @@ describe("Task model", () => {
     it("Should throw TaskNotFoundError() if there are no tasks", async () => {
       mockRun.mockResolvedValue([]);
 
-      await expect(Task.getAll()).rejects.toThrow(TaskNotFoundError);
+      await expect(Task.getAll()).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -52,7 +52,7 @@ describe("Task model", () => {
       mockRun.mockResolvedValue([]);
 
       await expect(Task.getTasksByCreated("DESC", pageParams)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
 
@@ -60,7 +60,7 @@ describe("Task model", () => {
       mockRun.mockResolvedValue([]);
 
       await expect(Task.getTasksByCreated("ASC", pageParams)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
   });
@@ -72,7 +72,7 @@ describe("Task model", () => {
       mockRun.mockResolvedValue([]);
 
       await expect(Task.getTasksByDueDate("DESC", pageParams)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
 
@@ -80,7 +80,7 @@ describe("Task model", () => {
       mockRun.mockResolvedValue([]);
 
       await expect(Task.getTasksByDueDate("ASC", pageParams)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
   });
@@ -90,7 +90,7 @@ describe("Task model", () => {
       mockRun.mockResolvedValue([]);
 
       await expect(Task.findById({ taskId: 999 })).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
   });
@@ -101,7 +101,7 @@ describe("Task model", () => {
 
       mockRun.mockResolvedValue([]);
       await expect(Task.updateStatus(params)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
   });
@@ -112,7 +112,7 @@ describe("Task model", () => {
 
       mockRun.mockResolvedValue([]);
 
-      await expect(Task.delete(params)).rejects.toThrow(TaskNotFoundError);
+      await expect(Task.delete(params)).rejects.toThrow(NotFoundError);
     });
   });
 });

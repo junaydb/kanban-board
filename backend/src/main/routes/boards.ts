@@ -1,5 +1,10 @@
 import Board from "../models/Board.js";
-import { successResponse } from "../util/responseWrappers.js";
+import {
+  BoardIdSchema,
+  CreateBoardSchema,
+  UpdateBoardNameSchema,
+} from "./validation.schemas.js";
+import { successResponseFactory } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 
 /*
@@ -11,29 +16,20 @@ import { publicProcedure, router } from "../trpc/trpc.js";
  */
 
 export const boardsRouter = router({
-  create: publicProcedure.input(IdSchema).query(async ({ input }) => {
-    const boardId = input;
-    const allTasks = await Task.getAllFromBoard(sessionToken, boardId);
-    return successResponse.array(allTasks);
+  create: publicProcedure.input(CreateBoardSchema).query(async ({ input }) => {
+    const board = await Board.create(input);
+    return successResponseFactory.standard(board);
   }),
 
   updateName: publicProcedure
-    .input(CreateTaskSchema)
+    .input(UpdateBoardNameSchema)
     .mutation(async ({ input }) => {
-      const { boardId, title, status, due_date, description } = input;
-      const task = await Task.create({
-        title,
-        status,
-        dueDate: due_date,
-        description,
-        boardId,
-      });
-      return successResponse.single(task);
+      const task = await Board.updateName(input);
+      return successResponseFactory.standard(task);
     }),
 
-  delete: publicProcedure.input(IdSchema).mutation(async ({ input }) => {
-    const id = input;
-    await Task.delete(id);
-    return successResponse.empty();
+  delete: publicProcedure.input(BoardIdSchema).mutation(async ({ input }) => {
+    await Board.delete(input);
+    return successResponseFactory.noData();
   }),
 });

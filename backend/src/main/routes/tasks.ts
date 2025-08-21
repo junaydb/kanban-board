@@ -1,5 +1,5 @@
 import Task from "../models/Task.js";
-import { successResponse } from "../util/responseWrappers.js";
+import { successResponseFactory } from "../util/responseWrappers.js";
 import {
   IdSchema,
   CreateTaskSchema,
@@ -26,13 +26,13 @@ export const tasksRouter = router({
   getAllFromBoard: publicProcedure.input(IdSchema).query(async ({ input }) => {
     const boardId = input;
     const allTasks = await Task.getAllFromBoard(sessionToken, boardId);
-    return successResponse.array(allTasks);
+    return successResponseFactory.standard(allTasks);
   }),
 
   getCount: publicProcedure.input(IdSchema).query(async ({ input }) => {
     const boardId = input;
     const numTasks = await Task.getNumTasks(sessionToken, boardId);
-    return successResponse.count(numTasks);
+    return successResponseFactory.standard(numTasks);
   }),
 
   getPage: publicProcedure.input(PageQuerySchema).query(async ({ input }) => {
@@ -63,13 +63,13 @@ export const tasksRouter = router({
       }
     }
 
-    return successResponse.withMeta(page, { cursor: nextCursor });
+    return successResponseFactory.withMeta(page, { cursor: nextCursor });
   }),
 
   getById: publicProcedure.input(IdSchema).query(async ({ input }) => {
     const id = input;
     const task = await Task.findById(id);
-    return successResponse.single(task);
+    return successResponseFactory.standard(task);
   }),
 
   create: publicProcedure
@@ -83,19 +83,19 @@ export const tasksRouter = router({
         description,
         boardId,
       });
-      return successResponse.single(task);
+      return successResponseFactory.standard(task);
     }),
 
   updateStatus: publicProcedure
     .input(UpdateStatusSchema)
     .mutation(async ({ input }) => {
       const result = await Task.updateStatus(sessionToken, input);
-      return successResponse.newStatus(result.status);
+      return successResponseFactory.standard({ newStatus: result.status });
     }),
 
   delete: publicProcedure.input(IdSchema).mutation(async ({ input }) => {
     const id = input;
     await Task.delete(id);
-    return successResponse.empty();
+    return successResponseFactory.noData();
   }),
 });

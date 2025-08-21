@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { taskStatusEnum } from "../db/schema.js";
 
+// Could possibly use drizzle-zod in the future, but this works for now.
+
 const StatusEnum = z.enum(taskStatusEnum.enumValues);
 
 const DateSchema = z
@@ -9,6 +11,14 @@ const DateSchema = z
   .transform((str) => new Date(str));
 
 export const IdSchema = z.coerce.number().int();
+
+export const TaskIdSchema = z.object({
+  taskId: IdSchema,
+});
+
+export const BoardIdSchema = z.object({
+  boardId: IdSchema,
+});
 
 export const CreateTaskSchema = z.object({
   title: z.string().min(1).max(100),
@@ -25,7 +35,6 @@ export const CreateTaskSchema = z.object({
 
 export const UpdateStatusSchema = z.object({
   taskId: IdSchema,
-  boardId: IdSchema,
   newStatus: StatusEnum,
 });
 
@@ -40,10 +49,27 @@ export const ByDueDateCursorSchema = z.object({
 });
 
 export const PageQuerySchema = z.object({
-  boardId: IdSchema,
   status: StatusEnum,
   sortBy: z.enum(["created", "dueDate"]).default("created"),
   sortOrder: z.enum(["ASC", "DESC"]).default("DESC"),
   pageSize: z.coerce.number().int(),
   cursor: z.string().base64().optional(),
+});
+
+export const CreateBoardSchema = z.object({
+  title: z.string().min(1).max(50),
+  userId: z.string(),
+});
+
+export const UpdateBoardNameSchema = CreateBoardSchema.extend({
+  boardId: IdSchema,
+});
+
+export const AuthSchema = z.object({
+  sessionToken: z.string(),
+});
+
+export const VerifyBoardSchema = z.object({
+  userId: z.string(),
+  boardId: IdSchema,
 });

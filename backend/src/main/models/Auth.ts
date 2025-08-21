@@ -2,9 +2,10 @@ import db from "../db/index.js";
 import { tasks, boards, session } from "../db/schema.js";
 import { SessionError, OwnershipError, NotFoundError } from "../util/errors.js";
 import { eq, and } from "drizzle-orm";
+import type { AuthParams } from "../util/types.js";
 
 class Auth {
-  static async getLoggedInUser(sessionToken: string) {
+  static async getLoggedInUser({ sessionToken }: AuthParams) {
     const userId = await db
       .select({ userId: session.id })
       .from(session)

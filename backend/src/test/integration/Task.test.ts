@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import { pool } from "../../main/db/index.js";
 import Task from "../../main/models/Task.js";
-import { TaskNotFoundError } from "../../main/util/errors.js";
+import { NotFoundError } from "../../main/util/errors.js";
 import type {
   status,
   IInsertTaskParams,
@@ -159,7 +159,7 @@ describe("Task model", () => {
     it("Should throw TaskNotFoundError() if the task does not exist", async () => {
       await expect(
         Task.findById({ taskId: NON_EXISTENT_TASK_ID }),
-      ).rejects.toThrow(TaskNotFoundError);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -194,7 +194,7 @@ describe("Task model", () => {
         newStatus: "DONE" as status,
       };
       await expect(Task.updateStatus(params)).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
   });
@@ -218,13 +218,13 @@ describe("Task model", () => {
       expect(result).toBe(1);
 
       await expect(Task.findById({ taskId: tempTaskId })).rejects.toThrow(
-        TaskNotFoundError,
+        NotFoundError,
       );
     });
 
     it("Should throw TaskNotFoundError() if the task does not exist", async () => {
       const params = { taskId: NON_EXISTENT_TASK_ID };
-      await expect(Task.delete(params)).rejects.toThrow(TaskNotFoundError);
+      await expect(Task.delete(params)).rejects.toThrow(NotFoundError);
     });
   });
 

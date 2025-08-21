@@ -1,14 +1,14 @@
 import db from "../db/index.js";
-import Auth from "./Auth.js";
 import { tasks } from "../db/schema.js";
 import { eq, and, lt, gt, desc, asc, count, or } from "drizzle-orm";
 import type {
   TTask,
-  SortOrder,
   CreateTaskParams,
   UpdateStatusParams,
   ByDueDatePageParams,
   ByCreatedPageParams,
+  BoardIdParams,
+  TaskIdParams,
 } from "../util/types.js";
 import { NotFoundError } from "../util/errors.js";
 
@@ -16,9 +16,7 @@ class Task {
   /**
    * Returns all tasks belonging to this board, ordered by creation date in descending order.
    */
-  static async getAllFromBoard(sessionToken: string, boardId: number) {
-    await Auth.verifyBoardOwnership(sessionToken, boardId);
-
+  static async getAllFromBoard({ boardId }: BoardIdParams) {
     const allTasks = await db
       .select()
       .from(tasks)
@@ -35,9 +33,7 @@ class Task {
   /**
    * Returns the total number of tasks for this board.
    */
-  static async getNumTasks(sessionToken: string, boardId: number) {
-    await Auth.verifyBoardOwnership(sessionToken, boardId);
-
+  static async getNumTasks({ boardId }: BoardIdParams) {
     const result = await db
       .select({ count: count() })
       .from(tasks)
@@ -51,12 +47,12 @@ class Task {
    * where the tasks have a status equal to `pageParams.status`,
    * ordered by creation date in ascending or descending order, depending on `sortOrder`.
    */
-  static async getTasksByCreated(
-    sessionToken: string,
-    { boardId, sortOrder, status, pageSize, cursor }: ByCreatedPageParams,
-  ) {
-    await Auth.verifyBoardOwnership(sessionToken, boardId);
-
+  static async getTasksByCreated({
+    sortOrder,
+    status,
+    pageSize,
+    cursor,
+  }: ByCreatedPageParams) {
     let page: TTask[];
 
     switch (sortOrder) {
@@ -117,12 +113,12 @@ class Task {
    * where the tasks have a status equal to `pageParams.status`,
    * ordered by due date in ascending or descending order, depending on `sortOrder`.
    */
-  static async getTasksByDueDate(
-    sessionToken: string,
-    { boardId, sortOrder, status, pageSize, cursor }: ByDueDatePageParams,
-  ) {
-    await Auth.verifyBoardOwnership(sessionToken, boardId);
-
+  static async getTasksByDueDate({
+    sortOrder,
+    status,
+    pageSize,
+    cursor,
+  }: ByDueDatePageParams) {
     let page: TTask[];
 
     switch (sortOrder) {
@@ -191,12 +187,7 @@ class Task {
    * Updates the status of task with id `id` in the database and returns the
    * updated status.
    */
-  static async updateStatus(
-    sessionToken: string,
-    { taskId, boardId, newStatus }: UpdateStatusParams,
-  ) {
-    await Auth.verifyBoardOwnership(sessionToken, boardId);
-
+  static async updateStatus({ taskId, newStatus }: UpdateStatusParams) {
     const result = await db
       .update(tasks)
       .set({ status: newStatus })
@@ -213,14 +204,14 @@ class Task {
   /**
    * Deletes task with id `id` from the database. Returns 1 to indicate success.
    */
-  static async delete(id: number) {
+  static async delete({ taskId }: TaskIdParams) {
     const result = await db
       .delete(tasks)
-      .where(eq(tasks.id, id))
+      .where(eq(tasks.id, taskId))
       .returning({ id: tasks.id });
 
     if (result.length === 0) {
-      throw new NotFoundError(`Task ${id}`);
+      throw new NotFoundError(`Task ${taskId}`);
     }
 
     return 1;

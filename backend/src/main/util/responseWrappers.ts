@@ -1,40 +1,17 @@
-import type { TTask as Task, TaskStatusEnum } from "./types.js";
-import type {
-  Cursor,
-  NoContentResponse,
-  TaskArrayResponse,
-  TaskCountResponse,
-  TaskResponse,
-  TaskArrayResponseWithMeta,
-  TaskUpdateResponse,
-} from "./types.js";
+import type { ApiResponse, ApiResponseWithMeta } from "./types.js";
 
-export const successResponse = {
-  single: (data: Task): TaskResponse => {
-    return { success: true, data: data };
+export const successResponseFactory = {
+  standard: <T>(data: T): ApiResponse<T> => {
+    return { success: true, data };
   },
-  array: (data: Task[]): TaskArrayResponse => {
-    return { success: true, data: { tasks: data } };
+  withMeta: <T, U>(data: T, meta: U): ApiResponseWithMeta<T, U> => {
+    return { success: true, data, meta };
   },
-  withMeta: (data: Task[], meta: Cursor): TaskArrayResponseWithMeta => {
-    return { success: true, data: { tasks: data }, meta: meta };
-  },
-  count: (data: number): TaskCountResponse => {
-    return { success: true, data: { count: data } };
-  },
-  newStatus: (data: TaskStatusEnum): TaskUpdateResponse => {
-    return { success: true, data: { newStatus: data } };
-  },
-  empty: (): NoContentResponse => {
+  noData: (): Omit<ApiResponse, "data"> => {
     return { success: true };
   },
 };
 
-export function errorResponse(message: string, errors?: Object[]) {
-  if (!errors) {
-    return { success: false, message: message };
-  }
-  if (Array.isArray(errors)) {
-    return { success: false, message: message, errors: errors };
-  }
+export function errorResponse<T extends any[]>(message: string, errors?: T) {
+  return { success: false, message, errors };
 }
