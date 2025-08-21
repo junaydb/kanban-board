@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { taskStatusEnum } from "../../db/schema.js";
+import { taskStatusEnum } from "../db/schema.js";
 
 const StatusEnum = z.enum(taskStatusEnum.enumValues);
 

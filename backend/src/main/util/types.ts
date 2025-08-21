@@ -6,7 +6,7 @@ import {
   ByDueDateCursorSchema,
   PageQuerySchema,
   UpdateStatusSchema,
-} from "../routes/tasks/tasks.schemas.js";
+} from "../routes/validation.schemas.js";
 
 export type TTask = InferSelectModel<typeof tasks>;
 export type CreateTaskParams = InferInsertModel<typeof tasks>;

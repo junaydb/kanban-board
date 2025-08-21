@@ -1,18 +1,18 @@
-import Task from "../../models/Task.js";
-import { successResponse } from "../../util/responseWrappers.js";
+import Task from "../models/Task.js";
+import { successResponse } from "../util/responseWrappers.js";
 import {
   IdSchema,
   CreateTaskSchema,
   UpdateStatusSchema,
   PageQuerySchema,
-} from "./tasks.schemas.js";
+} from "./validation.schemas.js";
 import type {
   TTask,
   ByCreatedPageParams,
   ByDueDatePageParams,
-} from "../../util/types.js";
-import Pagination from "../../util/Pagination.js";
-import { publicProcedure, router } from "../../trpc/trpc.js";
+} from "../util/types.js";
+import Pagination from "../util/Pagination.js";
+import { publicProcedure, router } from "../trpc/trpc.js";
 
 /*
  * All routes that take parameters validate those parameters using Zod schemas.

@@ -1,7 +1,7 @@
 import {
   ByCreatedCursorSchema,
   ByDueDateCursorSchema,
-} from "../routes/tasks/tasks.schemas.js";
+} from "../routes/validation.schemas.js";
 import type {
   TTask,
   PageQuery,
