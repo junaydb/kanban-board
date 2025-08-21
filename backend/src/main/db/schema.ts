@@ -2,6 +2,7 @@ import {
   pgTable,
   pgEnum,
   serial,
+  integer,
   text,
   time,
   timestamp,
@@ -36,7 +37,7 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
-  boardId: serial("board_id")
+  boardId: integer("board_id")
     .references(() => boards.id, { onDelete: "cascade" })
     .notNull(),
 });

@@ -4,10 +4,9 @@ import { tasks, boards } from "../db/schema.js";
 import {
   ByCreatedCursorSchema,
   ByDueDateCursorSchema,
-  PaginationQuerySchema,
+  PageQuerySchema,
   UpdateStatusSchema,
-  SortOrderSchema,
-} from "../routes/tasks.schemas.js";
+} from "../routes/tasks/tasks.schemas.js";
 
 export type TTask = InferSelectModel<typeof tasks>;
 export type CreateTaskParams = InferInsertModel<typeof tasks>;
@@ -19,21 +18,13 @@ export type ByCreatedCursor = z.infer<typeof ByCreatedCursorSchema>;
 export type ByDueDateCursor = z.infer<typeof ByDueDateCursorSchema>;
 export type Cursors = ByCreatedCursor | ByDueDateCursor;
 
-type PaginationParamsRaw = z.infer<typeof PaginationQuerySchema>;
-export type ByCreatedPaginationParams = Omit<
-  PaginationParamsRaw,
-  "cursor" | "sortBy"
-> & {
-  cursor: ByCreatedCursor;
+export type PageQuery = z.infer<typeof PageQuerySchema>;
+export type ByCreatedPageParams = Omit<PageQuery, "cursor"> & {
+  cursor?: ByCreatedCursor;
 };
-export type ByDueDatePaginationParams = Omit<
-  PaginationParamsRaw,
-  "cursor" | "sortBy"
-> & {
-  cursor: ByDueDateCursor;
+export type ByDueDatePageParams = Omit<PageQuery, "cursor"> & {
+  cursor?: ByDueDateCursor;
 };
-
-export type SortOrder = z.infer<typeof SortOrderSchema>;
 
 export interface ApiResponse<T = any> {
   success: boolean;

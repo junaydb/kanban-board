@@ -7,8 +7,8 @@ import type {
   SortOrder,
   CreateTaskParams,
   UpdateStatusParams,
-  ByDueDatePaginationParams,
-  ByCreatedPaginationParams,
+  ByDueDatePageParams,
+  ByCreatedPageParams,
 } from "../util/types.js";
 import { NotFoundError } from "../util/errors.js";
 
@@ -53,54 +53,56 @@ class Task {
    */
   static async getTasksByCreated(
     sessionToken: string,
-    boardId: number,
-    sortOrder: SortOrder,
-    { status, pageSize, cursor }: ByCreatedPaginationParams,
+    { boardId, sortOrder, status, pageSize, cursor }: ByCreatedPageParams,
   ) {
     await Auth.verifyBoardOwnership(sessionToken, boardId);
 
     let page: TTask[];
 
-    if (sortOrder === "ASC") {
-      page = await db
-        .select()
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.status, status),
-            cursor
-              ? or(
-                  gt(tasks.createdAt, cursor.prevCreatedAt),
-                  and(
-                    eq(tasks.createdAt, cursor.prevCreatedAt),
-                    gt(tasks.id, cursor.prevId),
-                  ),
-                )
-              : undefined,
-          ),
-        )
-        .orderBy(asc(tasks.createdAt), asc(tasks.id))
-        .limit(pageSize);
-    } else {
-      page = await db
-        .select()
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.status, status),
-            cursor
-              ? or(
-                  lt(tasks.createdAt, cursor.prevCreatedAt),
-                  and(
-                    eq(tasks.createdAt, cursor.prevCreatedAt),
-                    lt(tasks.id, cursor.prevId),
-                  ),
-                )
-              : undefined,
-          ),
-        )
-        .orderBy(desc(tasks.createdAt), desc(tasks.id))
-        .limit(pageSize);
+    switch (sortOrder) {
+      case "ASC":
+        page = await db
+          .select()
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.status, status),
+              cursor
+                ? or(
+                    gt(tasks.createdAt, cursor.prevCreatedAt),
+                    and(
+                      eq(tasks.createdAt, cursor.prevCreatedAt),
+                      gt(tasks.id, cursor.prevId),
+                    ),
+                  )
+                : undefined,
+            ),
+          )
+          .orderBy(asc(tasks.createdAt), asc(tasks.id))
+          .limit(pageSize);
+        break;
+
+      case "DESC":
+        page = await db
+          .select()
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.status, status),
+              cursor
+                ? or(
+                    lt(tasks.createdAt, cursor.prevCreatedAt),
+                    and(
+                      eq(tasks.createdAt, cursor.prevCreatedAt),
+                      lt(tasks.id, cursor.prevId),
+                    ),
+                  )
+                : undefined,
+            ),
+          )
+          .orderBy(desc(tasks.createdAt), desc(tasks.id))
+          .limit(pageSize);
+        break;
     }
 
     if (page.length === 0) {
@@ -117,54 +119,56 @@ class Task {
    */
   static async getTasksByDueDate(
     sessionToken: string,
-    boardId: number,
-    sortOrder: SortOrder,
-    { status, pageSize, cursor }: ByDueDatePaginationParams,
+    { boardId, sortOrder, status, pageSize, cursor }: ByDueDatePageParams,
   ) {
     await Auth.verifyBoardOwnership(sessionToken, boardId);
 
     let page: TTask[];
 
-    if (sortOrder === "ASC") {
-      page = await db
-        .select()
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.status, status),
-            cursor
-              ? or(
-                  gt(tasks.dueDate, cursor.prevDueDate),
-                  and(
-                    eq(tasks.dueDate, cursor.prevDueDate),
-                    gt(tasks.id, cursor.prevId),
-                  ),
-                )
-              : undefined,
-          ),
-        )
-        .orderBy(asc(tasks.dueDate), asc(tasks.id))
-        .limit(pageSize);
-    } else {
-      page = await db
-        .select()
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.status, status),
-            cursor
-              ? or(
-                  lt(tasks.dueDate, cursor.prevDueDate),
-                  and(
-                    eq(tasks.dueDate, cursor.prevDueDate),
-                    lt(tasks.id, cursor.prevId),
-                  ),
-                )
-              : undefined,
-          ),
-        )
-        .orderBy(desc(tasks.dueDate), desc(tasks.id))
-        .limit(pageSize);
+    switch (sortOrder) {
+      case "ASC":
+        page = await db
+          .select()
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.status, status),
+              cursor
+                ? or(
+                    gt(tasks.dueDate, cursor.prevDueDate),
+                    and(
+                      eq(tasks.dueDate, cursor.prevDueDate),
+                      gt(tasks.id, cursor.prevId),
+                    ),
+                  )
+                : undefined,
+            ),
+          )
+          .orderBy(asc(tasks.dueDate), asc(tasks.id))
+          .limit(pageSize);
+        break;
+
+      case "DESC":
+        page = await db
+          .select()
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.status, status),
+              cursor
+                ? or(
+                    lt(tasks.dueDate, cursor.prevDueDate),
+                    and(
+                      eq(tasks.dueDate, cursor.prevDueDate),
+                      lt(tasks.id, cursor.prevId),
+                    ),
+                  )
+                : undefined,
+            ),
+          )
+          .orderBy(desc(tasks.dueDate), desc(tasks.id))
+          .limit(pageSize);
+        break;
     }
 
     return page;
@@ -189,19 +193,18 @@ class Task {
    */
   static async updateStatus(
     sessionToken: string,
-    boardId: number,
-    params: UpdateStatusParams,
+    { taskId, boardId, newStatus }: UpdateStatusParams,
   ) {
     await Auth.verifyBoardOwnership(sessionToken, boardId);
 
     const result = await db
       .update(tasks)
-      .set({ status: params.newStatus })
-      .where(eq(tasks.id, params.id))
+      .set({ status: newStatus })
+      .where(eq(tasks.id, taskId))
       .returning({ status: tasks.status });
 
     if (result.length === 0) {
-      throw new NotFoundError(`Task ${params.id}`);
+      throw new NotFoundError(`Task ${taskId}`);
     }
 
     return result[0];
@@ -226,7 +229,7 @@ class Task {
   /**
    * Inserts the task into the database and returns the inserted task.
    */
-  static async save(params: CreateTaskParams) {
+  static async create(params: CreateTaskParams) {
     const result = await db.insert(tasks).values(params).returning();
     return result[0];
   }

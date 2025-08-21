@@ -11,7 +11,7 @@ import type {
 
 export const successResponse = {
   single: (data: Task): TaskResponse => {
-    return { success: true, data: { ...data } };
+    return { success: true, data: data };
   },
   array: (data: Task[]): TaskArrayResponse => {
     return { success: true, data: { tasks: data } };
@@ -30,12 +30,11 @@ export const successResponse = {
   },
 };
 
-export function errorResponse(message: string, errors?: {} | []) {
+export function errorResponse(message: string, errors?: Object[]) {
   if (!errors) {
     return { success: false, message: message };
   }
   if (Array.isArray(errors)) {
     return { success: false, message: message, errors: errors };
   }
-  return { success: false, message: message, errors: { ...errors } };
 }
