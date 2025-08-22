@@ -1,10 +1,11 @@
 import Task from "../models/Task.js";
 import { successResponseFactory } from "../util/responseWrappers.js";
 import {
-  IdSchema,
   CreateTaskSchema,
   UpdateStatusSchema,
   PageQuerySchema,
+  BoardIdSchema,
+  TaskIdSchema,
 } from "./validation.schemas.js";
 import type {
   TTask,
@@ -23,15 +24,15 @@ import { publicProcedure, router } from "../trpc/trpc.js";
  */
 
 export const tasksRouter = router({
-  getAllFromBoard: publicProcedure.input(IdSchema).query(async ({ input }) => {
-    const boardId = input;
-    const allTasks = await Task.getAllFromBoard(sessionToken, boardId);
-    return successResponseFactory.standard(allTasks);
-  }),
+  getAllFromBoard: publicProcedure
+    .input(BoardIdSchema)
+    .query(async ({ input }) => {
+      const allTasks = await Task.getAllFromBoard(input);
+      return successResponseFactory.standard(allTasks);
+    }),
 
-  getCount: publicProcedure.input(IdSchema).query(async ({ input }) => {
-    const boardId = input;
-    const numTasks = await Task.getNumTasks(sessionToken, boardId);
+  getCount: publicProcedure.input(BoardIdSchema).query(async ({ input }) => {
+    const numTasks = await Task.getNumTasks(input);
     return successResponseFactory.standard(numTasks);
   }),
 
@@ -41,34 +42,40 @@ export const tasksRouter = router({
     let page: TTask[];
     let nextCursor: string | null = null;
 
-    if (sortBy === "created") {
-      let params: ByCreatedPageParams;
-      params = Pagination.generateByCreatedParams(input);
-      page = await Task.getTasksByCreated(sessionToken, params);
+    // May need refactoring if more sort strategies are added
+    switch (sortBy) {
+      case "created": {
+        let params: ByCreatedPageParams;
+        params = Pagination.generateByCreatedParams(input);
+        page = await Task.getTasksByCreated(params);
 
-      const nextPageExists = page.length === pageSize;
-      if (nextPageExists) {
-        const lastTask = page[page.length - 1];
-        nextCursor = Pagination.getNextByCreatedCursor(lastTask);
+        const nextPageExists = page.length === pageSize;
+        if (nextPageExists) {
+          const lastTask = page[page.length - 1];
+          nextCursor = Pagination.getNextByCreatedCursor(lastTask);
+        }
+        break;
       }
-    } else {
-      let params: ByDueDatePageParams;
-      params = Pagination.generateByDueDateParams(input);
-      page = await Task.getTasksByDueDate(sessionToken, params);
 
-      const nextPageExists = page.length === pageSize;
-      if (nextPageExists) {
-        const lastTask = page[page.length - 1];
-        nextCursor = Pagination.getNextByDueDateCursor(lastTask);
+      case "dueDate": {
+        let params: ByDueDatePageParams;
+        params = Pagination.generateByDueDateParams(input);
+        page = await Task.getTasksByDueDate(params);
+
+        const nextPageExists = page.length === pageSize;
+        if (nextPageExists) {
+          const lastTask = page[page.length - 1];
+          nextCursor = Pagination.getNextByDueDateCursor(lastTask);
+        }
+        break;
       }
     }
 
     return successResponseFactory.withMeta(page, { cursor: nextCursor });
   }),
 
-  getById: publicProcedure.input(IdSchema).query(async ({ input }) => {
-    const id = input;
-    const task = await Task.findById(id);
+  getById: publicProcedure.input(TaskIdSchema).query(async ({ input }) => {
+    const task = await Task.findById(input);
     return successResponseFactory.standard(task);
   }),
 
@@ -89,13 +96,12 @@ export const tasksRouter = router({
   updateStatus: publicProcedure
     .input(UpdateStatusSchema)
     .mutation(async ({ input }) => {
-      const result = await Task.updateStatus(sessionToken, input);
+      const result = await Task.updateStatus(input);
       return successResponseFactory.standard({ newStatus: result.status });
     }),
 
-  delete: publicProcedure.input(IdSchema).mutation(async ({ input }) => {
-    const id = input;
-    await Task.delete(id);
+  delete: publicProcedure.input(TaskIdSchema).mutation(async ({ input }) => {
+    await Task.delete(input);
     return successResponseFactory.noData();
   }),
 });

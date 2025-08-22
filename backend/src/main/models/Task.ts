@@ -173,11 +173,11 @@ class Task {
   /**
    * Returns the task with id `id` from the database.
    */
-  static async findById(id: number) {
-    const task = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+  static async findById({ taskId }: TaskIdParams) {
+    const task = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
 
     if (task.length === 0) {
-      throw new NotFoundError(`Task ${id}`);
+      throw new NotFoundError(`Task ${taskId}`);
     }
 
     return task[0];
