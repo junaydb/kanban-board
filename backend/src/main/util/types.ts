@@ -10,7 +10,8 @@ import {
   TaskIdSchema,
   UpdateBoardNameSchema,
   UpdateStatusSchema,
-  VerifyBoardSchema,
+  VerifyBoardOwnershipSchema,
+  VerifyTaskOwnershipSchema,
 } from "../routes/validation.schemas.js";
 
 /* Types derived from drizzle schema */
@@ -23,7 +24,12 @@ export type InsertBoardParams = InferInsertModel<typeof boards>;
 export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
 export type UpdateBoardNameParams = z.infer<typeof UpdateBoardNameSchema>;
 export type AuthParams = z.infer<typeof AuthSchema>;
-export type VerifyBoardParams = z.infer<typeof VerifyBoardSchema>;
+export type VerifyBoardOwnershipParams = z.infer<
+  typeof VerifyBoardOwnershipSchema
+>;
+export type VerifyTaskOwnershipParams = z.infer<
+  typeof VerifyTaskOwnershipSchema
+>;
 export type TaskIdParams = z.infer<typeof TaskIdSchema>;
 export type BoardIdParams = z.infer<typeof BoardIdSchema>;
 // Pagination types

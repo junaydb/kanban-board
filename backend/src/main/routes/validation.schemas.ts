@@ -69,7 +69,12 @@ export const AuthSchema = z.object({
   sessionToken: z.string(),
 });
 
-export const VerifyBoardSchema = z.object({
+export const VerifyBoardOwnershipSchema = z.object({
   userId: z.string(),
   boardId: IdSchema,
+});
+
+export const VerifyTaskOwnershipSchema = z.object({
+  userId: z.string(),
+  taskId: IdSchema,
 });

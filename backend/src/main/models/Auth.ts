@@ -2,7 +2,11 @@ import db from "../db/index.js";
 import { tasks, boards, session } from "../db/schema.js";
 import { SessionError, OwnershipError, NotFoundError } from "../util/errors.js";
 import { eq, and } from "drizzle-orm";
-import type { AuthParams } from "../util/types.js";
+import type {
+  AuthParams,
+  VerifyBoardOwnershipParams,
+  VerifyTaskOwnershipParams,
+} from "../util/types.js";
 
 class Auth {
   static async getLoggedInUser({ sessionToken }: AuthParams) {
@@ -22,7 +26,10 @@ class Auth {
     return userId;
   }
 
-  static async verifyBoardOwnership(userId: string, boardId: number) {
+  static async verifyBoardOwnership({
+    userId,
+    boardId,
+  }: VerifyBoardOwnershipParams) {
     await db
       .select()
       .from(boards)
@@ -39,7 +46,10 @@ class Auth {
     return true;
   }
 
-  static async verifyTaskOwnership(userId: string, taskId: number) {
+  static async verifyTaskOwnership({
+    userId,
+    taskId,
+  }: VerifyTaskOwnershipParams) {
     // Get the boardId of the board this task belongs to
     const boardId = await db
       .select({ boardId: tasks.boardId })
@@ -52,7 +62,7 @@ class Auth {
         return res[0].boardId;
       });
 
-    return Auth.verifyBoardOwnership(userId, boardId);
+    return Auth.verifyBoardOwnership({ userId, boardId });
   }
 }
 
