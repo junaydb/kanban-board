@@ -4,10 +4,8 @@ import {
   serial,
   integer,
   text,
-  time,
   timestamp,
   boolean,
-  date,
 } from "drizzle-orm/pg-core";
 
 export const taskStatusEnum = pgEnum("task_status", [
@@ -32,8 +30,8 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   status: taskStatusEnum("status").default("TODO").notNull(),
-  dueDate: date({ mode: "date" }).notNull(),
-  dueTime: time("due_time", { withTimezone: true }),
+  dueDate: timestamp("due_date", { mode: "date" }).notNull(),
+  hasDueTime: boolean("has_due_date").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),

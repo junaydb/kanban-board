@@ -24,12 +24,13 @@ export const CreateTaskSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().max(10000).optional(),
   status: StatusEnum.default("TODO"),
-  due_date: DateSchema.refine(
+  dueDate: DateSchema.refine(
     (date) => {
       return typeof date === "string" || date > new Date();
     },
     { message: "Due date must be in the future" },
   ),
+  hasDueTime: z.boolean().default(false),
   boardId: IdSchema,
 });
 

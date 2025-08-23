@@ -124,14 +124,7 @@ export const tasksRouter = router({
   create: publicProcedure
     .input(CreateTaskSchema)
     .mutation(async ({ input }) => {
-      const { boardId, title, status, due_date, description } = input;
-      const task = await Task.create({
-        title,
-        status,
-        dueDate: due_date,
-        description,
-        boardId,
-      });
+      const task = await Task.create(input);
       return successResponseFactory.standard(task);
     }),
 
