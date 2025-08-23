@@ -5,9 +5,8 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "outDir": "dist",
+    "rootDir": ".",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },

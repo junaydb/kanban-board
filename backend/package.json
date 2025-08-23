@@ -2,7 +2,9 @@
   "name": "kanban-board",
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "dev": "tsx watch src/main/index.ts",
+    "start": "node ./dist/src/main/index.js",
     "check": "npx tsc --noEmit --strict",
     "test": "vitest",
     "test:unit": "vitest unit --run",

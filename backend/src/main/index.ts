@@ -5,9 +5,6 @@ import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { appRouter } from "./trpc/appRouter.js";
 import { trpcServer } from "@hono/trpc-server";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = new Hono();
 
@@ -45,5 +42,3 @@ serve(
     console.log(`Listening on http://localhost:${info.port}`);
   },
 );
-
-export default app;
