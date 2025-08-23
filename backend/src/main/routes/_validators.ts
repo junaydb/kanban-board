@@ -12,12 +12,12 @@ const DateSchema = z
 
 export const IdSchema = z.coerce.number().int();
 
-export const TaskIdSchema = z.object({
-  taskId: IdSchema,
+export const UserIdSchema = z.object({
+  userId: z.string(),
 });
 
-export const BoardIdSchema = z.object({
-  boardId: IdSchema,
+export const TaskIdSchema = z.object({
+  taskId: IdSchema,
 });
 
 export const CreateTaskSchema = z.object({
@@ -54,27 +54,13 @@ export const PageQuerySchema = z.object({
   sortOrder: z.enum(["ASC", "DESC"]).default("DESC"),
   pageSize: z.coerce.number().int(),
   cursor: z.string().base64().optional(),
+  boardId: IdSchema,
 });
 
-export const CreateBoardSchema = z.object({
+export const BoardIdSchema = z.object({
+  boardId: IdSchema,
+});
+
+export const BoardTitleSchema = z.object({
   title: z.string().min(1).max(50),
-  userId: z.string(),
-});
-
-export const UpdateBoardNameSchema = CreateBoardSchema.extend({
-  boardId: IdSchema,
-});
-
-export const AuthSchema = z.object({
-  sessionToken: z.string(),
-});
-
-export const VerifyBoardOwnershipSchema = z.object({
-  userId: z.string(),
-  boardId: IdSchema,
-});
-
-export const VerifyTaskOwnershipSchema = z.object({
-  userId: z.string(),
-  taskId: IdSchema,
 });

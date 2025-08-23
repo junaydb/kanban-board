@@ -1,35 +1,45 @@
 import Board from "../models/Board.js";
-import {
-  BoardIdSchema,
-  CreateBoardSchema,
-  UpdateBoardNameSchema,
-} from "./validation.schemas.js";
+import { BoardIdSchema, BoardTitleSchema } from "./_validators.js";
 import { successResponseFactory } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
+import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
 /*
- * All routes that take parameters validate those parameters using Zod schemas.
+ * All procedures that take parameters validate those parameters using Zod schemas.
  * Zod throws a `ZodError` when validation fails.
  *
- * Errors are handled at the top level in `index.ts` with the `app.onError` handler,
- * so try/catch blocks are not needed.
+ * All auth logic is handled within procedures that require it.
+ *
+ * All errors are handled by TRPC via throwing TRPCError with the respective error code.
  */
 
 export const boardsRouter = router({
-  create: publicProcedure.input(CreateBoardSchema).query(async ({ input }) => {
-    const board = await Board.create(input);
-    return successResponseFactory.standard(board);
-  }),
+  create: publicProcedure
+    .input(BoardTitleSchema)
+    .query(async ({ ctx, input }) => {
+      const board = await Board.create({
+        userId: ctx.user!.id,
+        title: input.title,
+      });
+
+      return successResponseFactory.standard(board);
+    }),
 
   updateName: publicProcedure
-    .input(UpdateBoardNameSchema)
-    .mutation(async ({ input }) => {
+    .input(BoardTitleSchema.merge(BoardIdSchema))
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
       const task = await Board.updateName(input);
       return successResponseFactory.standard(task);
     }),
 
-  delete: publicProcedure.input(BoardIdSchema).mutation(async ({ input }) => {
-    await Board.delete(input);
-    return successResponseFactory.noData();
-  }),
+  delete: publicProcedure
+    .input(BoardIdSchema)
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
+      await Board.delete(input);
+      return successResponseFactory.noData();
+    }),
 });

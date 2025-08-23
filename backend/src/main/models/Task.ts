@@ -10,7 +10,6 @@ import type {
   BoardIdParams,
   TaskIdParams,
 } from "../util/types.js";
-import { NotFoundError } from "../util/errors.js";
 
 class Task {
   /**
@@ -24,7 +23,7 @@ class Task {
       .orderBy(desc(tasks.createdAt));
 
     if (allTasks.length === 0) {
-      throw new NotFoundError("Tasks");
+      return null;
     }
 
     return allTasks;
@@ -52,6 +51,7 @@ class Task {
     status,
     pageSize,
     cursor,
+    boardId,
   }: ByCreatedPageParams) {
     let page: TTask[];
 
@@ -62,6 +62,7 @@ class Task {
           .from(tasks)
           .where(
             and(
+              eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
                 ? or(
@@ -84,6 +85,7 @@ class Task {
           .from(tasks)
           .where(
             and(
+              eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
                 ? or(
@@ -102,7 +104,7 @@ class Task {
     }
 
     if (page.length === 0) {
-      throw new NotFoundError("Tasks");
+      return null;
     }
 
     return page;
@@ -118,6 +120,7 @@ class Task {
     status,
     pageSize,
     cursor,
+    boardId,
   }: ByDueDatePageParams) {
     let page: TTask[];
 
@@ -128,6 +131,7 @@ class Task {
           .from(tasks)
           .where(
             and(
+              eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
                 ? or(
@@ -150,6 +154,7 @@ class Task {
           .from(tasks)
           .where(
             and(
+              eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
                 ? or(
@@ -174,10 +179,14 @@ class Task {
    * Returns the task with id `id` from the database.
    */
   static async findById({ taskId }: TaskIdParams) {
-    const task = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+    const task = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
 
     if (task.length === 0) {
-      throw new NotFoundError(`Task ${taskId}`);
+      return null;
     }
 
     return task[0];
@@ -195,7 +204,7 @@ class Task {
       .returning({ status: tasks.status });
 
     if (result.length === 0) {
-      throw new NotFoundError(`Task ${taskId}`);
+      return null;
     }
 
     return result[0];
@@ -208,13 +217,13 @@ class Task {
     const result = await db
       .delete(tasks)
       .where(eq(tasks.id, taskId))
-      .returning({ id: tasks.id });
+      .returning();
 
     if (result.length === 0) {
-      throw new NotFoundError(`Task ${taskId}`);
+      return null;
     }
 
-    return 1;
+    return result[0];
   }
 
   /**

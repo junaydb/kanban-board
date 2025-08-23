@@ -6,7 +6,7 @@ import {
   PageQuerySchema,
   BoardIdSchema,
   TaskIdSchema,
-} from "./validation.schemas.js";
+} from "./_validators.js";
 import type {
   TTask,
   ByCreatedPageParams,
@@ -14,70 +14,112 @@ import type {
 } from "../util/types.js";
 import Pagination from "../util/Pagination.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
+import { TRPCError } from "@trpc/server";
+import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
 /*
- * All routes that take parameters validate those parameters using Zod schemas.
+ * All procedures that take parameters validate those parameters using Zod schemas.
  * Zod throws a `ZodError` when validation fails.
  *
- * Errors are handled at the top level in `index.ts` with the `app.onError` handler,
- * so try/catch blocks are not needed.
+ * All auth logic is handled within procedures that require it.
+ *
+ * All errors are handled by TRPC via throwing TRPCError with the respective error code.
  */
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
     .input(BoardIdSchema)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
       const allTasks = await Task.getAllFromBoard(input);
+      if (!allTasks) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Tasks not found" });
+      }
+
       return successResponseFactory.standard(allTasks);
     }),
 
-  getCount: publicProcedure.input(BoardIdSchema).query(async ({ input }) => {
-    const numTasks = await Task.getNumTasks(input);
-    return successResponseFactory.standard(numTasks);
-  }),
+  getCount: publicProcedure
+    .input(BoardIdSchema)
+    .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
 
-  getPage: publicProcedure.input(PageQuerySchema).query(async ({ input }) => {
-    const { sortBy, pageSize } = input;
+      const numTasks = await Task.getNumTasks(input);
+      return successResponseFactory.standard(numTasks);
+    }),
 
-    let page: TTask[];
-    let nextCursor: string | null = null;
+  getPage: publicProcedure
+    .input(PageQuerySchema)
+    .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
 
-    // May need refactoring if more sort strategies are added
-    switch (sortBy) {
-      case "created": {
-        let params: ByCreatedPageParams;
-        params = Pagination.generateByCreatedParams(input);
-        page = await Task.getTasksByCreated(params);
+      const { sortBy, pageSize } = input;
 
-        const nextPageExists = page.length === pageSize;
-        if (nextPageExists) {
-          const lastTask = page[page.length - 1];
-          nextCursor = Pagination.getNextByCreatedCursor(lastTask);
+      let page: TTask[] | null;
+      let nextCursor: string | null = null;
+
+      // Lots of repetition, may need refactoring if more sort strategies are added
+      switch (sortBy) {
+        case "created": {
+          let params: ByCreatedPageParams;
+          params = Pagination.generateByCreatedParams(input);
+          page = await Task.getTasksByCreated(params);
+
+          if (!page) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Tasks not found",
+            });
+          }
+
+          const nextPageExists = page.length === pageSize;
+          if (nextPageExists) {
+            const lastTask = page[page.length - 1];
+            nextCursor = Pagination.getNextByCreatedCursor(lastTask);
+          }
+          break;
         }
-        break;
+
+        case "dueDate": {
+          let params: ByDueDatePageParams;
+          params = Pagination.generateByDueDateParams(input);
+          page = await Task.getTasksByDueDate(params);
+
+          if (!page) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Tasks not found",
+            });
+          }
+
+          const nextPageExists = page.length === pageSize;
+          if (nextPageExists) {
+            const lastTask = page[page.length - 1];
+            nextCursor = Pagination.getNextByDueDateCursor(lastTask);
+          }
+          break;
+        }
       }
 
-      case "dueDate": {
-        let params: ByDueDatePageParams;
-        params = Pagination.generateByDueDateParams(input);
-        page = await Task.getTasksByDueDate(params);
+      return successResponseFactory.withMeta(page, { cursor: nextCursor });
+    }),
 
-        const nextPageExists = page.length === pageSize;
-        if (nextPageExists) {
-          const lastTask = page[page.length - 1];
-          nextCursor = Pagination.getNextByDueDateCursor(lastTask);
-        }
-        break;
+  getById: publicProcedure
+    .input(BoardIdSchema.merge(TaskIdSchema))
+    .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
+      const task = await Task.findById(input);
+      if (!task) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: `Task ${input.taskId} not found`,
+        });
       }
-    }
 
-    return successResponseFactory.withMeta(page, { cursor: nextCursor });
-  }),
-
-  getById: publicProcedure.input(TaskIdSchema).query(async ({ input }) => {
-    const task = await Task.findById(input);
-    return successResponseFactory.standard(task);
-  }),
+      return successResponseFactory.standard(task);
+    }),
 
   create: publicProcedure
     .input(CreateTaskSchema)
@@ -94,14 +136,34 @@ export const tasksRouter = router({
     }),
 
   updateStatus: publicProcedure
-    .input(UpdateStatusSchema)
-    .mutation(async ({ input }) => {
+    .input(UpdateStatusSchema.merge(BoardIdSchema))
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
       const result = await Task.updateStatus(input);
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Task ${input.taskId} not found`,
+        });
+      }
+
       return successResponseFactory.standard({ newStatus: result.status });
     }),
 
-  delete: publicProcedure.input(TaskIdSchema).mutation(async ({ input }) => {
-    await Task.delete(input);
-    return successResponseFactory.noData();
-  }),
+  delete: publicProcedure
+    .input(TaskIdSchema.merge(BoardIdSchema))
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
+      const result = await Task.delete(input);
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Task ${input.taskId} not found`,
+        });
+      }
+
+      return successResponseFactory.standard(result);
+    }),
 });

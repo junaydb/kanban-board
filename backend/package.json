@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/main/index.ts",
+    "check": "npx tsc --noEmit --strict",
     "test": "vitest",
     "test:unit": "vitest unit --run",
     "test:integration": "vitest integration run",
