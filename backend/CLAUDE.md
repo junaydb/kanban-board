@@ -2,13 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Current Goal
-
-The current goal is to migrate from pgtyped to drizzle ORM, using a codebase first schema approach.
-
 ## Development Commands
 
-- `npm run dev` - Start development server with tsx watch on port 3000
+- `npm run dev` - Start development server with tsx watch
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm run start` - Run production server from dist folder
+- `npm run check` - Type check without emitting files
 - `npm run test` - Run all tests with Vitest
 - `npm run test:unit` - Run unit tests only
 - `npm run test:integration` - Run integration tests only
@@ -24,51 +23,90 @@ This is a TypeScript backend for a kanban board application built with:
 
 - **Hono** - Web framework serving as the HTTP server
 - **tRPC** - Type-safe API layer exposed at `/api/trpc/*`
-- **PostgreSQL** - Database with direct pg queries
+- **Drizzle ORM** - TypeScript ORM with PostgreSQL adapter
+- **Better Auth** - Authentication system with Google/GitHub providers
+- **PostgreSQL** - Database with Drizzle schema
 - **Zod** - Runtime validation and schema definition
 - **Vitest** - Testing framework
 
 ### Key Architecture Patterns
 
-**tRPC Integration**: The application migrated from REST routes to tRPC. The main router is in `src/main/trpc/appRouter.ts` and routes are organized by domain (currently just `tasks`).
+**tRPC Integration**: The application uses tRPC for type-safe APIs. The main router is in `src/main/trpc/appRouter.ts` and routes are organized by domain (`tasks` and `boards`).
 
-**Database Layer**: Uses direct PostgreSQL queries with the pg library. SQL queries are defined in `src/main/queries/taskQueries.sql` with corresponding TypeScript interfaces in `taskQueries.queries.ts`.
+**Database Layer**: Migrated from pgtyped to Drizzle ORM using a schema-first approach. Schema defined in `src/main/db/schema.ts` with models in `src/main/models/` for business logic.
 
-**Cursor-Based Pagination**: Implements cursor-based pagination for task lists with support for sorting by creation date or due date. The pagination system uses base64-encoded cursors and strategy pattern in `src/main/util/pagination.ts`.
+**Authentication**: Uses Better Auth with social providers (Google/GitHub). Auth configuration in `src/main/util/auth.ts` with database adapter integration.
 
-**Error Handling**: Centralized error handling in `src/main/index.ts` with custom error types like `TaskNotFoundError`. Zod validation errors are automatically converted to helpful HTTP responses.
+**Cursor-Based Pagination**: Implements cursor-based pagination for task lists with support for sorting by creation date or due date. Pagination logic in `src/main/util/Pagination.ts`.
+
+**Error Handling**: Uses tRPC error handling with `TRPCError` for consistent API responses. Custom response wrappers in `src/main/util/responseWrappers.ts`.
 
 ## Database Setup
 
-- Main database: `kanban_board`
-- Test database: `kanban_board_test`
+- Main database: Configured via `DB_URL` environment variable
+- Test database: Configured via `DB_URL_TEST` environment variable
 - Environment controlled by `DB_PROD` environment variable
-- Database configuration in `src/main/db/index.ts` uses connection pooling
-- Seed files: `seed_db.sql` and `seed_test_db.sql`
+- Drizzle configuration in `drizzle.config.ts`
+- Database connection in `src/main/db/index.ts` with schema import
+- Seed file: `seed_db.sql` (Note: needs updating for new schema structure)
 
-## Task Model
+## Schema Structure
 
-The Task model (`src/main/models/Task.ts`) provides:
+### Tables
 
-- CRUD operations using direct PostgreSQL queries
+- **users** - User accounts with Better Auth integration
+- **session** - User sessions for authentication
+- **account** - Social provider accounts
+- **verification** - Email verification tokens
+- **boards** - Kanban boards belonging to users
+- **tasks** - Tasks within boards with status enum (TODO, IN_PROGRESS, DONE)
+
+### Key Relationships
+
+- Users can have multiple boards (one-to-many)
+- Boards can have multiple tasks (one-to-many)
+- Cascading deletes for user -> boards -> tasks
+
+## Models
+
+### Task Model (`src/main/models/Task.ts`)
+
+- CRUD operations using Drizzle ORM
 - Pagination support with multiple sort strategies
-- Both throwing and safe variants of query methods
-- Status management (TODO, IN_PROGRESS, DONE)
+- Methods: `getAllFromBoard`, `getNumTasks`, `getTasksByCreated`, `getTasksByDueDate`, `findById`, `updateStatus`, `delete`, `create`
 
-## Testing Strategy
+### Board Model (`src/main/models/Board.ts`)
 
-- **Integration tests**: Test against real test database in `src/test/integration/`
-- **Unit tests**: Mock database queries for edge cases in `src/test/unit/`
-- Tests automatically use test database when `DB_PROD=false`
-- Comprehensive coverage of pagination, CRUD operations, and error cases
+- Basic CRUD operations for boards
+- Methods: `create`, `updateName`, `delete`
+
+### Auth Model (`src/main/models/Auth.ts`)
+
+- Authorization helpers
+- Methods: `verifyBoardOwnership`
+
+## API Structure
+
+### Tasks Router (`/api/trpc/tasks`)
+
+- `getAllFromBoard` - Get all tasks for a board
+- `getCount` - Get task count for a board
+- Pagination endpoints for tasks by creation date and due date
+- CRUD operations with proper ownership verification
+
+### Boards Router (`/api/trpc/boards`)
+
+- `create` - Create new board
+- `updateName` - Update board title
+- `delete` - Delete board (cascades to tasks)
 
 ## Project Structure
 
 - `src/main/` - Application code
-  - `index.ts` - Server entry point with Hono setup
+  - `index.ts` - Server entry point with Hono and tRPC setup
+  - `db/` - Database configuration and Drizzle schema
   - `trpc/` - tRPC configuration and routers
-  - `routes/` - Domain-specific route handlers and schemas
-  - `models/` - Database models
-  - `util/` - Shared utilities (errors, pagination, response wrappers)
+  - `routes/` - Domain-specific tRPC routers and validation schemas
+  - `models/` - Business logic models using Drizzle ORM
+  - `util/` - Shared utilities (auth, pagination, response wrappers, types)
 - `src/test/` - Test suites organized by type
-
