@@ -33,12 +33,12 @@ export type ByCreatedCursor = z.infer<typeof ByCreatedCursorSchema>;
 export type ByDueDateCursor = z.infer<typeof ByDueDateCursorSchema>;
 export type Cursors = ByCreatedCursor | ByDueDateCursor;
 export type PageQuery = z.infer<typeof PageQuerySchema>;
-export type ByCreatedPageParams = Omit<PageQuery, "cursor"> & {
+export type ByCreatedPageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
   cursor?: ByCreatedCursor;
-} & BoardIdParams;
-export type ByDueDatePageParams = Omit<PageQuery, "cursor"> & {
+};
+export type ByDueDatePageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
   cursor?: ByDueDateCursor;
-} & BoardIdParams;
+};
 
 /* HTTP response wrapper types */
 export interface ApiResponse<T = any> {
