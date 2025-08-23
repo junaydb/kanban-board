@@ -7,8 +7,6 @@
     "start": "node ./dist/src/main/index.js",
     "check": "npx tsc --noEmit --strict",
     "test": "vitest",
-    "test:unit": "vitest unit --run",
-    "test:integration": "vitest integration run",
     "seed-db": "psql -U postgres -d kanban_board -f seed_db.sql",
     "seed-test-db": "psql -U postgres -d kanban_board_test -f seed_db.sql",
     "drop-test-db": "dropdb -U postgres kanban_board_test"

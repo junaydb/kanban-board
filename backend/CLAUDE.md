@@ -9,8 +9,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start` - Run production server from dist folder
 - `npm run check` - Type check without emitting files
 - `npm run test` - Run all tests with Vitest
-- `npm run test:unit` - Run unit tests only
-- `npm run test:integration` - Run integration tests only
 - `npm run seed-db` - Seed the main database with test data
 - `npm run seed-test-db` - Seed the test database with test data
 - `npm run drop-test-db` - Drop the test database
