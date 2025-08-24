@@ -43,7 +43,7 @@ describe("Task model", () => {
 
   describe("getAllFromBoard", () => {
     it("Should return all tasks for a board, ordered by created_at (descending)", async () => {
-      const result = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      const result = await Task.getAll({ boardId: TEST_BOARD_ID });
 
       expect(result).not.toBeNull();
       expect(result).toHaveLength(20); // Seeded tasks
@@ -60,7 +60,7 @@ describe("Task model", () => {
 
     it("Should return null when board has no tasks", async () => {
       // Use a non-existent board ID to test null case
-      const result = await Task.getAllFromBoard({ boardId: 999 });
+      const result = await Task.getAll({ boardId: 999 });
       expect(result).toBeNull();
     });
   });
@@ -249,7 +249,7 @@ describe("Task model", () => {
   describe("findById", () => {
     it("Should return the task with the passed in id", async () => {
       // Use first seeded task (should have ID 1 based on seed file)
-      const allTasks = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      const allTasks = await Task.getAll({ boardId: TEST_BOARD_ID });
       expect(allTasks).not.toBeNull();
       const firstTask = allTasks![0];
 
@@ -269,7 +269,7 @@ describe("Task model", () => {
   describe("updateStatus", () => {
     it("Should update the status of the task and return the updated status", async () => {
       // Find a TODO task from seeded data to update
-      const allTasks = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      const allTasks = await Task.getAll({ boardId: TEST_BOARD_ID });
       expect(allTasks).not.toBeNull();
       const todoTask = allTasks!.find((task) => task.status === "TODO");
       expect(todoTask).toBeDefined();
