@@ -6,9 +6,7 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": ".",
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "rootDir": "."
   },
   "exclude": [
     "src/test"

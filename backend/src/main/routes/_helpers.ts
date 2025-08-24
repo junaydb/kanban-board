@@ -1,4 +1,4 @@
-import type { HonoContext } from "../trpc/trpc.js";
+import type { ExpressContext } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import Auth from "../models/Auth.js";
 import type { BoardIdParams } from "../util/types.js";
@@ -6,7 +6,7 @@ import type { BoardIdParams } from "../util/types.js";
 // Helpers for logic that gets repeated in multiple routes
 
 export async function verifyBoardOwnershipHandler(
-  ctx: HonoContext,
+  ctx: ExpressContext,
   { boardId }: BoardIdParams,
 ) {
   if (!ctx.user) {

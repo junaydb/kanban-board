@@ -1,44 +1,32 @@
-import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { Hono } from "hono";
-import { logger } from "hono/logger";
-import { cors } from "hono/cors";
+import express from "express";
+import cors from "cors";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./trpc/appRouter.js";
-import { trpcServer } from "@hono/trpc-server";
+import { createContext } from "./trpc/trpc.js";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./util/auth.js";
 
-const app = new Hono();
+const app = express();
 
-app.use(logger());
-
-app.use("/favicon.ico", serveStatic({ path: "./favicon.ico" }));
+app.use(express.static("public"));
 
 if (!process.env.PROD) {
-  app.use(
-    cors({
-      origin: "*",
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type"],
-      exposeHeaders: ["Content-Length"],
-      maxAge: 600,
-      credentials: true,
-    }),
-  );
+  app.use(cors({ credentials: true }));
+  console.log("CORS enabled");
 }
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use(
   "/api/trpc/*",
-  trpcServer({
-    endpoint: "/api/trpc",
+  createExpressMiddleware({
     router: appRouter,
+    createContext,
   }),
 );
 
-serve(
-  {
-    fetch: app.fetch,
-    port: parseInt(process.env.PORT!),
-  },
-  (info) => {
-    console.log(`Listening on http://localhost:${info.port}`);
-  },
-);
+const port = parseInt(process.env.PORT!) || 3000;
+
+app.listen(port, () => {
+  console.log(`Listening on http://localhost:${port}`);
+});

@@ -19,7 +19,7 @@ This is a TypeScript backend for a kanban board application built with:
 
 ### Core Stack
 
-- **Hono** - Web framework serving as the HTTP server
+- **Express** - Web framework serving as the HTTP server
 - **tRPC** - Type-safe API layer exposed at `/api/trpc/*`
 - **Drizzle ORM** - TypeScript ORM with PostgreSQL adapter
 - **Better Auth** - Authentication system with Google/GitHub providers
@@ -101,7 +101,7 @@ This is a TypeScript backend for a kanban board application built with:
 ## Project Structure
 
 - `src/main/` - Application code
-  - `index.ts` - Server entry point with Hono and tRPC setup
+  - `index.ts` - Server entry point with Express and tRPC setup
   - `db/` - Database configuration and Drizzle schema
   - `trpc/` - tRPC configuration and routers
   - `routes/` - Domain-specific tRPC routers and validation schemas
