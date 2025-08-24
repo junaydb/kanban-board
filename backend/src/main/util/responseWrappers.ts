@@ -10,7 +10,10 @@ export const successResponseFactory = {
     // Example: { success: true, data: { tasks: [...] } }
     return { success: true, data };
   },
-  withMeta: <T, U>(data: T, meta: U): ApiResponseWithMeta<T, U> => {
+  arrayWithMeta: <T extends Record<string, any[]>, U>(
+    data: T,
+    meta: U,
+  ): ApiResponseWithMeta<T, U> => {
     return { success: true, data, meta };
   },
   noData: (): Omit<ApiResponse, "data"> => {
