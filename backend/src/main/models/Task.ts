@@ -16,7 +16,7 @@ class Task {
   /**
    * Returns all tasks belonging to this board, ordered by creation date in descending order.
    */
-  static async getAllFromBoard({ boardId }: BoardIdParams) {
+  static async getAll({ boardId }: BoardIdParams) {
     const allTasks = await db
       .select()
       .from(tasks)
