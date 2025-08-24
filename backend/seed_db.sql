@@ -3,8 +3,8 @@ INSERT INTO "user" (id, name, email, email_verified, image, created_at, updated_
 ('test-user-1', 'John Doe', 'john.doe@example.com', true, 'https://example.com/avatar.jpg', '2025-08-01T10:00:00Z', '2025-08-01T10:00:00Z');
 
 -- Insert test board
-INSERT INTO boards (id, title, created_at, user_id) VALUES
-(1, 'Project Board', '2025-08-05T10:00:00Z', 'test-user-1');
+INSERT INTO boards (title, created_at, user_id) VALUES
+('Project Board', '2025-08-05T10:00:00Z', 'test-user-1');
 
 -- Insert tasks with updated schema
 INSERT INTO tasks (title, description, status, due_date, has_due_time, created_at, board_id) VALUES

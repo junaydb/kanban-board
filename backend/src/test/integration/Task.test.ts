@@ -9,14 +9,14 @@ import {
 } from "vitest";
 import db from "../../main/db/index.js";
 import Task from "../../main/models/Task.js";
-import { tasks } from "../../main/db/schema.js";
+import { tasks, boards } from "../../main/db/schema.js";
 import type {
   TaskStatusEnum,
   CreateTaskParams,
 } from "../../main/util/types.js";
 import { eq } from "drizzle-orm";
 
-const TEST_BOARD_ID = 1; // Use seeded board
+let TEST_BOARD_ID: number;
 const NON_EXISTENT_TASK_ID = 99999;
 const PAGE_SIZE = 5;
 
@@ -25,6 +25,15 @@ describe("Task model", () => {
     expect(process.env.DB_PROD, "DB_PROD should be 'false' during tests").toBe(
       "false",
     );
+
+    // Get the first available board ID (should be seeded board, but could be different)
+    const allBoards = await db.select().from(boards);
+    if (allBoards.length === 0) {
+      throw new Error(
+        "No boards found in test database. Seeding may have failed.",
+      );
+    }
+    TEST_BOARD_ID = allBoards[0].id;
   });
 
   afterAll(async () => {
