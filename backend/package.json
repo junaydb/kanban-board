@@ -6,10 +6,10 @@
     "dev": "tsx watch src/main/index.ts",
     "start": "node ./dist/src/main/index.js",
     "check": "npx tsc --noEmit --strict",
-    "test": "vitest",
     "seed-db": "psql -U postgres -d kanban_board -f seed_db.sql",
     "seed-test-db": "psql -U postgres -d kanban_board_test -f seed_db.sql",
-    "drop-test-db": "dropdb -U postgres kanban_board_test"
+    "drop-test-db": "dropdb -U postgres kanban_board_test",
+    "test:integration": "createdb -U postgres kanban_board_test && npx drizzle-kit push && pnpm seed-test-db && vitest integration --run && pnpm drop-test-db"
   },
   "dependencies": {
     "@hono/node-server": "^1.18.2",

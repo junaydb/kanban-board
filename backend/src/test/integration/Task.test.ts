@@ -9,15 +9,14 @@ import {
 } from "vitest";
 import db from "../../main/db/index.js";
 import Task from "../../main/models/Task.js";
-import { tasks, boards, users } from "../../main/db/schema.js";
+import { tasks } from "../../main/db/schema.js";
 import type {
   TaskStatusEnum,
   CreateTaskParams,
 } from "../../main/util/types.js";
 import { eq } from "drizzle-orm";
 
-let TEST_BOARD_ID: number;
-let TEST_USER_ID: string;
+const TEST_BOARD_ID = 1; // Use seeded board
 const NON_EXISTENT_TASK_ID = 99999;
 const PAGE_SIZE = 5;
 
@@ -26,138 +25,70 @@ describe("Task model", () => {
     expect(process.env.DB_PROD, "DB_PROD should be 'false' during tests").toBe(
       "false",
     );
-
-    // Create test user and board for all tests
-    const testUser = await db
-      .insert(users)
-      .values({
-        id: "test-user-integration",
-        name: "Test User",
-        email: "test@example.com",
-        emailVerified: false,
-      })
-      .returning();
-    TEST_USER_ID = testUser[0].id;
-
-    const testBoard = await db
-      .insert(boards)
-      .values({
-        title: "Test Board",
-        userId: TEST_USER_ID,
-      })
-      .returning();
-    TEST_BOARD_ID = testBoard[0].id;
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // Clean up only test-created tasks, leave seeded data intact
     await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-    await db.delete(boards).where(eq(boards.id, TEST_BOARD_ID));
-    await db.delete(users).where(eq(users.id, TEST_USER_ID));
   });
 
   describe("getAllFromBoard", () => {
-    beforeEach(async () => {
-      // Clean up any existing tasks
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-
-      // Create test tasks
-      await db.insert(tasks).values([
-        {
-          title: "Task 1",
-          description: "Description 1",
-          status: "TODO" as TaskStatusEnum,
-          dueDate: new Date("2025-01-01"),
-          boardId: TEST_BOARD_ID,
-        },
-        {
-          title: "Task 2",
-          description: "Description 2",
-          status: "IN_PROGRESS" as TaskStatusEnum,
-          dueDate: new Date("2025-01-02"),
-          boardId: TEST_BOARD_ID,
-        },
-      ]);
-    });
-
     it("Should return all tasks for a board, ordered by created_at (descending)", async () => {
       const result = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
 
       expect(result).not.toBeNull();
-      expect(result).toHaveLength(2);
-      expect(result![0].createdAt.getTime()).toBeGreaterThanOrEqual(
-        result![1].createdAt.getTime(),
-      );
+      expect(result).toHaveLength(20); // Seeded tasks
+      // Verify descending order by creation time
+      for (let i = 0; i < result!.length - 1; i++) {
+        expect(result![i].createdAt.getTime()).toBeGreaterThanOrEqual(
+          result![i + 1].createdAt.getTime(),
+        );
+      }
+      // Check that we have the expected seeded tasks
+      expect(result![0].title).toBe("Deploy to staging environment"); // Last created
+      expect(result![result!.length - 1].title).toBe("Design homepage layout"); // First created
     });
 
     it("Should return null when board has no tasks", async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      const result = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      // Use a non-existent board ID to test null case
+      const result = await Task.getAllFromBoard({ boardId: 999 });
       expect(result).toBeNull();
     });
   });
 
   describe("getNumTasks", () => {
-    beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      await db.insert(tasks).values([
-        {
-          title: "Task 1",
-          status: "TODO" as TaskStatusEnum,
-          dueDate: new Date("2025-01-01"),
-          boardId: TEST_BOARD_ID,
-        },
-        {
-          title: "Task 2",
-          status: "DONE" as TaskStatusEnum,
-          dueDate: new Date("2025-01-02"),
-          boardId: TEST_BOARD_ID,
-        },
-      ]);
-    });
-
     it("Should return the number of tasks for a board", async () => {
       const result = await Task.getNumTasks({ boardId: TEST_BOARD_ID });
-      expect(result).toBe(2);
+      expect(result).toBe(20); // Seeded tasks count
     });
   });
 
   describe("getTasksByCreated", () => {
-    beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      // Create multiple TODO tasks for pagination testing
-      const taskPromises = [];
-      for (let i = 0; i < 10; i++) {
-        taskPromises.push(
-          db.insert(tasks).values({
-            title: `Task ${i + 1}`,
-            status: "TODO" as TaskStatusEnum,
-            dueDate: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
-            boardId: TEST_BOARD_ID,
-          }),
-        );
-        // Add small delay to ensure different created_at times
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      }
-      await Promise.all(taskPromises);
-    });
-
     it("Should return tasks ordered by createdAt (descending)", async () => {
       const result = await Task.getTasksByCreated({
         sortOrder: "DESC",
-        status: "TODO" as TaskStatusEnum,
+        status: "TODO",
         pageSize: PAGE_SIZE,
         boardId: TEST_BOARD_ID,
       });
 
       expect(result).not.toBeNull();
       expect(result!).toHaveLength(PAGE_SIZE);
-      expect(result![0].createdAt.getTime()).toBeGreaterThanOrEqual(
-        result![1].createdAt.getTime(),
-      );
-      if (result![0].createdAt.getTime() === result![1].createdAt.getTime()) {
-        expect(result![0].id).toBeGreaterThan(result![1].id);
+      // Verify descending order
+      for (let i = 0; i < result!.length - 1; i++) {
+        expect(result![i].createdAt.getTime()).toBeGreaterThanOrEqual(
+          result![i + 1].createdAt.getTime(),
+        );
+        if (
+          result![i].createdAt.getTime() === result![i + 1].createdAt.getTime()
+        ) {
+          expect(result![i].id).toBeGreaterThan(result![i + 1].id);
+        }
       }
+      // Verify all returned tasks are TODO
+      result!.forEach((task) => {
+        expect(task.status).toBe("TODO");
+      });
     });
 
     it("Should return tasks ordered by createdAt (ascending)", async () => {
@@ -170,12 +101,21 @@ describe("Task model", () => {
 
       expect(result).not.toBeNull();
       expect(result!).toHaveLength(PAGE_SIZE);
-      expect(result![0].createdAt.getTime()).toBeLessThanOrEqual(
-        result![1].createdAt.getTime(),
-      );
-      if (result![0].createdAt.getTime() === result![1].createdAt.getTime()) {
-        expect(result![0].id).toBeLessThan(result![1].id);
+      // Verify ascending order
+      for (let i = 0; i < result!.length - 1; i++) {
+        expect(result![i].createdAt.getTime()).toBeLessThanOrEqual(
+          result![i + 1].createdAt.getTime(),
+        );
+        if (
+          result![i].createdAt.getTime() === result![i + 1].createdAt.getTime()
+        ) {
+          expect(result![i].id).toBeLessThan(result![i + 1].id);
+        }
       }
+      // Verify all returned tasks are TODO
+      result!.forEach((task) => {
+        expect(task.status).toBe("TODO");
+      });
     });
 
     it("Should handle pagination correctly (descending)", async () => {
@@ -202,7 +142,7 @@ describe("Task model", () => {
       });
 
       expect(secondPage).not.toBeNull();
-      expect(secondPage!).toHaveLength(PAGE_SIZE);
+      expect(secondPage!).toHaveLength(3); // Remaining TODO tasks (8 total - 5 from first page)
       expect(secondPage![0].createdAt.getTime()).toBeLessThanOrEqual(
         lastTask.createdAt.getTime(),
       );
@@ -213,23 +153,6 @@ describe("Task model", () => {
   });
 
   describe("getTasksByDueDate", () => {
-    beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      // Create multiple TODO tasks with different due dates
-      const taskPromises = [];
-      for (let i = 0; i < 10; i++) {
-        taskPromises.push(
-          db.insert(tasks).values({
-            title: `Task ${i + 1}`,
-            status: "TODO" as TaskStatusEnum,
-            dueDate: new Date(`2025-01-${String(i + 1).padStart(2, "0")}`),
-            boardId: TEST_BOARD_ID,
-          }),
-        );
-      }
-      await Promise.all(taskPromises);
-    });
-
     it("Should return tasks ordered by dueDate (descending)", async () => {
       const result = await Task.getTasksByDueDate({
         sortOrder: "DESC",
@@ -240,12 +163,19 @@ describe("Task model", () => {
 
       expect(result).not.toBeNull();
       expect(result!).toHaveLength(PAGE_SIZE);
-      expect(result![0].dueDate.getTime()).toBeGreaterThanOrEqual(
-        result![1].dueDate.getTime(),
-      );
-      if (result![0].dueDate.getTime() === result![1].dueDate.getTime()) {
-        expect(result![0].id).toBeGreaterThan(result![1].id);
+      // Verify descending order by due date
+      for (let i = 0; i < result!.length - 1; i++) {
+        expect(result![i].dueDate.getTime()).toBeGreaterThanOrEqual(
+          result![i + 1].dueDate.getTime(),
+        );
+        if (result![i].dueDate.getTime() === result![i + 1].dueDate.getTime()) {
+          expect(result![i].id).toBeGreaterThan(result![i + 1].id);
+        }
       }
+      // Verify all returned tasks are TODO
+      result!.forEach((task) => {
+        expect(task.status).toBe("TODO");
+      });
     });
 
     it("Should return tasks ordered by dueDate (ascending)", async () => {
@@ -258,12 +188,19 @@ describe("Task model", () => {
 
       expect(result).not.toBeNull();
       expect(result!).toHaveLength(PAGE_SIZE);
-      expect(result![0].dueDate.getTime()).toBeLessThanOrEqual(
-        result![1].dueDate.getTime(),
-      );
-      if (result![0].dueDate.getTime() === result![1].dueDate.getTime()) {
-        expect(result![0].id).toBeLessThan(result![1].id);
+      // Verify ascending order by due date
+      for (let i = 0; i < result!.length - 1; i++) {
+        expect(result![i].dueDate.getTime()).toBeLessThanOrEqual(
+          result![i + 1].dueDate.getTime(),
+        );
+        if (result![i].dueDate.getTime() === result![i + 1].dueDate.getTime()) {
+          expect(result![i].id).toBeLessThan(result![i + 1].id);
+        }
       }
+      // Verify all returned tasks are TODO
+      result!.forEach((task) => {
+        expect(task.status).toBe("TODO");
+      });
     });
 
     it("Should handle pagination correctly (ascending)", async () => {
@@ -290,7 +227,7 @@ describe("Task model", () => {
       });
 
       expect(secondPage).not.toBeNull();
-      expect(secondPage!).toHaveLength(PAGE_SIZE);
+      expect(secondPage!).toHaveLength(3); // Remaining TODO tasks (8 total - 5 from first page)
       expect(secondPage![0].dueDate.getTime()).toBeGreaterThanOrEqual(
         lastTask.dueDate.getTime(),
       );
@@ -301,29 +238,17 @@ describe("Task model", () => {
   });
 
   describe("findById", () => {
-    let testTaskId: number;
-
-    beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      const [testTask] = await db
-        .insert(tasks)
-        .values({
-          title: "Test Task for FindById",
-          description: "Test description",
-          status: "TODO" as TaskStatusEnum,
-          dueDate: new Date("2025-01-01"),
-          boardId: TEST_BOARD_ID,
-        })
-        .returning();
-      testTaskId = testTask.id;
-    });
-
     it("Should return the task with the passed in id", async () => {
-      const result = await Task.findById({ taskId: testTaskId });
+      // Use first seeded task (should have ID 1 based on seed file)
+      const allTasks = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      expect(allTasks).not.toBeNull();
+      const firstTask = allTasks![0];
+
+      const result = await Task.findById({ taskId: firstTask.id });
       expect(result).not.toBeNull();
-      expect(result!.id).toBe(testTaskId);
-      expect(result!.title).toBe("Test Task for FindById");
-      expect(result!.description).toBe("Test description");
+      expect(result!.id).toBe(firstTask.id);
+      expect(result!.title).toBe(firstTask.title);
+      expect(result!.boardId).toBe(TEST_BOARD_ID);
     });
 
     it("Should return null if the task does not exist", async () => {
@@ -333,32 +258,22 @@ describe("Task model", () => {
   });
 
   describe("updateStatus", () => {
-    let testTaskId: number;
-
-    beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
-      const [testTask] = await db
-        .insert(tasks)
-        .values({
-          title: "Temp Task for Update",
-          status: "TODO" as TaskStatusEnum,
-          dueDate: new Date("2025-01-01"),
-          boardId: TEST_BOARD_ID,
-        })
-        .returning();
-      testTaskId = testTask.id;
-    });
-
     it("Should update the status of the task and return the updated status", async () => {
+      // Find a TODO task from seeded data to update
+      const allTasks = await Task.getAllFromBoard({ boardId: TEST_BOARD_ID });
+      expect(allTasks).not.toBeNull();
+      const todoTask = allTasks!.find((task) => task.status === "TODO");
+      expect(todoTask).toBeDefined();
+
       const newStatus = "DONE" as TaskStatusEnum;
-      const params = { taskId: testTaskId, newStatus };
+      const params = { taskId: todoTask!.id, newStatus };
 
       const result = await Task.updateStatus(params);
       expect(result).not.toBeNull();
       expect(result!.status).toBe(newStatus);
 
       // Verify the change in the database
-      const updatedTask = await Task.findById({ taskId: testTaskId });
+      const updatedTask = await Task.findById({ taskId: todoTask!.id });
       expect(updatedTask).not.toBeNull();
       expect(updatedTask!.status).toBe(newStatus);
     });
@@ -377,13 +292,14 @@ describe("Task model", () => {
     let testTaskId: number;
 
     beforeEach(async () => {
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
+      // Create a dedicated task for deletion (don't delete seeded data)
       const [testTask] = await db
         .insert(tasks)
         .values({
           title: "Temp Task for Delete",
           status: "TODO" as TaskStatusEnum,
           dueDate: new Date("2025-01-01"),
+          hasDueTime: false,
           boardId: TEST_BOARD_ID,
         })
         .returning();
@@ -411,8 +327,8 @@ describe("Task model", () => {
 
   describe("create", () => {
     afterEach(async () => {
-      // Clean up any created tasks
-      await db.delete(tasks).where(eq(tasks.boardId, TEST_BOARD_ID));
+      // Clean up any test-created tasks, keep seeded data
+      await db.delete(tasks).where(eq(tasks.title, "New Task Created"));
     });
 
     it("Should save the passed in task in the database and return the task", async () => {
@@ -421,6 +337,7 @@ describe("Task model", () => {
         description: "Created Description",
         status: "TODO" as TaskStatusEnum,
         dueDate: new Date("2025-08-01"),
+        hasDueTime: false,
         boardId: TEST_BOARD_ID,
       };
 
