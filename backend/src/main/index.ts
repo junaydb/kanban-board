@@ -12,7 +12,7 @@ const app = express();
 app.use(morgan("combined"));
 app.use(express.static("public"));
 
-if (!process.env.PROD) {
+if (process.env.PROD === "false") {
   app.use(cors({ origin: "http://localhost:5173", credentials: true }));
   console.log("CORS enabled");
 }
