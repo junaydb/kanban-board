@@ -10,6 +10,7 @@ import {
   UpdateStatusSchema,
   BoardTitleSchema,
   UserIdSchema,
+  TaskCountSchema,
 } from "../routes/_validators.js";
 
 /* Types derived from drizzle schema */
@@ -22,9 +23,8 @@ export type InsertBoardParams = InferInsertModel<typeof boards>;
 export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
 export type TaskIdParams = z.infer<typeof TaskIdSchema>;
 export type BoardIdParams = z.infer<typeof BoardIdSchema>;
-export type UpdateBoardNameParams = z.infer<
-  typeof BoardIdSchema & typeof BoardTitleSchema
->;
+export type TaskCountParams = z.infer<typeof TaskCountSchema>;
+export type UpdateBoardNameParams = z.infer<typeof BoardTitleSchema>;
 export type VerifyBoardOwnershipParams = z.infer<
   typeof UserIdSchema & typeof BoardIdSchema
 >;

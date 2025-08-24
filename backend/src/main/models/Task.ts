@@ -9,6 +9,7 @@ import type {
   ByCreatedPageParams,
   BoardIdParams,
   TaskIdParams,
+  TaskCountParams,
 } from "../util/types.js";
 
 class Task {
@@ -32,11 +33,16 @@ class Task {
   /**
    * Returns the total number of tasks for this board.
    */
-  static async getNumTasks({ boardId }: BoardIdParams) {
+  static async getNumTasks({ boardId, status }: TaskCountParams) {
     const result = await db
       .select({ count: count() })
       .from(tasks)
-      .where(eq(tasks.boardId, boardId));
+      .where(
+        and(
+          eq(tasks.boardId, boardId),
+          status ? eq(tasks.status, status) : undefined,
+        ),
+      );
 
     return result[0].count;
   }

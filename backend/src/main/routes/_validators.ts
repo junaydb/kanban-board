@@ -65,3 +65,8 @@ export const BoardIdSchema = z.object({
 export const BoardTitleSchema = z.object({
   title: z.string().min(1).max(50),
 });
+
+export const TaskCountSchema = z.object({
+  boardId: IdSchema,
+  status: StatusEnum.optional(),
+});

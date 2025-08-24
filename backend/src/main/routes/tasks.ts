@@ -6,6 +6,7 @@ import {
   PageQuerySchema,
   BoardIdSchema,
   TaskIdSchema,
+  TaskCountSchema,
 } from "./_validators.js";
 import type {
   TTask,
@@ -41,7 +42,7 @@ export const tasksRouter = router({
     }),
 
   getCount: publicProcedure
-    .input(BoardIdSchema)
+    .input(BoardIdSchema.merge(TaskCountSchema))
     .query(async ({ ctx, input }) => {
       await verifyBoardOwnershipHandler(ctx, input);
 
