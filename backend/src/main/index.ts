@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./trpc/appRouter.js";
 import { createContext } from "./trpc/trpc.js";
@@ -8,10 +9,11 @@ import { auth } from "./util/auth.js";
 
 const app = express();
 
+app.use(morgan("combined"));
 app.use(express.static("public"));
 
 if (!process.env.PROD) {
-  app.use(cors({ credentials: true }));
+  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
   console.log("CORS enabled");
 }
 
