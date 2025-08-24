@@ -22,7 +22,7 @@ export const boardsRouter = router({
         title: input.title,
       });
 
-      return successResponseFactory.standard(board);
+      return successResponseFactory.single(board);
     }),
 
   updateName: publicProcedure
@@ -31,7 +31,7 @@ export const boardsRouter = router({
       await verifyBoardOwnershipHandler(ctx, input);
 
       const task = await Board.updateName(input);
-      return successResponseFactory.standard(task);
+      return successResponseFactory.single(task);
     }),
 
   delete: publicProcedure

@@ -10,7 +10,7 @@ import type {
 class Board {
   static async create(params: InsertBoardParams) {
     const board = await db.insert(boards).values(params).returning();
-    return board;
+    return board[0];
   }
 
   static async updateName({ title, boardId }: UpdateBoardNameParams) {

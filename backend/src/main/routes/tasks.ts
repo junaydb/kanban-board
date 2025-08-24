@@ -36,7 +36,7 @@ export const tasksRouter = router({
       throw new TRPCError({ code: "NOT_FOUND", message: "Tasks not found" });
     }
 
-    return successResponseFactory.standard(allTasks);
+    return successResponseFactory.array({ tasks: allTasks });
   }),
 
   getCount: publicProcedure
@@ -45,7 +45,7 @@ export const tasksRouter = router({
       await verifyBoardOwnershipHandler(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
-      return successResponseFactory.standard(numTasks);
+      return successResponseFactory.single(numTasks);
     }),
 
   getPage: publicProcedure
@@ -117,14 +117,14 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.standard(task);
+      return successResponseFactory.single(task);
     }),
 
   create: publicProcedure
     .input(CreateTaskSchema)
     .mutation(async ({ input }) => {
       const task = await Task.create(input);
-      return successResponseFactory.standard(task);
+      return successResponseFactory.single(task);
     }),
 
   updateStatus: publicProcedure
@@ -140,7 +140,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.standard({ newStatus: result.status });
+      return successResponseFactory.single({ newStatus: result.status });
     }),
 
   delete: publicProcedure
@@ -156,6 +156,6 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.standard(result);
+      return successResponseFactory.single(result);
     }),
 });

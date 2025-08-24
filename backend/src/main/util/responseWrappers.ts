@@ -1,7 +1,13 @@
 import type { ApiResponse, ApiResponseWithMeta } from "./types.js";
 
 export const successResponseFactory = {
-  standard: <T>(data: T): ApiResponse<T> => {
+  single: <T extends any>(
+    data: T extends any[] ? never : T,
+  ): ApiResponse<T> => {
+    return { success: true, data };
+  },
+  array: <T extends Record<string, any[]>>(data: T): ApiResponse<T> => {
+    // Example: { success: true, data: { tasks: [...] } }
     return { success: true, data };
   },
   withMeta: <T, U>(data: T, meta: U): ApiResponseWithMeta<T, U> => {
