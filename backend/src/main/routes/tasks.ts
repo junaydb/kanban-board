@@ -101,7 +101,10 @@ export const tasksRouter = router({
         }
       }
 
-      return successResponseFactory.arrayWithMeta({ tasks: page }, { cursor: nextCursor });
+      return successResponseFactory.arrayWithMeta(
+        { tasks: page },
+        { cursor: nextCursor },
+      );
     }),
 
   getById: publicProcedure
