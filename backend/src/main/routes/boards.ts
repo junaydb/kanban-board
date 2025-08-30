@@ -15,8 +15,10 @@ import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
 export const boardsRouter = router({
   create: publicProcedure
-    .input(BoardTitleSchema)
+    .input(BoardTitleSchema.merge(BoardIdSchema))
     .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
+
       const board = await Board.create({
         userId: ctx.user!.id,
         title: input.title,
@@ -31,6 +33,7 @@ export const boardsRouter = router({
       await verifyBoardOwnershipHandler(ctx, input);
 
       const task = await Board.updateName(input);
+
       return successResponseFactory.single(task);
     }),
 
@@ -40,6 +43,7 @@ export const boardsRouter = router({
       await verifyBoardOwnershipHandler(ctx, input);
 
       await Board.delete(input);
+
       return successResponseFactory.noData();
     }),
 });
