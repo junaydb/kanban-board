@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   validateTitle,
   validateDescription,
   validateDueDate,
-  validateDueTime,
-} from "../validators";
-import { useCreateTask } from "../util/hooks";
+} from "@/util/validators";
+import { useCreateTask } from "@/util/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,13 +19,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { combineDateAndTimeToISO } from "@/util/helpers";
+import type { RouterInput } from "@/util/types";
 
-type Inputs = {
-  title: string;
-  description?: string;
-  dueDate: string;
-  dueTime: string;
+type Inputs = RouterInput["tasks"]["create"] & {
+  dueTime: Date;
 };
 
 // Round the time to the nearest next half hour
@@ -37,47 +35,64 @@ function getRoundedTime() {
   return date;
 }
 
+function formatDateToISOString(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
 function CreateTaskModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [submittedData, setSubmittedData] = useState<Inputs | null>(null);
 
   const now = getRoundedTime();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  const nowDateIso = now.toISOString().slice(0, 10);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const {
     register,
     handleSubmit,
-    getValues,
+    control,
+    watch,
     reset,
     formState: { errors },
   } = useForm<Inputs>({
     reValidateMode: "onSubmit",
     defaultValues: {
-      dueDate: nowDateIso,
-      dueTime: `${hh}:${mm}`,
+      dueDate: formatDateToISOString(today),
+      dueTime: now,
+      hasDueTime: false,
     },
   });
 
   const { mutate } = useCreateTask();
 
+  const hasDueTime = watch("hasDueTime");
+
   const onSubmit: SubmitHandler<Inputs> = (params) => {
-    const isoDateTime = combineDateAndTimeToISO(params.dueDate, params.dueTime);
+    let finalDateTime: Date;
+
+    if (params.hasDueTime) {
+      finalDateTime = new Date(params.dueTime);
+    } else {
+      // Set to end of day (23:59:59) if no specific time is chosen
+      finalDateTime = new Date(params.dueDate + "T23:59:59");
+    }
 
     setSubmittedData(params);
     mutate({
       title: params.title,
       description: params.description,
-      due_date: isoDateTime,
+      dueDate: finalDateTime.toISOString(),
+      // Hardcode this for now
+      boardId: 1,
     });
   };
 
   const handleAddAnother = () => {
     setSubmittedData(null);
     reset({
-      dueDate: nowDateIso,
-      dueTime: `${hh}:${mm}`,
+      dueDate: formatDateToISOString(today),
+      dueTime: now,
+      hasDueTime: false,
     });
   };
 
@@ -86,8 +101,9 @@ function CreateTaskModal() {
     if (!open) {
       setSubmittedData(null);
       reset({
-        dueDate: nowDateIso,
-        dueTime: `${hh}:${mm}`,
+        dueDate: formatDateToISOString(today),
+        dueTime: now,
+        hasDueTime: false,
       });
     }
   };
@@ -130,34 +146,66 @@ function CreateTaskModal() {
               {errors.dueDate && (
                 <p className="text-sm text-red-600">{errors.dueDate.message}</p>
               )}
-              <Input
-                id="dueDate"
-                type="date"
-                defaultValue={nowDateIso}
-                {...register("dueDate", {
-                  validate: validateDueDate,
-                })}
-                className={errors.dueDate ? "border-red-500" : ""}
+              <Controller
+                name="dueDate"
+                control={control}
+                rules={{ validate: validateDueDate }}
+                render={({ field }) => (
+                  <DatePicker
+                    id="dueDate"
+                    selected={field.value ? new Date(field.value) : null}
+                    onChange={(date) =>
+                      field.onChange(date ? formatDateToISOString(date) : "")
+                    }
+                    dateFormat="yyyy-MM-dd"
+                    minDate={today}
+                    className={`w-full px-3 py-2 border rounded-md ${errors.dueDate ? "border-red-500" : "border-gray-300"}`}
+                    placeholderText="Select due date"
+                  />
+                )}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dueTime">Due time</Label>
-              {errors.dueTime && (
-                <p className="text-sm text-red-600">{errors.dueTime.message}</p>
-              )}
-              <Input
-                id="dueTime"
-                type="time"
-                {...register("dueTime", {
-                  validate: (time) => {
-                    const curDueDate = getValues("dueDate");
-                    return validateDueTime(time, new Date(curDueDate));
-                  },
-                })}
-                className={errors.dueTime ? "border-red-500" : ""}
+            <div className="flex items-center space-x-2">
+              <input
+                id="hasDueTime"
+                type="checkbox"
+                {...register("hasDueTime")}
+                className="rounded"
               />
+              <Label htmlFor="hasDueTime">Include due time</Label>
             </div>
+
+            {hasDueTime && (
+              <div className="space-y-2">
+                <Label htmlFor="dueTime">Due time</Label>
+                {errors.dueTime && (
+                  <p className="text-sm text-red-600">
+                    {errors.dueTime.message}
+                  </p>
+                )}
+                <Controller
+                  name="dueTime"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      id="dueTime"
+                      selected={field.value ? new Date(field.value) : null}
+                      onChange={field.onChange}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={30}
+                      timeCaption="Time"
+                      dateFormat="h:mm aa"
+                      className={`w-full px-3 py-2 border rounded-md ${errors.dueTime ? "border-red-500" : "border-gray-300"}`}
+                      placeholderText="Select due time"
+                      minTime={new Date(new Date().setHours(0, 0, 0, 0))}
+                      maxTime={new Date(new Date().setHours(23, 59, 59, 999))}
+                    />
+                  )}
+                />
+              </div>
+            )}
 
             <Button type="submit" className="w-full">
               Submit

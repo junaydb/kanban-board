@@ -1,25 +1,25 @@
 import { useState } from "react";
-import { useDeleteTask } from "../util/hooks";
-import { RouterInput } from "../types";
+import { useDeleteTask } from "@/util/hooks";
+import { RouterInput } from "@/util/types";
 import { Button } from "@/components/ui/button";
 
-type IdParam = RouterInput["tasks"]["delete"];
+type MutationParams = RouterInput["tasks"]["delete"];
 
 interface Props {
-  id: number;
-  onClose?: () => void;
+  params: MutationParams;
 }
 
-function DeleteTaskConfirmation({ id, onClose }: Props) {
-  const [submittedData, setSubmittedData] = useState<IdParam | null>(null);
+function DeleteTaskConfirmation({ params }: Props) {
+  const [submittedData, setSubmittedData] = useState<MutationParams | null>(
+    null,
+  );
 
   const { mutate } = useDeleteTask();
 
   const onConfirm = () => {
-    const deleteParams = { id };
+    const deleteParams = { ...params };
     setSubmittedData(deleteParams);
     mutate(deleteParams);
-    onClose?.();
   };
 
   if (!submittedData) {
@@ -33,7 +33,7 @@ function DeleteTaskConfirmation({ id, onClose }: Props) {
           <Button variant="destructive" onClick={onConfirm} className="flex-1">
             Confirm
           </Button>
-          <Button variant="outline" onClick={onClose} className="flex-1">
+          <Button variant="outline" className="flex-1">
             Cancel
           </Button>
         </div>

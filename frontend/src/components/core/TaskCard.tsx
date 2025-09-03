@@ -15,16 +15,16 @@ import {
 } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CalendarPlus, Clock, Edit, Trash2 } from "lucide-react";
-import type { Task, Status } from "../types";
-import ModalButton from "./ModalButton";
+import ModalButton from "../util/ModalButton";
 import SelectStatusForm from "./SelectStatusForm";
 import DeleteTaskConfirmation from "./DeleteConfirmation";
+import type { Task } from "@/util/types";
 
-interface TaskCardProps {
+interface Props {
   task: Task;
 }
 
-const columnProps = {
+const badgeProps = {
   TODO: {
     title: "TO DO",
     badgeClassName: "bg-gray-100 text-gray-800",
@@ -39,21 +39,21 @@ const columnProps = {
   },
 };
 
-function TaskCard({ task }: TaskCardProps) {
+function TaskCard({ task }: Props) {
   const [isTaskCardOpen, setIsTaskCardOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const dueDate = new Date(task.due_date);
+  const dueDate = new Date(task.dueDate);
   const dueDateStr = dueDate.toLocaleDateString();
   const dueTimeStr = dueDate.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const createdDate = new Date(task.created_at);
+  const createdDate = new Date(task.createdAt);
   const createdDateStr = createdDate.toLocaleDateString();
 
-  const props = columnProps[task.status as Status];
+  const props = badgeProps[task.status];
 
   return (
     <>
@@ -137,10 +137,12 @@ function TaskCard({ task }: TaskCardProps) {
 
                 <div className="flex gap-2 pt-4 border-t">
                   <ModalButton text="Change status" variant="default">
-                    <SelectStatusForm id={task.id} status={task.status} />
+                    <SelectStatusForm />
                   </ModalButton>
                   <ModalButton text="Delete" variant="destructive">
-                    <DeleteTaskConfirmation id={task.id} />
+                    <DeleteTaskConfirmation
+                      params={{ taskId: task.id, boardId: 1 }}
+                    />
                   </ModalButton>
                 </div>
               </div>
@@ -175,7 +177,7 @@ function TaskCard({ task }: TaskCardProps) {
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
-          <DeleteTaskConfirmation id={task.id} />
+          <DeleteTaskConfirmation params={{ taskId: task.id, boardId: 1 }} />
         </DialogContent>
       </Dialog>
     </>

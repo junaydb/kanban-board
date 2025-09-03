@@ -1,11 +1,16 @@
-import type { Status } from "../types";
-import { useGetNextPage } from "../util/hooks";
-import TaskCard from "./TaskCard";
-import LoadingSpinner from "./LoadingSpinner";
+import { useGetNextPage } from "@/util/hooks";
 import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
+import TaskCard from "./TaskCard";
+import LoadingSpinner from "../decorative/LoadingSpinner";
+import type { Status } from "@/util/types";
 
-const columnProps = {
+type ColumnProp = {
+  title: string;
+  className: string;
+};
+
+const columnProps: Record<Status, ColumnProp> = {
   TODO: {
     title: "To do",
     className: "border-gray-300 bg-gray-50",
@@ -24,12 +29,12 @@ function ColumnContainer({
   colProps,
   children,
 }: {
-  colProps: typeof columnProps.TODO;
+  colProps: ColumnProp;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className={`flex flex-col h-full min-h-[600px] rounded-xs border-2 ${colProps.className} p-4`}
+      className={`${colProps.className} flex flex-col h-full min-h-[600px] rounded-xs border-2 p-4`}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-lg">{colProps.title}</h3>
@@ -39,13 +44,19 @@ function ColumnContainer({
   );
 }
 
-function TaskColumn({ status }: { status: Status }) {
+interface Props {
+  status: Status;
+}
+
+function TaskColumn({ status }: Props) {
   const { isPending, data, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useGetNextPage({
       status,
       sortBy: "created",
       sortOrder: "DESC",
+      // Hardcode these for now
       pageSize: 10,
+      boardId: 1,
     });
 
   const props = columnProps[status];

@@ -1,6 +1,6 @@
 import React from "react";
 import Home from "./Home";
-import Footer from "./components/Footer";
+import Footer from "./components/decorative/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./util/trpc";
 

@@ -8,16 +8,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useGetAllTasks } from "../util/hooks";
+import { useGetAllTasks } from "@/util/hooks";
 import { Search } from "lucide-react";
 import TaskCard from "./TaskCard";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../decorative/LoadingSpinner";
 
-function SearchModal() {
+interface Props {
+  boardId: number;
+}
+
+function SearchModal({ boardId }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data, isLoading, error } = useGetAllTasks();
+  const { data, isLoading, error } = useGetAllTasks({ boardId });
 
   const allTasks = data?.data.tasks || [];
 

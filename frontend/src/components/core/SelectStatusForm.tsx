@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { useUpdateTaskStatus } from "../util/hooks";
-import { statusEnumToDisplay, getSetStatusOptions } from "../util/helpers";
-import type { RouterInput, Status } from "../types";
+import { useUpdateTaskStatus } from "@/util/hooks";
+import { statusEnumToDisplay, getSetStatusOptions } from "@/util/helpers";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import type { RouterInput, Status } from "@/util/types";
 
 type UpdateTaskStatusParams = RouterInput["tasks"]["updateStatus"];
 
 interface Props {
-  id: number;
-  status: Status;
-  onClose?: () => void;
+  params: UpdateTaskStatusParams;
 }
 
-function SelectStatusForm({ id, status, onClose }: Props) {
+function SelectStatusForm({ params }: Props) {
   const [selectedStatus, setSelectedStatus] = useState<Status | "">("");
   const [submittedData, setSubmittedData] =
     useState<UpdateTaskStatusParams | null>(null);
@@ -24,9 +22,8 @@ function SelectStatusForm({ id, status, onClose }: Props) {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedStatus) {
-      setSubmittedData({ id, status: selectedStatus as Status });
-      mutate({ id, status: selectedStatus as Status });
-      onClose?.();
+      setSubmittedData(params);
+      mutate(params);
     }
   };
 
@@ -40,7 +37,7 @@ function SelectStatusForm({ id, status, onClose }: Props) {
               value={selectedStatus}
               onValueChange={(value: Status) => setSelectedStatus(value)}
             >
-              {getSetStatusOptions(status).map((option) => (
+              {getSetStatusOptions(params.newStatus).map((option) => (
                 <div key={option} className="flex items-center space-x-2">
                   <RadioGroupItem value={option} id={option} />
                   <Label htmlFor={option}>{statusEnumToDisplay(option)}</Label>

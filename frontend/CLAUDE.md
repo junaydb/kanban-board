@@ -31,7 +31,17 @@ This is a React + TypeScript frontend application for a kanban-style task manage
 ```
 frontend/
 ├── src/
-│   ├── components/                 # React components
+│   ├── components/                 # React components (organized by purpose)
+│   │   ├── core/                   # Core business logic components
+│   │   │   ├── CreateTaskModal.tsx # Modal form for creating new tasks
+│   │   │   ├── DeleteConfirmation.tsx # Task deletion confirmation dialog
+│   │   │   ├── SearchModal.tsx     # Global task search functionality
+│   │   │   ├── SelectStatusForm.tsx # Task status change form
+│   │   │   ├── TaskCard.tsx        # Individual task display component
+│   │   │   └── TaskColumn.tsx      # Kanban column with infinite scroll
+│   │   ├── decorative/             # Presentational/UI components
+│   │   │   ├── Footer.tsx          # App footer with GitHub commit info
+│   │   │   └── LoadingSpinner.tsx  # Reusable loading indicator
 │   │   ├── ui/                     # Shadcn UI primitive components
 │   │   │   ├── badge.tsx           # Status badges with variants
 │   │   │   ├── button.tsx          # Button component with variants
@@ -43,27 +53,23 @@ frontend/
 │   │   │   ├── label.tsx           # Form labels
 │   │   │   ├── radio-group.tsx     # Radio button groups
 │   │   │   └── textarea.tsx        # Text areas
-│   │   ├── CreateTaskModal.tsx     # Modal form for creating new tasks
-│   │   ├── DeleteConfirmation.tsx  # Task deletion confirmation dialog
-│   │   ├── Footer.tsx              # App footer with GitHub commit info
-│   │   ├── LoadingSpinner.tsx      # Reusable loading indicator
-│   │   ├── ModalButton.tsx         # Reusable modal wrapper component
-│   │   ├── SearchModal.tsx         # Global task search functionality
-│   │   ├── SelectStatusForm.tsx    # Task status change form
-│   │   ├── TaskCard.tsx            # Individual task display component
-│   │   └── TaskColumn.tsx          # Kanban column with infinite scroll
+│   │   └── util/                   # Utility/wrapper components
+│   │       └── ModalButton.tsx     # Reusable modal wrapper component
+│   ├── context/                    # React Context providers
+│   │   ├── AuthContext.tsx         # Authentication context (placeholder)
+│   │   └── BoardContext.tsx        # Board-specific context (placeholder)
 │   ├── lib/
 │   │   └── utils.ts                # Utility functions (cn for className merging)
-│   ├── util/
+│   ├── util/                       # Business logic and API utilities
 │   │   ├── helpers.ts              # Business logic utilities
 │   │   ├── hooks.ts                # Custom tRPC + React Query hooks
-│   │   └── trpc.ts                 # tRPC client configuration
+│   │   ├── trpc.ts                 # tRPC client configuration
+│   │   ├── types.ts                # TypeScript type definitions
+│   │   └── validators.ts           # Form validation functions
 │   ├── App.tsx                     # Root component with QueryClientProvider
 │   ├── Home.tsx                    # Main kanban board layout
 │   ├── index.css                   # Tailwind CSS with custom theme
 │   ├── main.tsx                    # React app entry point
-│   ├── types.ts                    # TypeScript type definitions (temporary)
-│   ├── validators.tsx              # Form validation functions
 │   └── vite-env.d.ts              # Vite environment types
 ├── components.json                 # Shadcn UI configuration
 ├── eslint.config.js               # ESLint configuration (flat config)
@@ -87,30 +93,51 @@ frontend/
 
 ### Component Architecture
 
-#### Core Components
+The project uses a well-organized component structure separated by purpose:
 
-1. **TaskColumn** (`src/components/TaskColumn.tsx`): Kanban column with infinite scrolling
+#### Core Components (`src/components/core/`)
 
+Business logic and functional components:
+
+1. **TaskColumn** (`src/components/core/TaskColumn.tsx`): Kanban column with infinite scrolling
    - Uses `useGetNextPage` hook for pagination
    - Intersection Observer for scroll detection
    - Status-based task filtering
 
-2. **TaskCard** (`src/components/TaskCard.tsx`): Individual task display
-
+2. **TaskCard** (`src/components/core/TaskCard.tsx`): Individual task display
    - Click to open detailed modal view
    - Right-click context menu for quick actions
    - Status badges and due date formatting
    - Inline status change and delete functionality
 
-3. **CreateTaskModal** (`src/components/CreateTaskModal.tsx`): Task creation form
-
+3. **CreateTaskModal** (`src/components/core/CreateTaskModal.tsx`): Task creation form
    - React Hook Form with comprehensive validation
    - Time rounding to 30-minute intervals
    - Success state with "Add Another Task" option
 
-4. **SearchModal** (`src/components/SearchModal.tsx`): Global search functionality
+4. **SearchModal** (`src/components/core/SearchModal.tsx`): Global search functionality
    - Real-time search filtering across all tasks
    - Empty states for different scenarios
+
+5. **SelectStatusForm** (`src/components/core/SelectStatusForm.tsx`): Task status change form
+   - Radio button selection interface
+   - Immediate status updates
+
+6. **DeleteConfirmation** (`src/components/core/DeleteConfirmation.tsx`): Task deletion confirmation
+   - Confirmation dialog with optimistic updates
+
+#### Decorative Components (`src/components/decorative/`)
+
+Presentational and visual components:
+
+1. **Footer** (`src/components/decorative/Footer.tsx`): App footer with GitHub commit information
+2. **LoadingSpinner** (`src/components/decorative/LoadingSpinner.tsx`): Reusable loading indicator
+
+#### Utility Components (`src/components/util/`)
+
+Wrapper and utility components:
+
+1. **ModalButton** (`src/components/util/ModalButton.tsx`): Reusable modal wrapper component
 
 #### UI Component System
 
@@ -123,7 +150,10 @@ frontend/
 1. **Server State**: TanStack Query handles all API data with intelligent caching
 2. **Form State**: React Hook Form for complex form validation and submission
 3. **Local UI State**: React's useState for modal visibility and component-specific state
-4. **Derived State**: Computed values from props and server state (search filtering, etc.)
+4. **Context State**: React Context providers for shared application state
+   - **AuthContext** (`src/context/AuthContext.tsx`): Authentication state management (placeholder)
+   - **BoardContext** (`src/context/BoardContext.tsx`): Board-specific state (placeholder)
+5. **Derived State**: Computed values from props and server state (search filtering, etc.)
 
 ### Task Management Flow
 
@@ -153,3 +183,5 @@ Tasks follow a standard kanban flow: `TODO` → `IN_PROGRESS` → `DONE`
 - **tRPC Endpoint**: Hardcoded to `http://localhost:3000/api/trpc`
 - **Query Client**: Configured with shared instance for optimal performance
 - **Batch Requests**: HTTP batch link for efficient request batching
+- **Type Definitions**: Centralized type definitions in `src/util/types.ts`
+- **Form Validation**: Reusable validation functions in `src/util/validators.ts`

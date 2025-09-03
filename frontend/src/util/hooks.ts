@@ -28,10 +28,12 @@ export function useGetNextPage(params: inferInput<typeof trpc.tasks.getPage>) {
   );
 }
 
-export function useGetTaskCount() {
-  return useQuery(trpc.tasks.getCount.queryOptions());
+export function useGetTaskCount(
+  params: inferInput<typeof trpc.tasks.getCount>,
+) {
+  return useQuery(trpc.tasks.getCount.queryOptions(params));
 }
 
-export function useGetAllTasks() {
-  return useQuery(trpc.tasks.getAll.queryOptions());
+export function useGetAllTasks(params: inferInput<typeof trpc.tasks.getAll>) {
+  return useQuery(trpc.tasks.getAll.queryOptions(params));
 }
