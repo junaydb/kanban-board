@@ -1,5 +1,5 @@
 import { initTRPC } from "@trpc/server";
-import { auth } from "../util/auth.js";
+import { auth } from "../auth/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 

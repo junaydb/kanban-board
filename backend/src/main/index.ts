@@ -5,7 +5,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./trpc/appRouter.js";
 import { createContext } from "./trpc/trpc.js";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./util/auth.js";
+import { auth } from "./auth/auth.js";
 
 const app = express();
 
