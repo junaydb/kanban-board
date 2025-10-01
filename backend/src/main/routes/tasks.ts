@@ -18,15 +18,6 @@ import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
-/*
- * All procedures that take parameters validate those parameters using Zod schemas.
- * Zod throws a `ZodError` when validation fails.
- *
- * All auth logic is handled within procedures that require it.
- *
- * All errors are handled by TRPC via throwing TRPCError with the respective error code.
- */
-
 export const tasksRouter = router({
   getAll: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
     await verifyBoardOwnershipHandler(ctx, input);
