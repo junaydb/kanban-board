@@ -6,9 +6,8 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url:
-      process.env.DB_PROD == "true"
+      process.env.PROD == "true"
         ? process.env.DB_URL!
         : process.env.DB_URL_TEST!,
   },
 });
-

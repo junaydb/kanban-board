@@ -6,6 +6,7 @@ import { appRouter } from "./trpc/appRouter.js";
 import { createContext } from "./trpc/trpc.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth/auth.js";
+import chalk from "chalk";
 
 const app = express();
 
@@ -13,8 +14,19 @@ app.use(morgan("combined"));
 app.use(express.static("public"));
 
 if (process.env.PROD === "false") {
-  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+  console.log(chalk.yellow("ENVIRONMENT: TEST"));
+
+  app.use(
+    cors({
+      origin: "http://localhost:5173",
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true,
+    }),
+  );
+
   console.log("CORS enabled");
+} else {
+  console.log(chalk.red("ENVIRONMENT: PRODUCTION"));
 }
 
 app.all("/api/auth/*", toNodeHandler(auth));
