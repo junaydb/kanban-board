@@ -3,18 +3,15 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { AppRouter } from "@backend/trpc/appRouter";
 
+// tRPC + TanStack Query setup,
+// tRPC takes full ownership of query keys
+
 export const queryClient = new QueryClient();
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: "http://localhost:3000/api/trpc",
-      // fetch(url, options) {
-      //   return fetch(url, {
-      //     ...options,
-      //     credentials: "include",
-      //   });
-      // },
+      url: "/api/trpc",
     }),
   ],
 });

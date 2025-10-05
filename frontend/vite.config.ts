@@ -20,4 +20,12 @@ export default defineConfig({
       "@backend": path.resolve(__dirname, "../backend/src/main"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
+  },
 });

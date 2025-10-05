@@ -1,23 +1,12 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "./auth-client";
+import type { AuthProviders } from "@/util/types";
 
-type Providers = "google" | "github";
-
-export async function socialSignIn(provider: Providers) {
+export async function socialSignIn(provider: AuthProviders) {
   await authClient.signIn.social({
     /**
      * The social provider ID
      * @example "github", "google", "apple"
      */
     provider: provider,
-    /**
-     * A URL to redirect after the user authenticates with the provider
-     * @default "/"
-     */
-    callbackURL: "/",
-    /**
-     * disable the automatic redirect to the provider.
-     * @default false
-     */
-    disableRedirect: true,
   });
 }

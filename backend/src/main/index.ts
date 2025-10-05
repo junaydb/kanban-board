@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import morgan from "morgan";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./trpc/appRouter.js";
@@ -13,20 +12,10 @@ const app = express();
 app.use(morgan("combined"));
 app.use(express.static("public"));
 
-if (process.env.PROD === "false") {
-  console.log(chalk.yellow("ENVIRONMENT: TEST"));
-
-  app.use(
-    cors({
-      origin: "http://localhost:5173",
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      credentials: true,
-    }),
-  );
-
-  console.log("CORS enabled");
-} else {
+if (process.env.NODE_ENV === "prod") {
   console.log(chalk.red("ENVIRONMENT: PRODUCTION"));
+} else {
+  console.log(chalk.yellow("ENVIRONMENT: TEST"));
 }
 
 app.all("/api/auth/*", toNodeHandler(auth));
