@@ -6,7 +6,9 @@ import { Pool } from "pg";
 import { sql } from "drizzle-orm";
 
 let dbUrl =
-  process.env.PROD === "true" ? process.env.DB_URL! : process.env.DB_URL_TEST!;
+  process.env.NODE_ENV === "prod"
+    ? process.env.DB_URL!
+    : process.env.DB_URL_TEST!;
 
 const pool = new Pool({ connectionString: dbUrl });
 const db = drizzle({ client: pool });

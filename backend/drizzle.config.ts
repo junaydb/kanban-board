@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
@@ -6,7 +9,7 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url:
-      process.env.PROD == "true"
+      process.env.NODE_ENV == "prod"
         ? process.env.DB_URL!
         : process.env.DB_URL_TEST!,
   },
