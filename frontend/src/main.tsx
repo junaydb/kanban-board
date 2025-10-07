@@ -1,12 +1,20 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { trpc } from "./trpc/trpc";
+import { queryClient } from "./trpc/trpc";
+import "./css/globals.css";
 
-// Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
-// Create a new router instance
-const router = createRouter({ routeTree });
+// Create router with context
+const router = createRouter({
+  routeTree,
+  context: {
+    trpc,
+    queryClient,
+  },
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -15,7 +23,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-// Render the app
+// Render
 const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);

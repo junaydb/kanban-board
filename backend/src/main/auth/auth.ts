@@ -10,8 +10,13 @@ import * as schema from "../db/schema.js";
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema: schema,
+    schema: {
+      ...schema,
+      user: schema.users,
+    },
   }),
+  trustedOrigins:
+    process.env.NODE_ENV === "test" ? ["http://localhost:5173"] : undefined,
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -20,6 +25,11 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+  },
+  user: {
+    deleteUser: {
+      enabled: true,
     },
   },
   advanced: {

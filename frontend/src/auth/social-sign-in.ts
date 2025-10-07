@@ -3,10 +3,13 @@ import type { AuthProviders } from "@/util/types";
 
 export async function socialSignIn(provider: AuthProviders) {
   await authClient.signIn.social({
-    /**
-     * The social provider ID
-     * @example "github", "google", "apple"
-     */
     provider: provider,
+    callbackURL:
+      process.env.NODE_ENV === "prod" ? "/" : "http://localhost:5173",
+    newUserCallbackURL:
+      process.env.NODE_ENV === "prod"
+        ? "/boards?newUser"
+        : "http://localhost:5173/boards?newUser=true",
+    // errorCallbackURL: "/auth-error",
   });
 }

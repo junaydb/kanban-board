@@ -5,4 +5,5 @@ export type RouterInput = inferRouterInputs<AppRouter>;
 export type RouterOutput = inferRouterOutputs<AppRouter>;
 
 export type Status = RouterOutput["tasks"]["getById"]["data"]["status"];
-export type Task = RouterOutput["tasks"]["getById"]["data"];
+
+export type AuthProviders = "google" | "github";

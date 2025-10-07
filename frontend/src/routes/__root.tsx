@@ -9,8 +9,6 @@ interface RouterAppContext {
   queryClient: QueryClient;
 }
 
-const RootComponent = () => <Outlet />;
-
 export const Route = createRootRouteWithContext<RouterAppContext>()({
-  component: RootComponent,
+  component: () => <Outlet />,
 });

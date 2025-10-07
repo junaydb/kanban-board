@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@hookform/resolvers':
     specifier: ^5.2.1
-    version: 5.2.1(react-hook-form@7.56.1)
+    version: 5.2.1(react-hook-form@7.62.0)
   '@radix-ui/react-context-menu':
     specifier: ^2.2.15
     version: 2.2.15(@types/react-dom@19.0.4)(@types/react@19.0.10)(react-dom@19.0.0)(react@19.0.0)
@@ -35,9 +35,6 @@ dependencies:
   '@tanstack/react-router':
     specifier: ^1.131.35
     version: 1.131.35(react-dom@19.0.0)(react@19.0.0)
-  '@tanstack/react-router-devtools':
-    specifier: ^1.131.35
-    version: 1.131.35(@tanstack/react-router@1.131.35)(@tanstack/router-core@1.131.35)(csstype@3.1.3)(react-dom@19.0.0)(react@19.0.0)(solid-js@1.9.9)(tiny-invariant@1.3.3)
   '@trpc/client':
     specifier: ^11.4.4
     version: 11.4.4(@trpc/server@11.4.4)(typescript@5.7.2)
@@ -46,7 +43,7 @@ dependencies:
     version: 11.4.4(@tanstack/react-query@5.85.0)(@trpc/client@11.4.4)(@trpc/server@11.4.4)(react-dom@19.0.0)(react@19.0.0)(typescript@5.7.2)
   better-auth:
     specifier: ^1.3.7
-    version: 1.3.7(react-dom@19.0.0)(react@19.0.0)(zod@4.1.5)
+    version: 1.3.7(react-dom@19.0.0)(react@19.0.0)(zod@4.1.8)
   class-variance-authority:
     specifier: ^0.7.1
     version: 0.7.1
@@ -59,15 +56,12 @@ dependencies:
   react:
     specifier: ^19.0.0
     version: 19.0.0
-  react-datepicker:
-    specifier: ^8.7.0
-    version: 8.7.0(react-dom@19.0.0)(react@19.0.0)
   react-dom:
     specifier: ^19.0.0
     version: 19.0.0(react@19.0.0)
   react-hook-form:
-    specifier: ^7.56.1
-    version: 7.56.1(react@19.0.0)
+    specifier: ^7.62.0
+    version: 7.62.0(react@19.0.0)
   react-intersection-observer:
     specifier: ^9.16.0
     version: 9.16.0(react-dom@19.0.0)(react@19.0.0)
@@ -77,11 +71,17 @@ dependencies:
   tailwindcss:
     specifier: ^4.1.11
     version: 4.1.11
+  zod:
+    specifier: ^4.1.8
+    version: 4.1.8
 
 devDependencies:
   '@eslint/js':
     specifier: ^9.22.0
     version: 9.22.0
+  '@tanstack/react-router-devtools':
+    specifier: ^1.131.42
+    version: 1.131.42(@tanstack/react-router@1.131.35)(@tanstack/router-core@1.131.41)(csstype@3.1.3)(react-dom@19.0.0)(react@19.0.0)(solid-js@1.9.9)(tiny-invariant@1.3.3)
   '@tanstack/router-plugin':
     specifier: ^1.131.35
     version: 1.131.35(@tanstack/react-router@1.131.35)(vite@6.3.4)
@@ -763,19 +763,6 @@ packages:
       react-dom: 19.0.0(react@19.0.0)
     dev: false
 
-  /@floating-ui/react@0.27.16(react-dom@19.0.0)(react@19.0.0):
-    resolution: {integrity: sha512-9O8N4SeG2z++TSM8QA/KTeKFBVCNEz/AGS7gWPJf6KFRzmRWixFRnCnkPHRDwSVZW6QPDO6uT0P2SpWNKCc9/g==}
-    peerDependencies:
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
-    dependencies:
-      '@floating-ui/react-dom': 2.1.6(react-dom@19.0.0)(react@19.0.0)
-      '@floating-ui/utils': 0.2.10
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      tabbable: 6.2.0
-    dev: false
-
   /@floating-ui/utils@0.2.10:
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
     dev: false
@@ -784,13 +771,13 @@ packages:
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
     dev: false
 
-  /@hookform/resolvers@5.2.1(react-hook-form@7.56.1):
+  /@hookform/resolvers@5.2.1(react-hook-form@7.62.0):
     resolution: {integrity: sha512-u0+6X58gkjMcxur1wRWokA7XsiiBJ6aK17aPZxhkoYiK5J+HcTx0Vhu9ovXe6H+dVpO6cjrn2FkJTryXEMlryQ==}
     peerDependencies:
       react-hook-form: ^7.55.0
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.56.1(react@19.0.0)
+      react-hook-form: 7.62.0(react@19.0.0)
     dev: false
 
   /@humanfs/core@0.19.1:
@@ -1884,16 +1871,16 @@ packages:
       react: 19.0.0
     dev: false
 
-  /@tanstack/react-router-devtools@1.131.35(@tanstack/react-router@1.131.35)(@tanstack/router-core@1.131.35)(csstype@3.1.3)(react-dom@19.0.0)(react@19.0.0)(solid-js@1.9.9)(tiny-invariant@1.3.3):
-    resolution: {integrity: sha512-F93UQDpOJPXvyu4PUiRyr7al6B4sJIgwIkyr7O8QQNY2r2NLqyEWeJMWfOJD/FtrF6r+4G8UR/PE3sXF+kNO5Q==}
+  /@tanstack/react-router-devtools@1.131.42(@tanstack/react-router@1.131.35)(@tanstack/router-core@1.131.41)(csstype@3.1.3)(react-dom@19.0.0)(react@19.0.0)(solid-js@1.9.9)(tiny-invariant@1.3.3):
+    resolution: {integrity: sha512-7pymFB1CCimRHot2Zp0ZekQjd1iN812V88n9NLPSeiv9sVRtRVIaLphJjDeudx1NNgkfSJPx2lOhz6K38cuZog==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@tanstack/react-router': ^1.131.35
+      '@tanstack/react-router': ^1.131.41
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
     dependencies:
       '@tanstack/react-router': 1.131.35(react-dom@19.0.0)(react@19.0.0)
-      '@tanstack/router-devtools-core': 1.131.35(@tanstack/router-core@1.131.35)(csstype@3.1.3)(solid-js@1.9.9)(tiny-invariant@1.3.3)
+      '@tanstack/router-devtools-core': 1.131.42(@tanstack/router-core@1.131.41)(csstype@3.1.3)(solid-js@1.9.9)(tiny-invariant@1.3.3)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
     transitivePeerDependencies:
@@ -1901,7 +1888,7 @@ packages:
       - csstype
       - solid-js
       - tiny-invariant
-    dev: false
+    dev: true
 
   /@tanstack/react-router@1.131.35(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-2mwHgwoSs4wih67jfl2TjcF4enYpLpY0TljE+Sl1njZ01CWLrrQgjQ6tEuVA24Pm5re4V01A3abKvDtN1miQ9Q==}
@@ -1942,11 +1929,24 @@ packages:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  /@tanstack/router-devtools-core@1.131.35(@tanstack/router-core@1.131.35)(csstype@3.1.3)(solid-js@1.9.9)(tiny-invariant@1.3.3):
-    resolution: {integrity: sha512-a3FgyedrjreUK3bypxvtUgumjsGsOQn6V/ksNVyC3yTIdpmRL1b7zrzkM0vT18H0x5iaX33Ix3Xt/renqh3qwg==}
+  /@tanstack/router-core@1.131.41:
+    resolution: {integrity: sha512-VoLly00DWM0abKuVPRm8wiwGtRBHOKs6K896fy48Q/KYoDVLs8kRCRjFGS7rGnYC2FIkmmvHqYRqNg7jgCx2yg==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@tanstack/history': 1.131.2
+      '@tanstack/store': 0.7.4
+      cookie-es: 1.2.2
+      seroval: 1.3.2
+      seroval-plugins: 1.3.3(seroval@1.3.2)
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+    dev: true
+
+  /@tanstack/router-devtools-core@1.131.42(@tanstack/router-core@1.131.41)(csstype@3.1.3)(solid-js@1.9.9)(tiny-invariant@1.3.3):
+    resolution: {integrity: sha512-o8jKTiwXcUSjmkozcMjIw1yhjVYeXcuQO7DtfgjKW3B85iveH6VzYK+bGEVU7wmLNMuUSe2eI/7RBzJ6a5+MCA==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@tanstack/router-core': ^1.131.35
+      '@tanstack/router-core': ^1.131.41
       csstype: ^3.0.10
       solid-js: '>=1.9.5'
       tiny-invariant: ^1.3.3
@@ -1954,13 +1954,13 @@ packages:
       csstype:
         optional: true
     dependencies:
-      '@tanstack/router-core': 1.131.35
+      '@tanstack/router-core': 1.131.41
       clsx: 2.1.1
       csstype: 3.1.3
       goober: 2.1.16(csstype@3.1.3)
       solid-js: 1.9.9
       tiny-invariant: 1.3.3
-    dev: false
+    dev: true
 
   /@tanstack/router-generator@1.131.35:
     resolution: {integrity: sha512-fOxjiactUQXGfOAv4dC/hFjFUSUV0XmwnQwhNHswWNol6Te/gIBBj14umAaG/PqTaQZoN/b6v+wvkVvpQt3Dbw==}
@@ -2346,7 +2346,7 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
-  /better-auth@1.3.7(react-dom@19.0.0)(react@19.0.0)(zod@4.1.5):
+  /better-auth@1.3.7(react-dom@19.0.0)(react@19.0.0)(zod@4.1.8):
     resolution: {integrity: sha512-/1fEyx2SGgJQM5ujozDCh9eJksnVkNU/J7Fk/tG5Y390l8nKbrPvqiFlCjlMM+scR+UABJbQzA6An7HT50LHyQ==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -2371,7 +2371,7 @@ packages:
       nanostores: 0.11.4
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
-      zod: 4.1.5
+      zod: 4.1.8
     dev: false
 
   /better-call@1.0.16:
@@ -2465,7 +2465,6 @@ packages:
   /clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
-    dev: false
 
   /color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -2500,10 +2499,6 @@ packages:
 
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
-
-  /date-fns@4.1.0:
-    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
-    dev: false
 
   /debug@4.4.1:
     resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
@@ -2844,7 +2839,7 @@ packages:
       csstype: ^3.0.10
     dependencies:
       csstype: 3.1.3
-    dev: false
+    dev: true
 
   /graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
@@ -3276,19 +3271,6 @@ packages:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
 
-  /react-datepicker@8.7.0(react-dom@19.0.0)(react@19.0.0):
-    resolution: {integrity: sha512-r5OJbiLWc3YiVNy69Kau07/aVgVGsFVMA6+nlqCV7vyQ8q0FUOnJ+wAI4CgVxHejG3i5djAEiebrF8/Eip4rIw==}
-    peerDependencies:
-      react: ^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc
-      react-dom: ^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc
-    dependencies:
-      '@floating-ui/react': 0.27.16(react-dom@19.0.0)(react@19.0.0)
-      clsx: 2.1.1
-      date-fns: 4.1.0
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-    dev: false
-
   /react-dom@19.0.0(react@19.0.0):
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
     peerDependencies:
@@ -3297,8 +3279,8 @@ packages:
       react: 19.0.0
       scheduler: 0.25.0
 
-  /react-hook-form@7.56.1(react@19.0.0):
-    resolution: {integrity: sha512-qWAVokhSpshhcEuQDSANHx3jiAEFzu2HAaaQIzi/r9FNPm1ioAvuJSD4EuZzWd7Al7nTRKcKPnBKO7sRn+zavQ==}
+  /react-hook-form@7.62.0(react@19.0.0):
+    resolution: {integrity: sha512-7KWFejc98xqG/F4bAxpL41NB3o1nnvQO1RWZT3TqRZYL8RryQETGfEdVnJN2fy1crCiBLLjkRBVK05j24FxJGA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -3499,7 +3481,7 @@ packages:
       csstype: 3.1.3
       seroval: 1.3.2
       seroval-plugins: 1.3.3(seroval@1.3.2)
-    dev: false
+    dev: true
 
   /source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -3526,10 +3508,6 @@ packages:
     dependencies:
       has-flag: 4.0.0
     dev: true
-
-  /tabbable@6.2.0:
-    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
-    dev: false
 
   /tailwind-merge@3.3.1:
     resolution: {integrity: sha512-gBXpgUm/3rp1lMZZrM/w7D8GKqshif0zAymAhbCyIt8KMe+0v9DQ7cdYLR4FHH/cKpdTXb+A/tKKU3eolfsI+g==}
@@ -3788,6 +3766,6 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
     dev: true
 
-  /zod@4.1.5:
-    resolution: {integrity: sha512-rcUUZqlLJgBC33IT3PNMgsCq6TzLQEG/Ei/KTCU0PedSWRMAXoOUN+4t/0H+Q8bdnLPdqUYnvboJT0bn/229qg==}
+  /zod@4.1.8:
+    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
     dev: false
