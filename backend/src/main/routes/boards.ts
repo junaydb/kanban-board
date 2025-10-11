@@ -3,6 +3,7 @@ import { BoardIdSchema, BoardTitleSchema } from "./_validators.js";
 import { successResponseFactory } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { verifyBoardOwnershipHandler } from "./_helpers.js";
+import { TRPCError } from "@trpc/server";
 
 export const boardsRouter = router({
   create: publicProcedure
@@ -10,22 +11,49 @@ export const boardsRouter = router({
     .query(async ({ ctx, input }) => {
       await verifyBoardOwnershipHandler(ctx, input);
 
-      const board = await Board.create({
+      const result = await Board.create({
         userId: ctx.user!.id,
         title: input.title,
       });
 
-      return successResponseFactory.single(board);
+      if (result === "DUPLICATE") {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Another board with this name already exists.",
+        });
+      }
+
+      return successResponseFactory.single(result);
     }),
 
-  updateName: publicProcedure
+  updateTitle: publicProcedure
     .input(BoardTitleSchema.merge(BoardIdSchema))
     .mutation(async ({ ctx, input }) => {
       await verifyBoardOwnershipHandler(ctx, input);
 
-      const task = await Board.updateName(input);
+      const result = await Board.updateTitle(input);
 
-      return successResponseFactory.single(task);
+      if (result === null) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found.",
+        });
+      }
+
+      if (result === "DUPLICATE") {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Another board with this name already exists.",
+        });
+      }
+
+      if (result === "NO_OP") {
+        return successResponseFactory.single({
+          message: "Identical title received. No action taken.",
+        });
+      }
+
+      return successResponseFactory.single(result);
     }),
 
   delete: publicProcedure
@@ -33,7 +61,14 @@ export const boardsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await verifyBoardOwnershipHandler(ctx, input);
 
-      await Board.delete(input);
+      const result = await Board.delete(input);
+
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found.",
+        });
+      }
 
       return successResponseFactory.noData();
     }),

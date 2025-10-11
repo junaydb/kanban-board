@@ -22,7 +22,7 @@ export const tasksRouter = router({
   getAll: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
     await verifyBoardOwnershipHandler(ctx, input);
 
-    const allTasks = await Task.getAll(input);
+    const allTasks = await Task.getAllFromBoard(input);
     if (!allTasks) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Tasks not found" });
     }

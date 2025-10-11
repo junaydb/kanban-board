@@ -20,7 +20,3 @@ export const successResponseFactory = {
     return { success: true };
   },
 };
-
-export function errorResponse<T extends any[]>(message: string, errors?: T) {
-  return { success: false, message, errors };
-}
