@@ -19,7 +19,7 @@ import { TRPCError } from "@trpc/server";
 import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
 export const tasksRouter = router({
-  getAll: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
+  getAllFromBoard: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
     await verifyBoardOwnershipHandler(ctx, input);
 
     const allTasks = await Task.getAllFromBoard(input);
