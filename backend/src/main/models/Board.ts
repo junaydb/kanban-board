@@ -5,9 +5,23 @@ import type {
   BoardIdParams,
   InsertBoardParams,
   UpdateBoardNameParams,
+  UserIdParams,
 } from "../util/types.js";
 
 class Board {
+  static async getAll({ userId }: UserIdParams) {
+    const allBoards = await db
+      .select()
+      .from(boards)
+      .where(eq(boards.userId, userId));
+
+    if (allBoards.length === 0) {
+      return null;
+    }
+
+    return allBoards;
+  }
+
   static async create(params: InsertBoardParams) {
     const titleExists = await db
       .select()

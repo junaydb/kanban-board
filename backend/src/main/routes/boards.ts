@@ -6,11 +6,24 @@ import { verifyBoardOwnershipHandler } from "./_helpers.js";
 import { TRPCError } from "@trpc/server";
 
 export const boardsRouter = router({
-  create: publicProcedure
-    .input(BoardTitleSchema.merge(BoardIdSchema))
-    .query(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
 
+    const allBoards = await Board.getAll({
+      userId: ctx.user.id,
+    });
+    if (!allBoards) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "No boards found" });
+    }
+
+    return successResponseFactory.array({ boards: allBoards });
+  }),
+
+  create: publicProcedure
+    .input(BoardTitleSchema)
+    .query(async ({ ctx, input }) => {
       const result = await Board.create({
         userId: ctx.user!.id,
         title: input.title,
