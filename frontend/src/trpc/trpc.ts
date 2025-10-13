@@ -6,8 +6,6 @@ import type { AppRouter } from "@backend/trpc/appRouter";
 // tRPC + TanStack Query setup,
 // tRPC takes full ownership of query keys
 
-export const queryClient = new QueryClient();
-
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
@@ -15,6 +13,8 @@ const trpcClient = createTRPCClient<AppRouter>({
     }),
   ],
 });
+
+const queryClient = new QueryClient();
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: trpcClient,
