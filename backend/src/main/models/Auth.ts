@@ -17,7 +17,7 @@ class Auth {
       .limit(1);
 
     if (result.length === 0) {
-      return null;
+      return false;
     }
 
     return true;
