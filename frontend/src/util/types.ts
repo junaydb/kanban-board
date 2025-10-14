@@ -7,3 +7,8 @@ export type RouterOutput = inferRouterOutputs<AppRouter>;
 export type Status = RouterOutput["tasks"]["getById"]["data"]["status"];
 
 export type AuthProviders = "google" | "github";
+
+export type SidebarBoardItem = {
+  title: string;
+  slug: string;
+};

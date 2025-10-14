@@ -1,9 +1,10 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/shadcn/ui/sidebar";
 import SidebarMaster from "@/components/sidebar/SidebarMaster";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/shadcn/hooks/use-mobile";
 import { isMobileAgent } from "@/util/is-mobile-agent";
 import { CircleAlert } from "lucide-react";
+import * as boardHooks from "../trpc/board-hooks";
 
 export const Route = createRootRoute({
   loader: async () => {
@@ -15,6 +16,22 @@ export const Route = createRootRoute({
 function Root() {
   const isMobile = useIsMobile();
   const isAgentMobile = isMobileAgent();
+
+  // const boards = Route.useLoaderData();
+  const boards = [
+    {
+      title: "Team project",
+      slug: "/boards",
+    },
+    {
+      title: "Capstone",
+      slug: "/boards",
+    },
+    {
+      title: "Event planning",
+      slug: "/boards",
+    },
+  ];
 
   if (isMobile || isAgentMobile) {
     return (
@@ -29,7 +46,15 @@ function Root() {
     );
   }
 
-  return <div></div>;
+  return (
+    <SidebarProvider>
+      <SidebarMaster boards={boards} />
+      <SidebarTrigger />
+      <main className="w-full h-screen p-2">
+        <Outlet />
+      </main>
+    </SidebarProvider>
+  );
 }
 
 // TODO:
@@ -43,3 +68,8 @@ function Root() {
 // - Add button with "+" icon for quickly creating new boards
 // - Implement create new board dialog
 // - Add a settings button and help button
+// - Add  a subtle transition to elements when they mount
+//
+// FIX:
+// - Fix flash of unstyled content
+// - I think this can be fixed by calling useSession() in the route's loader

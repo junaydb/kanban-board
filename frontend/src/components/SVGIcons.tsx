@@ -7,8 +7,9 @@ export type SvgIconProps = {
 export function Github({ width, height, fill }: SvgIconProps) {
   return (
     <svg
-      width={width ? width : "98"}
-      height={height ? height : "96"}
+      width={width ? width : "24"}
+      height={height ? height : "24"}
+      viewBox="0 0 98 96"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
