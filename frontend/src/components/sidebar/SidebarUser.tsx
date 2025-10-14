@@ -59,15 +59,15 @@ function SidebarUser({ user }: Props) {
   }
 
   async function handleDeleteAccount() {
-    // const deleted = await authClient.deleteUser();
+    const deleted = await authClient.deleteUser();
     navigate({ href: "/boards?accountRemoved=true" });
-    // if (deleted.data?.success) {
-    //   // TODO: Success toast
-    //   navigate({ to: "/boards" });
-    // }
-    // if (deleted.error) {
-    //   // TODO: Error toast
-    // }
+    if (deleted.data?.success) {
+      // TODO: Success toast
+      navigate({ to: "/boards" });
+    }
+    if (deleted.error) {
+      // TODO: Error toast
+    }
   }
 
   return (
