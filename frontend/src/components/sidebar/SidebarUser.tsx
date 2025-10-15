@@ -58,9 +58,8 @@ function SidebarUser({ user }: Props) {
 
   async function handleDeleteAccount() {
     const deleted = await authClient.deleteUser();
-    navigate({ href: "/boards?accountRemoved=true" });
     if (deleted.data?.success) {
-      navigate({ to: "/boards" });
+      navigate({ to: "/boards", search: { accountRemoved: true } });
     }
     if (deleted.error) {
       // TODO: Error toast
