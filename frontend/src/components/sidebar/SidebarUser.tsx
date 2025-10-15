@@ -49,7 +49,6 @@ function SidebarUser({ user }: Props) {
   async function handleSignOut() {
     const result = await authClient.signOut();
     if (result.data?.success) {
-      // TODO: Success toast
       navigate({ to: "/boards" });
     }
     if (result.error) {
@@ -61,7 +60,6 @@ function SidebarUser({ user }: Props) {
     const deleted = await authClient.deleteUser();
     navigate({ href: "/boards?accountRemoved=true" });
     if (deleted.data?.success) {
-      // TODO: Success toast
       navigate({ to: "/boards" });
     }
     if (deleted.error) {
@@ -81,7 +79,9 @@ function SidebarUser({ user }: Props) {
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-slate-600 text-white">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

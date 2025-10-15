@@ -17,15 +17,14 @@ type Props = {
   boards: SidebarBoardItem[];
 };
 
-const user = {
-  name: "John Doe",
-  avatar:
-    "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541",
-  email: "john@acme.com",
-};
-
 function SidebarMaster({ boards }: Props) {
   const { data: session, isPending } = authClient.useSession();
+
+  const user = {
+    name: session?.user?.name || "",
+    avatar: session?.user?.image || "",
+    email: session?.user?.email || "",
+  };
 
   if (isPending) {
     return null;
