@@ -13,7 +13,11 @@ export const Route = createFileRoute("/boards/")({
 
 function Boards() {
   const { newUser, accountRemoved } = Route.useSearch();
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return null;
+  }
 
   return (
     <div className="h-full flex flex-col gap-2">

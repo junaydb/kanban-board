@@ -25,7 +25,11 @@ const user = {
 };
 
 function SidebarMaster({ boards }: Props) {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return null;
+  }
 
   return (
     <Sidebar collapsible="offcanvas">

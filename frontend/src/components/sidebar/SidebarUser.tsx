@@ -22,7 +22,6 @@ import {
 } from "@/shadcn/ui/dialog";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -133,9 +132,9 @@ function SidebarUser({ user }: Props) {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAccount}>
+              <Button variant="destructive" onClick={handleDeleteAccount}>
                 Delete Account
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
