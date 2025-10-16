@@ -8,8 +8,7 @@ export async function socialSignIn(provider: AuthProviders) {
       process.env.NODE_ENV === "prod" ? "/" : "http://localhost:5173",
     newUserCallbackURL:
       process.env.NODE_ENV === "prod"
-        ? "/boards?newUser"
+        ? "/boards?newUser=true"
         : "http://localhost:5173/boards?newUser=true",
-    // errorCallbackURL: "/auth-error",
   });
 }
