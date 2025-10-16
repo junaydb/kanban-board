@@ -24,6 +24,10 @@ export const boardsRouter = router({
   create: publicProcedure
     .input(BoardTitleSchema)
     .query(async ({ ctx, input }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
       const result = await Board.create({
         userId: ctx.user!.id,
         title: input.title,
