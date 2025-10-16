@@ -27,11 +27,8 @@ function SidebarMaster() {
   };
 
   if (isPending) {
-    // TODO: loading ui
     return null;
   }
-
-  // TODO: fallback ui for auth error
 
   return (
     <Sidebar collapsible="offcanvas">
