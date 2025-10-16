@@ -7,18 +7,18 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/shadcn/ui/sidebar";
-import SidebarBoardsSection from "./SidebarBoards";
+import SidebarBoards from "./SidebarBoards";
 import SidebarUser from "./SidebarUser";
 import SidebarSignIn from "./SidebarSignIn";
 import { authClient } from "@/auth/auth-client";
-import type { SidebarBoardItem } from "@/util/types";
+import Banner from "../Banners";
 
-type Props = {
-  boards: SidebarBoardItem[];
-};
-
-function SidebarMaster({ boards }: Props) {
-  const { data: session, isPending } = authClient.useSession();
+function SidebarMaster() {
+  const {
+    data: session,
+    error: authError,
+    isPending,
+  } = authClient.useSession();
 
   const user = {
     name: session?.user?.name || "",
@@ -27,8 +27,11 @@ function SidebarMaster({ boards }: Props) {
   };
 
   if (isPending) {
+    // TODO: loading ui
     return null;
   }
+
+  // TODO: fallback ui for auth error
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -42,10 +45,16 @@ function SidebarMaster({ boards }: Props) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarBoardsSection boards={boards} />
+        <SidebarBoards />
       </SidebarContent>
       <SidebarFooter>
-        {session ? <SidebarUser user={user} /> : <SidebarSignIn />}
+        {session ? (
+          <SidebarUser user={user} />
+        ) : authError ? (
+          <Banner banner="AUTH_ERROR" />
+        ) : (
+          <SidebarSignIn />
+        )}
       </SidebarFooter>
     </Sidebar>
   );

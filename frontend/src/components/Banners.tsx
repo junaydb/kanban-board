@@ -2,7 +2,12 @@ import { Alert, AlertTitle } from "@/shadcn/ui/alert";
 import { AlertCircleIcon, CheckCircle2 } from "lucide-react";
 
 type Props = {
-  banner: "LOGGED_OUT" | "NEW_USER" | "ACCOUNT_REMOVED";
+  banner:
+    | "LOGGED_OUT"
+    | "NEW_USER"
+    | "ACCOUNT_REMOVED"
+    | "BOARD_FETCH_ERROR"
+    | "AUTH_ERROR";
 };
 
 function Banner({ banner }: Props) {
@@ -31,6 +36,20 @@ function Banner({ banner }: Props) {
         <Alert className="flex justify-center rounded-md" variant="success">
           <CheckCircle2 />
           <AlertTitle>Your account was successfully removed.</AlertTitle>
+        </Alert>
+      );
+    case "BOARD_FETCH_ERROR":
+      return (
+        <Alert className="flex justify-center rounded-md" variant="error">
+          <AlertCircleIcon />
+          <AlertTitle>Unable to fetch boards</AlertTitle>
+        </Alert>
+      );
+    case "AUTH_ERROR":
+      return (
+        <Alert className="flex justify-center rounded-md" variant="error">
+          <AlertCircleIcon />
+          <AlertTitle>Authentication error</AlertTitle>
         </Alert>
       );
   }
