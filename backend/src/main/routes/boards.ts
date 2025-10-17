@@ -23,7 +23,7 @@ export const boardsRouter = router({
 
   create: publicProcedure
     .input(BoardTitleSchema)
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
