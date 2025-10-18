@@ -13,14 +13,12 @@ export const boardsRouter = router({
 
     const allBoards = await Board.getAll({
       userId: ctx.user.id,
-    });
-    if (!allBoards) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "No boards found" });
-    }
+    }).then((res) => (res ? res : []));
 
     return successResponseFactory.array({ boards: allBoards });
   }),
 
+  // TODO: set a board count limit. user's should only be able to create a certain number of boards.
   create: publicProcedure
     .input(BoardTitleSchema)
     .mutation(async ({ ctx, input }) => {

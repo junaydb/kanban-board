@@ -19,16 +19,17 @@ import { TRPCError } from "@trpc/server";
 import { verifyBoardOwnershipHandler } from "./_helpers.js";
 
 export const tasksRouter = router({
-  getAllFromBoard: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
-    await verifyBoardOwnershipHandler(ctx, input);
+  getAllFromBoard: publicProcedure
+    .input(BoardIdSchema)
+    .query(async ({ ctx, input }) => {
+      await verifyBoardOwnershipHandler(ctx, input);
 
-    const allTasks = await Task.getAllFromBoard(input);
-    if (!allTasks) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Tasks not found" });
-    }
+      const allTasks = await Task.getAllFromBoard(input).then((res) =>
+        res ? res : [],
+      );
 
-    return successResponseFactory.array({ tasks: allTasks });
-  }),
+      return successResponseFactory.array({ tasks: allTasks });
+    }),
 
   getCount: publicProcedure
     .input(BoardIdSchema.merge(TaskCountSchema))
