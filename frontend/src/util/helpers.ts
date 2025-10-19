@@ -18,3 +18,7 @@ export function getSetStatusOptions(status: Status) {
 export function combineDateAndTimeToISO(date: string, time: string): string {
   return new Date(`${date}T${time}`).toISOString();
 }
+
+export function toLowerKebabCase(str: string) {
+  return str.toLowerCase().replace(/\s/g, "-");
+}
