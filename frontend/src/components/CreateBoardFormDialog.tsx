@@ -51,7 +51,7 @@ function CreateBoardFormDialog({ children }: Props) {
     trpc.boards.create.mutationOptions(),
   );
 
-  const user = authClient.useSession();
+  const { data: session } = authClient.useSession();
 
   function onSubmit({ title }: z.infer<typeof BoardTitleSchema>) {
     mutate({ title });
@@ -71,7 +71,7 @@ function CreateBoardFormDialog({ children }: Props) {
       navigate({
         to: "/boards/$user/$board",
         params: {
-          user: toLowerKebabCase(user.data?.user.name!),
+          user: toLowerKebabCase(session?.user.name!),
           board: toLowerKebabCase(data.data.title),
         },
       });
