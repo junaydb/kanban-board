@@ -1,6 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-router";
+import { authClient } from "@/auth/auth-client";
 
 export const Route = createFileRoute("/boards/$user/$board")({
+  beforeLoad: async () => {
+    const { data: session, error } = await authClient.getSession();
+
+    if (!session) {
+      throw redirect({
+        to: "/boards",
+      });
+    }
+
+    if (error) {
+      // TODO: handle auth error
+    }
+  },
+
   component: Board,
 });
 
