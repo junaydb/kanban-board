@@ -20,12 +20,6 @@ function SidebarMaster() {
     isPending,
   } = authClient.useSession();
 
-  const user = {
-    name: session?.user?.name || "",
-    avatar: session?.user?.image || "",
-    email: session?.user?.email || "",
-  };
-
   if (isPending) {
     return null;
   }
@@ -46,7 +40,7 @@ function SidebarMaster() {
       </SidebarContent>
       <SidebarFooter>
         {session ? (
-          <SidebarUser user={user} />
+          <SidebarUser />
         ) : authError ? (
           <Banner banner="AUTH_ERROR" />
         ) : (

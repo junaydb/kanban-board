@@ -35,16 +35,16 @@ import { ChevronsUpDown } from "lucide-react";
 import { authClient } from "@/auth/auth-client";
 import { useNavigate } from "@tanstack/react-router";
 
-type Props = {
-  user: {
-    name: string;
-    avatar: string;
-    email: string;
-  };
-};
-
-function SidebarUser({ user }: Props) {
+function SidebarUser() {
   const navigate = useNavigate();
+
+  const { data } = authClient.useSession();
+
+  const user = {
+    name: data?.user?.name || "",
+    avatar: data?.user?.image || "",
+    email: data?.user?.email || "",
+  };
 
   async function handleSignOut() {
     const result = await authClient.signOut();
