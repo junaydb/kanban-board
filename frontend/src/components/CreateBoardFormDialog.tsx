@@ -20,6 +20,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
 
+// TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
+
 type Props = {
   children: React.ReactNode;
 };
@@ -36,7 +38,7 @@ function CreateBoardFormDialog({ children }: Props) {
 
   const navigate = useNavigate();
 
-  const { handleSubmit, control, reset } = useForm<
+  const { handleSubmit, control, reset, setError } = useForm<
     z.infer<typeof BoardTitleSchema>
   >({
     resolver: zodResolver(BoardTitleSchema),
@@ -79,7 +81,15 @@ function CreateBoardFormDialog({ children }: Props) {
       setOpen(!open);
     }
     if (isError) {
-      // TODO: error toast for when board creation fails
+      if (error.data?.code === "CONFLICT") {
+        setError("title", {
+          type: error.data.code,
+          message: error.message,
+        });
+      }
+      if (error.data?.code === "UNAUTHORIZED") {
+        // TODO: error toast for when board creation fails due to auth
+      }
     }
   }, [isSuccess, isError]);
 
@@ -112,9 +122,6 @@ function CreateBoardFormDialog({ children }: Props) {
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
-                  )}
-                  {error?.data?.code === "CONFLICT" && (
-                    <FieldError errors={[{ message: error?.message }]} />
                   )}
                 </Field>
               )}
