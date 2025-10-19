@@ -71,7 +71,13 @@ function SidebarBoards() {
                   {title}
                 </Link>
               </SidebarMenuButton>
-              <SidebarMenuAction showOnHover className="cursor-pointer">
+              <SidebarMenuAction
+                showOnHover
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.currentTarget.blur();
+                }}
+              >
                 <Trash2 className="text-red-500" />
                 <span className="sr-only">Delete board</span>
               </SidebarMenuAction>
