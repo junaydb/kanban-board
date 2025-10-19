@@ -23,10 +23,6 @@ class Task {
       .where(eq(tasks.boardId, boardId))
       .orderBy(desc(tasks.createdAt));
 
-    if (allTasks.length === 0) {
-      return null;
-    }
-
     return allTasks;
   }
 

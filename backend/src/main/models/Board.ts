@@ -15,10 +15,6 @@ class Board {
       .from(boards)
       .where(eq(boards.userId, userId));
 
-    if (allBoards.length === 0) {
-      return null;
-    }
-
     return allBoards;
   }
 

@@ -24,9 +24,7 @@ export const tasksRouter = router({
     .query(async ({ ctx, input }) => {
       await verifyBoardOwnershipHandler(ctx, input);
 
-      const allTasks = await Task.getAllFromBoard(input).then((res) =>
-        res ? res : [],
-      );
+      const allTasks = await Task.getAllFromBoard(input);
 
       return successResponseFactory.array({ tasks: allTasks });
     }),

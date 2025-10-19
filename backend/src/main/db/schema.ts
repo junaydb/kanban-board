@@ -23,6 +23,7 @@ export const boards = pgTable("boards", {
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  // TODO: add 'sortOrder' column
 });
 
 export const tasks = pgTable("tasks", {

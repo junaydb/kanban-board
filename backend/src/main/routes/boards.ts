@@ -13,7 +13,7 @@ export const boardsRouter = router({
 
     const allBoards = await Board.getAll({
       userId: ctx.user.id,
-    }).then((res) => (res ? res : []));
+    });
 
     return successResponseFactory.array({ boards: allBoards });
   }),
