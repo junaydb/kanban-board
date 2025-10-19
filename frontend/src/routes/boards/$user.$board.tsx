@@ -9,6 +9,7 @@ export const Route = createFileRoute("/boards/$user/$board")({
     if (!session) {
       throw redirect({
         to: "/boards",
+        search: { boardAuthError: true },
       });
     }
 

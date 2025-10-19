@@ -7,6 +7,7 @@ export const Route = createFileRoute("/boards/")({
   validateSearch: z.object({
     newUser: z.boolean().nullish(),
     accountRemoved: z.boolean().nullish(),
+    boardAuthError: z.boolean().nullish(),
   }),
   component: Boards,
 });
@@ -19,7 +20,9 @@ function Boards() {
     return null;
   }
 
-  // TODO: Success toast for when user logs out
+  // TODO:
+  // - Success toast for when user logs out
+  // - Error toast for board authentication error redirect
 
   return (
     <div className="h-full flex flex-col gap-2">
