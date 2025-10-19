@@ -9,7 +9,7 @@ import chalk from "chalk";
 
 const app = express();
 
-app.use(morgan("combined"));
+app.use(morgan("dev"));
 app.use(express.static("public"));
 
 if (process.env.NODE_ENV === "prod") {
@@ -21,12 +21,14 @@ if (process.env.NODE_ENV === "prod") {
 app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use(
-  "/api/trpc/*",
+  "/api/trpc",
   createExpressMiddleware({
     router: appRouter,
     createContext,
   }),
 );
+
+// TODO: Handle Zod errors
 
 const port = parseInt(process.env.PORT!) || 3000;
 
