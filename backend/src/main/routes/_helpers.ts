@@ -1,16 +1,24 @@
-import type { ExpressContext } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import Auth from "../models/Auth.js";
+import Board from "../models/Board.js";
 import type { BoardIdParams } from "../util/types.js";
+import type { ExpressContext } from "../trpc/trpc.js";
 
 // Helpers for logic that gets repeated in multiple routes
 
-export async function verifyBoardOwnershipHandler(
+export async function verifyBoardExistenceAndOwnership(
   ctx: ExpressContext,
   { boardId }: BoardIdParams,
 ) {
   if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  if (!Board.checkExists({ boardId })) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: `Board with ${boardId} not found`,
+    });
   }
 
   const userOwnsBoard = await Auth.verifyBoardOwnership({

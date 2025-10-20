@@ -16,13 +16,13 @@ import type {
 import Pagination from "../util/Pagination.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
-import { verifyBoardOwnershipHandler } from "./_helpers.js";
+import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
     .input(BoardIdSchema)
     .query(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const allTasks = await Task.getAllFromBoard(input);
 
@@ -32,7 +32,7 @@ export const tasksRouter = router({
   getCount: publicProcedure
     .input(BoardIdSchema.merge(TaskCountSchema))
     .query(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
       return successResponseFactory.single(numTasks);
@@ -41,7 +41,7 @@ export const tasksRouter = router({
   getPage: publicProcedure
     .input(PageQuerySchema)
     .query(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const { sortBy, pageSize } = input;
 
@@ -100,12 +100,12 @@ export const tasksRouter = router({
   getById: publicProcedure
     .input(BoardIdSchema.merge(TaskIdSchema))
     .query(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const task = await Task.findById(input);
       if (!task) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: "NOT_FOUND",
           message: `Task ${input.taskId} not found`,
         });
       }
@@ -115,15 +115,18 @@ export const tasksRouter = router({
 
   create: publicProcedure
     .input(CreateTaskSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardExistenceAndOwnership(ctx, input);
+
       const task = await Task.create(input);
+
       return successResponseFactory.single(task);
     }),
 
   updateStatus: publicProcedure
     .input(UpdateStatusSchema.merge(BoardIdSchema))
     .mutation(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const result = await Task.updateStatus(input);
       if (!result) {
@@ -139,7 +142,7 @@ export const tasksRouter = router({
   delete: publicProcedure
     .input(TaskIdSchema.merge(BoardIdSchema))
     .mutation(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const result = await Task.delete(input);
       if (!result) {

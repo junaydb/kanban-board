@@ -18,6 +18,16 @@ class Board {
     return allBoards;
   }
 
+  static async checkExists({ boardId }: BoardIdParams) {
+    const exists = await db.select().from(boards).where(eq(boards.id, boardId));
+
+    if (exists.length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
   static async create(params: InsertBoardParams) {
     const titleExists = await db
       .select()
@@ -42,10 +52,6 @@ class Board {
       .from(boards)
       .where(eq(boards.id, boardId))
       .limit(1);
-
-    if (currentBoard.length === 0) {
-      return null;
-    }
 
     if (currentBoard[0].title === title) {
       return "NO_OP";
@@ -74,16 +80,7 @@ class Board {
   }
 
   static async delete({ boardId }: BoardIdParams) {
-    const result = await db
-      .delete(boards)
-      .where(eq(boards.id, boardId))
-      .returning();
-
-    if (result.length === 0) {
-      return null;
-    }
-
-    return boardId;
+    await db.delete(boards).where(eq(boards.id, boardId));
   }
 }
 

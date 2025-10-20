@@ -2,7 +2,7 @@ import Board from "../models/Board.js";
 import { BoardIdSchema, BoardTitleSchema } from "./_validators.js";
 import { successResponseFactory } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
-import { verifyBoardOwnershipHandler } from "./_helpers.js";
+import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 import { TRPCError } from "@trpc/server";
 
 export const boardsRouter = router({
@@ -44,16 +44,9 @@ export const boardsRouter = router({
   updateTitle: publicProcedure
     .input(BoardTitleSchema.merge(BoardIdSchema))
     .mutation(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
       const result = await Board.updateTitle(input);
-
-      if (result === null) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Board not found.",
-        });
-      }
 
       if (result === "DUPLICATE") {
         throw new TRPCError({
@@ -74,16 +67,9 @@ export const boardsRouter = router({
   delete: publicProcedure
     .input(BoardIdSchema)
     .mutation(async ({ ctx, input }) => {
-      await verifyBoardOwnershipHandler(ctx, input);
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
-      const result = await Board.delete(input);
-
-      if (!result) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Board not found.",
-        });
-      }
+      await Board.delete(input);
 
       return successResponseFactory.noData();
     }),
