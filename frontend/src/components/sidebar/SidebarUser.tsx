@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuContent,
 } from "@/shadcn/ui/dropdown-menu";
@@ -95,13 +94,11 @@ function SidebarUser() {
               align="end"
               sideOffset={4}
             >
-              <DropdownMenuGroup>
-                <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Account
-                  </DropdownMenuItem>
-                </DialogTrigger>
-              </DropdownMenuGroup>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  Account
+                </DropdownMenuItem>
+              </DialogTrigger>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut />
