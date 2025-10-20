@@ -5,6 +5,8 @@ import { publicProcedure, router } from "../trpc/trpc.js";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 import { TRPCError } from "@trpc/server";
 
+const MAX_BOARD_COUNT = 10;
+
 export const boardsRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.user) {
@@ -24,6 +26,15 @@ export const boardsRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      const userBoardCount = await Board.getNumBoards({ userId: ctx.user.id });
+
+      if (userBoardCount >= MAX_BOARD_COUNT) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Maximum board limit reached. You can create up to ${MAX_BOARD_COUNT} boards.`,
+        });
       }
 
       const result = await Board.create({

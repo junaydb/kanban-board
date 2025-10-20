@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { boards } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import type {
   BoardIdParams,
   InsertBoardParams,
@@ -26,6 +26,15 @@ class Board {
     }
 
     return true;
+  }
+
+  static async getNumBoards({ userId }: UserIdParams) {
+    const result = await db
+      .select({ count: count() })
+      .from(boards)
+      .where(eq(boards.userId, userId));
+
+    return result[0].count;
   }
 
   static async create(params: InsertBoardParams) {
