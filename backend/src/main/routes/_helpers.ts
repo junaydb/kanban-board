@@ -14,10 +14,11 @@ export async function verifyBoardExistenceAndOwnership(
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  if (!Board.checkExists({ boardId })) {
+  const boardExists = await Board.checkExists({ boardId });
+  if (!boardExists) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: `Board with ${boardId} not found`,
+      message: `Board with id ${boardId} not found`,
     });
   }
 
