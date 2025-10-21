@@ -16,6 +16,8 @@ import Banner from "../Banners";
 import SpinnerBar from "../SpinnerBar";
 import CreateBoardFormDialog from "../CreateBoardFormDialog";
 
+// TODO: ensure new boards are populated after creating a new board
+
 function SidebarBoards() {
   const { data: session } = authClient.useSession();
 
@@ -36,6 +38,7 @@ function SidebarBoards() {
 
   const boardTitles = data?.data.boards.map((board) => board.title);
 
+  // TODO: disable create board button when the user is at max board count
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
@@ -57,7 +60,7 @@ function SidebarBoards() {
           <SidebarMenuItem>
             <Banner banner="BOARD_FETCH_ERROR" />
           </SidebarMenuItem>
-        ) : data?.success ? (
+        ) : (
           boardTitles?.map((title) => (
             <SidebarMenuItem key={title}>
               <SidebarMenuButton asChild>
@@ -83,7 +86,7 @@ function SidebarBoards() {
               </SidebarMenuAction>
             </SidebarMenuItem>
           ))
-        ) : null}
+        )}
       </SidebarMenu>
     </SidebarGroup>
   );
