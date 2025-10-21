@@ -1,26 +1,19 @@
-import { Plus, Trash2 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/shadcn/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/trpc/trpc";
-import { authClient } from "@/auth/auth-client";
-import { toLowerKebabCase } from "@/util/helpers";
 import Banner from "../Banners";
 import SpinnerBar from "../SpinnerBar";
 import CreateBoardFormDialog from "../CreateBoardFormDialog";
-
-// TODO: ensure new boards are populated after creating a new board
+import SidebarBoardItem from "./SidebarBoardItem";
 
 function SidebarBoards() {
-  const { data: session } = authClient.useSession();
-
   const { data, error, isPending } = useQuery(
     trpc.boards.getAll.queryOptions(undefined, {
       // Do not retry query if we get an auth error or not found error
@@ -36,9 +29,11 @@ function SidebarBoards() {
     }),
   );
 
-  const boardTitles = data?.data.boards.map((board) => board.title);
+  const boardData = data?.data.boards.map(({ id, title }) => ({ id, title }));
 
-  // TODO: disable create board button when the user is at max board count
+  // TODO:
+  // - disable create board button when the user is at max board count
+  // - add a mount delay to the loading spinner component to avoid it flashing in and out instantly
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
@@ -54,37 +49,15 @@ function SidebarBoards() {
           <SpinnerBar>Loading boards...</SpinnerBar>
         ) : error?.data?.code === "UNAUTHORIZED" ? (
           <SidebarMenuItem>
-            <Banner banner="AUTH_ERROR" />
+            <Banner banner="AUTHORISATION_ERROR" />
           </SidebarMenuItem>
         ) : !data?.success ? (
           <SidebarMenuItem>
             <Banner banner="BOARD_FETCH_ERROR" />
           </SidebarMenuItem>
         ) : (
-          boardTitles?.map((title) => (
-            <SidebarMenuItem key={title}>
-              <SidebarMenuButton asChild>
-                <Link
-                  to="/boards/$user/$board"
-                  params={{
-                    user: toLowerKebabCase(session?.user.name!),
-                    board: title,
-                  }}
-                >
-                  {title}
-                </Link>
-              </SidebarMenuButton>
-              <SidebarMenuAction
-                showOnHover
-                className="cursor-pointer"
-                onClick={(e) => {
-                  e.currentTarget.blur();
-                }}
-              >
-                <Trash2 className="text-red-500" />
-                <span className="sr-only">Delete board</span>
-              </SidebarMenuAction>
-            </SidebarMenuItem>
+          boardData?.map(({ id, title }) => (
+            <SidebarBoardItem key={id} id={id} title={title} />
           ))
         )}
       </SidebarMenu>
