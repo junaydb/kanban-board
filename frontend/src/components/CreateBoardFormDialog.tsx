@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/shadcn/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
@@ -68,29 +68,31 @@ function CreateBoardFormDialog({ children }: Props) {
     }
   }
 
-  if (isSuccess) {
-    navigate({
-      to: "/boards/$user/$board",
-      params: {
-        user: toLowerKebabCase(session?.user.name!),
-        board: toLowerKebabCase(data.data.title),
-      },
-    });
-
-    setOpen(!open);
-  }
-
-  if (isError) {
-    if (error.data?.code === "CONFLICT") {
-      setError("title", {
-        type: error.data.code,
-        message: error.message,
+  useEffect(() => {
+    if (isSuccess) {
+      navigate({
+        to: "/boards/$user/$board",
+        params: {
+          user: toLowerKebabCase(session?.user.name!),
+          board: toLowerKebabCase(data.data.title),
+        },
       });
+
+      setOpen(!open);
     }
-    if (error.data?.code === "UNAUTHORIZED") {
-      // TODO: error toast for when board creation fails due to auth
+
+    if (isError) {
+      if (error.data?.code === "CONFLICT") {
+        setError("title", {
+          type: error.data.code,
+          message: error.message,
+        });
+      }
+      if (error.data?.code === "UNAUTHORIZED") {
+        // TODO: error toast for when board creation fails due to auth
+      }
     }
-  }
+  }, [isSuccess, isError]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
