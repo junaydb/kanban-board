@@ -7,13 +7,10 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/shadcn/ui/sidebar";
-import SidebarBoards from "./SidebarBoards";
-import SidebarUser from "./SidebarUser";
-import { authClient } from "@/auth/auth-client";
+import SidebarSignIn from "./SidebarSignIn";
+import OfflineSidebarBoards from "./OfflineSidebarBoards";
 
-function SidebarMaster() {
-  const { isPending } = authClient.useSession();
-
+function OfflineSidebarMaster() {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
@@ -26,11 +23,13 @@ function SidebarMaster() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarBoards />
+        <OfflineSidebarBoards />
       </SidebarContent>
-      <SidebarFooter>{isPending ? null : <SidebarUser />}</SidebarFooter>
+      <SidebarFooter>
+        <SidebarSignIn />
+      </SidebarFooter>
     </Sidebar>
   );
 }
 
-export default SidebarMaster;
+export default OfflineSidebarMaster;
