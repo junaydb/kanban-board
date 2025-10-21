@@ -7,7 +7,7 @@ type Props = {
     | "NEW_USER"
     | "ACCOUNT_REMOVED"
     | "BOARD_FETCH_ERROR"
-    | "AUTH_ERROR";
+    | "AUTHORISATION_ERROR";
 };
 
 function Banner({ banner }: Props) {
@@ -45,11 +45,11 @@ function Banner({ banner }: Props) {
           <AlertTitle>Unable to fetch boards</AlertTitle>
         </Alert>
       );
-    case "AUTH_ERROR":
+    case "AUTHORISATION_ERROR":
       return (
         <Alert className="flex justify-center rounded-md" variant="error">
           <AlertCircleIcon />
-          <AlertTitle>Authentication error</AlertTitle>
+          <AlertTitle>Authorisation error</AlertTitle>
         </Alert>
       );
   }
