@@ -33,7 +33,6 @@ function SidebarBoards() {
 
   // TODO:
   // - disable create board button when the user is at max board count
-  // - add a mount delay to the loading spinner component to avoid it flashing in and out instantly
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
