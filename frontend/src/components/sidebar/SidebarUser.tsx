@@ -33,6 +33,7 @@ import { Button } from "@/shadcn/ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import { authClient } from "@/auth/auth-client";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 function SidebarUser() {
   const navigate = useNavigate();
@@ -48,9 +49,9 @@ function SidebarUser() {
   async function handleSignOut() {
     const result = await authClient.signOut();
     if (result.data?.success) {
-      navigate({ to: "/boards" });
+      navigate({ to: "/boards", search: { logoutSuccess: true } });
     } else if (result.error) {
-      // TODO: Error toast
+      toast.error("Network error");
     }
   }
 
@@ -59,7 +60,7 @@ function SidebarUser() {
     if (deleted.data?.success) {
       navigate({ to: "/boards", search: { accountRemoved: true } });
     } else if (deleted.error) {
-      // TODO: Error toast
+      toast.error("Network error");
     }
   }
 

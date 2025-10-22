@@ -20,6 +20,7 @@ import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
 import { invalidateBoardsCache, useDeleteBoard } from "@/trpc/board-hooks";
+import { toast } from "sonner";
 
 type Props = {
   id: number;
@@ -42,9 +43,9 @@ function SidebarBoardItem({ id, title }: Props) {
   }
 
   if (error?.data?.code === "NOT_FOUND") {
-    // TODO: error toast telling user board was probably already deleted
+    toast.error("Board not found (maybe it was already deleted?)");
   } else if (error?.data?.code === "UNAUTHORIZED") {
-    // TODO: auth error toast
+    toast.error("Authorisation error");
   }
 
   useEffect(() => {

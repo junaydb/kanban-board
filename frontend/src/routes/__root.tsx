@@ -4,6 +4,7 @@ import { useIsMobile } from "@/shadcn/hooks/use-mobile";
 import { isMobileAgent } from "@/util/is-mobile-agent";
 import { CircleAlert } from "lucide-react";
 import { authClient } from "@/auth/auth-client";
+import { Toaster } from "sonner";
 import SidebarMaster from "@/components/sidebar/SidebarMaster";
 import OfflineSidebarMaster from "@/components/sidebar/OfflineSidebarMaster";
 
@@ -31,13 +32,16 @@ function Root() {
   const { data: session } = authClient.useSession();
 
   return (
-    <SidebarProvider>
-      {session ? <SidebarMaster /> : <OfflineSidebarMaster />}
-      <SidebarTrigger />
-      <main className="w-full h-screen p-2">
-        <Outlet />
-      </main>
-    </SidebarProvider>
+    <>
+      <SidebarProvider>
+        {session ? <SidebarMaster /> : <OfflineSidebarMaster />}
+        <SidebarTrigger />
+        <main className="w-full h-screen p-2">
+          <Outlet />
+        </main>
+      </SidebarProvider>
+      <Toaster richColors={true} />
+    </>
   );
 }
 

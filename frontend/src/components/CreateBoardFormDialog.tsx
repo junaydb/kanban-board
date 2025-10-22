@@ -18,6 +18,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
 import { useCreateBoard, invalidateBoardsCache } from "@/trpc/board-hooks";
+import { toast } from "sonner";
 
 // TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
 
@@ -88,7 +89,7 @@ function CreateBoardFormDialog({ children }: Props) {
         });
       }
       if (error.data?.code === "UNAUTHORIZED") {
-        // TODO: error toast for when board creation fails due to auth
+        toast.error("Authorisation error");
       }
     }
   }, [isSuccess, isError]);
