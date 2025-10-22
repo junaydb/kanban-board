@@ -1,6 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { trpc } from "@/trpc/trpc";
 import { useState, useEffect } from "react";
 import {
   AlertDialog,
@@ -21,7 +19,7 @@ import { authClient } from "@/auth/auth-client";
 import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
-import { queryClient } from "@/trpc/trpc";
+import { invalidateBoardsCache, useDeleteBoard } from "@/trpc/board-hooks";
 
 type Props = {
   id: number;
@@ -33,9 +31,7 @@ function SidebarBoardItem({ id, title }: Props) {
 
   const { data: session } = authClient.useSession();
 
-  const { mutate, isSuccess, error } = useMutation(
-    trpc.boards.delete.mutationOptions(),
-  );
+  const { mutate, isSuccess, error } = useDeleteBoard();
 
   const routerState = useRouterState();
 
@@ -53,9 +49,7 @@ function SidebarBoardItem({ id, title }: Props) {
 
   useEffect(() => {
     if (isSuccess) {
-      queryClient.invalidateQueries({
-        queryKey: trpc.boards.getAll.queryKey(),
-      });
+      invalidateBoardsCache();
 
       // if this was the actively open board, navigate to /boards
       if (

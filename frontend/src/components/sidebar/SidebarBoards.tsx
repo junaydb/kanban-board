@@ -6,28 +6,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/shadcn/ui/sidebar";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/trpc/trpc";
 import Banner from "../Banners";
 import SpinnerBar from "../SpinnerBar";
 import CreateBoardFormDialog from "../CreateBoardFormDialog";
 import SidebarBoardItem from "./SidebarBoardItem";
+import { useGetAllBoards } from "@/trpc/board-hooks";
 
 function SidebarBoards() {
-  const { data, error, isPending } = useQuery(
-    trpc.boards.getAll.queryOptions(undefined, {
-      // Do not retry query if we get an auth error or not found error
-      retry: (failureCount, error) => {
-        if (
-          error?.data?.code === "UNAUTHORIZED" ||
-          error?.data?.code === "NOT_FOUND"
-        ) {
-          return false;
-        }
-        return failureCount < 3;
-      },
-    }),
-  );
+  const { data, error, isPending } = useGetAllBoards();
 
   const boardData = data?.data.boards.map(({ id, title }) => ({ id, title }));
 

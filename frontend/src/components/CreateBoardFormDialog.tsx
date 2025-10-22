@@ -4,9 +4,6 @@ import * as z from "zod";
 import { Button } from "@/shadcn/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shadcn/ui/field";
 import { Input } from "@/shadcn/ui/input";
-import { trpc } from "@/trpc/trpc";
-import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/trpc/trpc";
 import {
   Dialog,
   DialogTrigger,
@@ -20,6 +17,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
+import { useCreateBoard, invalidateBoardsCache } from "@/trpc/board-hooks";
 
 // TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
 
@@ -50,9 +48,7 @@ function CreateBoardFormDialog({ children }: Props) {
     reValidateMode: "onSubmit",
   });
 
-  const { mutate, data, isSuccess, isError, error } = useMutation(
-    trpc.boards.create.mutationOptions(),
-  );
+  const { mutate, data, isSuccess, isError, error } = useCreateBoard();
 
   const { data: session } = authClient.useSession();
 
@@ -71,9 +67,7 @@ function CreateBoardFormDialog({ children }: Props) {
 
   useEffect(() => {
     if (isSuccess) {
-      queryClient.invalidateQueries({
-        queryKey: trpc.boards.getAll.queryKey(),
-      });
+      invalidateBoardsCache();
 
       navigate({
         to: "/boards/$user/$board",
