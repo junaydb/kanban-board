@@ -6,6 +6,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/shadcn/ui/field";
 import { Input } from "@/shadcn/ui/input";
 import { trpc } from "@/trpc/trpc";
 import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/trpc/trpc";
 import {
   Dialog,
   DialogTrigger,
@@ -70,6 +71,10 @@ function CreateBoardFormDialog({ children }: Props) {
 
   useEffect(() => {
     if (isSuccess) {
+      queryClient.invalidateQueries({
+        queryKey: trpc.boards.getAll.queryKey(),
+      });
+
       navigate({
         to: "/boards/$user/$board",
         params: {
