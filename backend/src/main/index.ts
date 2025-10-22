@@ -7,6 +7,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth/auth.js";
 import chalk from "chalk";
 
+// TODO: add more descriptive logging, e.g., for cases where unauthorized access was attempted
+
 const app = express();
 
 app.use(morgan("dev"));
@@ -17,6 +19,10 @@ if (process.env.NODE_ENV === "prod") {
 } else {
   console.log(chalk.yellow("ENVIRONMENT: TEST"));
 }
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.all("/api/auth/*", toNodeHandler(auth));
 
