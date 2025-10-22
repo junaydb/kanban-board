@@ -1,21 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { redirect } from "@tanstack/react-router";
 import { authClient } from "@/auth/auth-client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/boards/$user/$board")({
   beforeLoad: async () => {
-    const { data: session, error } = await authClient.getSession();
+    const { data: session, error: betterAuthError } =
+      await authClient.getSession();
 
     if (!session) {
       throw redirect({
         to: "/boards",
-        search: { boardAuthError: true },
+        search: { redirect: "boardAuthError" },
       });
     }
 
-    if (error) {
-      // TODO: handle auth error
+    if (betterAuthError) {
+      toast.error("Network error");
     }
+
+    // TODO: check if this board exists
   },
 
   component: Board,

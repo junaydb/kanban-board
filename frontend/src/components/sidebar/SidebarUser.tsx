@@ -49,7 +49,7 @@ function SidebarUser() {
   async function handleSignOut() {
     const result = await authClient.signOut();
     if (result.data?.success) {
-      navigate({ to: "/boards", search: { logoutSuccess: true } });
+      navigate({ to: "/boards", search: { redirect: "logoutSuccess" } });
     } else if (result.error) {
       toast.error("Network error");
     }
@@ -58,7 +58,7 @@ function SidebarUser() {
   async function handleDeleteAccount() {
     const deleted = await authClient.deleteUser();
     if (deleted.data?.success) {
-      navigate({ to: "/boards", search: { accountRemoved: true } });
+      navigate({ to: "/boards", search: { redirect: "accountRemoved" } });
     } else if (deleted.error) {
       toast.error("Network error");
     }

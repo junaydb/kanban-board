@@ -8,10 +8,12 @@ function getUrlPrefix(path = "/") {
 }
 
 export async function socialSignIn(provider: AuthProviders) {
-  await authClient.signIn.social({
+  const res = await authClient.signIn.social({
     provider: provider,
     callbackURL: getUrlPrefix(),
-    newUserCallbackURL: getUrlPrefix("/boards?newUser=true"),
-    errorCallbackURL: getUrlPrefix("/boards?oauthError=true"),
+    newUserCallbackURL: getUrlPrefix("/boards?redirect=newUser"),
+    errorCallbackURL: getUrlPrefix("/boards?redirect=oauthError"),
   });
+
+  return res
 }

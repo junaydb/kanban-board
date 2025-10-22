@@ -7,11 +7,15 @@ import { useEffect } from "react";
 
 export const Route = createFileRoute("/boards/")({
   validateSearch: z.object({
-    newUser: z.boolean().nullish(),
-    logoutSuccess: z.boolean().nullish(),
-    accountRemoved: z.boolean().nullish(),
-    boardAuthError: z.boolean().nullish(),
-    oauthError: z.boolean().nullish(),
+    redirect: z
+      .enum([
+        "newUser",
+        "logoutSuccess",
+        "accountRemoved",
+        "boardAuthError",
+        "oauthError",
+      ])
+      .optional(),
   }),
   component: Boards,
 });
@@ -21,14 +25,19 @@ function Boards() {
   const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    if (search.accountRemoved) {
-      toast.success("Your account was successfully deleted");
-    } else if (search.logoutSuccess) {
-      toast.success("You were logged out successfully");
-    } else if (search.boardAuthError) {
-      toast.error("Authorisation error");
-    } else if (search.oauthError) {
-      toast.error("Authentication error");
+    switch (search.redirect) {
+      case "accountRemoved":
+        toast.success("Your account was successfully deleted");
+        break;
+      case "logoutSuccess":
+        toast.success("You were logged out successfully");
+        break;
+      case "boardAuthError":
+        toast.error("Authorisation error");
+        break;
+      case "oauthError":
+        toast.error("Authentication error");
+        break;
     }
   }, [search]);
 
@@ -44,7 +53,7 @@ function Boards() {
         <Outlet />
       </div>
       {!session && <Banner banner="LOGGED_OUT" />}
-      {search.newUser && <Banner banner="NEW_USER" />}
+      {search.redirect === "newUser" && <Banner banner="NEW_USER" />}
     </div>
   );
 }
