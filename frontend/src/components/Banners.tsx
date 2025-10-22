@@ -1,16 +1,37 @@
 import { Alert, AlertTitle } from "@/shadcn/ui/alert";
 import { AlertCircleIcon, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/shadcn/ui/button";
+import { Badge } from "@/shadcn/ui/badge";
 
 type Props = {
-  banner:
-    | "LOGGED_OUT"
-    | "NEW_USER"
-    | "ACCOUNT_REMOVED"
-    | "BOARD_FETCH_ERROR"
-    | "AUTHORISATION_ERROR";
+  banner: "LOGGED_OUT" | "NEW_USER";
 };
 
 function Banner({ banner }: Props) {
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  if (isDismissed) {
+    return null;
+  }
+
+  const dismissButton = (
+    <Badge
+      asChild
+      variant="outline"
+      className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setIsDismissed(true)}
+        className="h-auto py-1 px-2 flex items-center justify-center"
+      >
+        Dismiss
+      </Button>
+    </Badge>
+  );
+
   switch (banner) {
     case "LOGGED_OUT":
       return (
@@ -20,6 +41,7 @@ function Banner({ banner }: Props) {
             Using local storage. Log in to store your boards remotely and access
             them from anywhere.
           </AlertTitle>
+          {dismissButton}
         </Alert>
       );
     case "NEW_USER":
@@ -29,27 +51,7 @@ function Banner({ banner }: Props) {
           <AlertTitle>
             Welcome! You can now access your boards from anywhere.
           </AlertTitle>
-        </Alert>
-      );
-    case "ACCOUNT_REMOVED":
-      return (
-        <Alert className="flex justify-center rounded-md" variant="success">
-          <CheckCircle2 />
-          <AlertTitle>Your account was successfully removed.</AlertTitle>
-        </Alert>
-      );
-    case "BOARD_FETCH_ERROR":
-      return (
-        <Alert className="flex justify-center rounded-md" variant="error">
-          <AlertCircleIcon />
-          <AlertTitle>Unable to fetch boards</AlertTitle>
-        </Alert>
-      );
-    case "AUTHORISATION_ERROR":
-      return (
-        <Alert className="flex justify-center rounded-md" variant="error">
-          <AlertCircleIcon />
-          <AlertTitle>Authorisation error</AlertTitle>
+          {dismissButton}
         </Alert>
       );
   }
