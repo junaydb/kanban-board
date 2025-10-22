@@ -49,8 +49,7 @@ function SidebarUser() {
     const result = await authClient.signOut();
     if (result.data?.success) {
       navigate({ to: "/boards" });
-    }
-    if (result.error) {
+    } else if (result.error) {
       // TODO: Error toast
     }
   }
@@ -59,8 +58,7 @@ function SidebarUser() {
     const deleted = await authClient.deleteUser();
     if (deleted.data?.success) {
       navigate({ to: "/boards", search: { accountRemoved: true } });
-    }
-    if (deleted.error) {
+    } else if (deleted.error) {
       // TODO: Error toast
     }
   }
