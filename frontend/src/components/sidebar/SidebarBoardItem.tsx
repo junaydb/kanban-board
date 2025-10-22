@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { trpc } from "@/trpc/trpc";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,6 +21,7 @@ import { authClient } from "@/auth/auth-client";
 import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
+import { queryClient } from "@/trpc/trpc";
 
 type Props = {
   id: number;
@@ -36,6 +37,10 @@ function SidebarBoardItem({ id, title }: Props) {
     trpc.boards.delete.mutationOptions(),
   );
 
+  const routerState = useRouterState();
+
+  const navigate = useNavigate();
+
   function handleBoardDelete() {
     mutate({ boardId: id });
   }
@@ -46,10 +51,23 @@ function SidebarBoardItem({ id, title }: Props) {
     // TODO: auth error toast
   }
 
-  if (isSuccess) {
-    // TODO:
-    // - If this was the actively open board, navigate to /boards (else, do nothing)
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      queryClient.invalidateQueries({
+        queryKey: trpc.boards.getAll.queryKey(),
+      });
+
+      // if this was the actively open board, navigate to /boards
+      if (
+        routerState.location.pathname ===
+        `/boards/${toLowerKebabCase(session?.user.name!)}/${title}`
+      ) {
+        navigate({ to: "/boards" });
+      }
+
+      setOpen(!open);
+    }
+  }, [isSuccess]);
 
   return (
     <>
