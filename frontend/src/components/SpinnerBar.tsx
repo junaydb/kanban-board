@@ -3,7 +3,7 @@ import { Alert, AlertTitle } from "@/shadcn/ui/alert";
 import { useState, useEffect } from "react";
 
 type Props = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   delay?: number;
 };
 
