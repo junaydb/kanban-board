@@ -17,7 +17,19 @@ export const boardsRouter = router({
       userId: ctx.user.id,
     });
 
-    return successResponseFactory.array({ boards: allBoards });
+    const boardCount = await Board.getNumBoards({
+      userId: ctx.user.id,
+    });
+
+    return successResponseFactory.arrayWithMeta(
+      {
+        boards: allBoards,
+      },
+      {
+        boardCount: boardCount,
+        boardCountLimit: MAX_BOARD_COUNT,
+      },
+    );
   }),
 
   create: publicProcedure
@@ -83,19 +95,4 @@ export const boardsRouter = router({
 
       return successResponseFactory.noData();
     }),
-
-  getBoardCountInfo: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
-
-    const boardCount = await Board.getNumBoards({
-      userId: ctx.user.id,
-    });
-
-    return successResponseFactory.single({
-      boardCount: boardCount,
-      boardLimit: MAX_BOARD_COUNT,
-    });
-  }),
 });
