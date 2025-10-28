@@ -7,9 +7,11 @@ import { authClient } from "@/auth/auth-client";
 import { Toaster } from "sonner";
 import SidebarMaster from "@/components/sidebar/SidebarMaster";
 import OfflineSidebarMaster from "@/components/sidebar/OfflineSidebarMaster";
+import RouteNotFound from "@/components/RouteNotFound";
 
 export const Route = createRootRoute({
   component: Root,
+  notFoundComponent: RouteNotFound,
 });
 
 function Root() {
@@ -44,8 +46,3 @@ function Root() {
     </>
   );
 }
-
-// TODO:
-// - Add help button
-// - Add a subtle transition to elements when they mount
-// - Disable sign in button and use offline mode when server is unreachable
