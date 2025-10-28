@@ -15,7 +15,8 @@ export const Route = createFileRoute("/boards/")({
         "boardAuthError",
         "oauthError",
       ])
-      .optional(),
+      .optional()
+      .catch(undefined),
   }),
   component: Boards,
 });
