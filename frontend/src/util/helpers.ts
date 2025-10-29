@@ -1,5 +1,4 @@
 import type { Status } from "@/util/types";
-import { useQuery } from "@tanstack/react-query";
 
 export function statusEnumToDisplay(status: Status) {
   const statusMapper = {
@@ -22,19 +21,4 @@ export function combineDateAndTimeToISO(date: string, time: string): string {
 
 export function toLowerKebabCase(str: string) {
   return str.toLowerCase().replace(/\s/g, "-");
-}
-
-export function useHealthCheck() {
-  return useQuery({
-    queryKey: ["health-check"],
-    queryFn: async () => {
-      const res = await fetch("/api/health", { method: "GET" });
-      if (!res.ok) {
-        throw new Error("Health check failed");
-      }
-      return true;
-    },
-    staleTime: 0,
-    gcTime: 0,
-  });
 }
