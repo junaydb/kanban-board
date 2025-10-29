@@ -27,7 +27,7 @@ type Props = {
   title: string;
 };
 
-function SidebarBoardItem({ id, title }: Props) {
+export function SidebarBoardItem({ id, title }: Props) {
   const [open, setOpen] = useState(false);
 
   const { data: session } = authClient.useSession();
@@ -115,5 +115,3 @@ function SidebarBoardItem({ id, title }: Props) {
     </>
   );
 }
-
-export default SidebarBoardItem;

@@ -6,9 +6,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/shadcn/ui/sidebar";
-import OfflineSidebarBoardItem from "./OfflineSidebarBoardItem";
+import { OfflineSidebarBoardItem } from "./OfflineSidebarBoardItem";
 
-function OfflineSidebarBoards() {
+export function OfflineSidebarBoards() {
   // TODO:
   // - disable create board button when the user is at max board count
   // - add a mount delay to the loading spinner component to avoid it flashing in and out instantly
@@ -25,5 +25,3 @@ function OfflineSidebarBoards() {
     </SidebarGroup>
   );
 }
-
-export default OfflineSidebarBoards;

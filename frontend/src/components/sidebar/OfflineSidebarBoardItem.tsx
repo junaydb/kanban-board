@@ -23,7 +23,7 @@ type Props = {
   title: string;
 };
 
-function OfflineSidebarBoardItem({ id, title }: Props) {
+export function OfflineSidebarBoardItem({ id, title }: Props) {
   const [open, setOpen] = useState(false);
 
   function handleBoardDelete() {
@@ -75,5 +75,3 @@ function OfflineSidebarBoardItem({ id, title }: Props) {
     </>
   );
 }
-
-export default OfflineSidebarBoardItem;

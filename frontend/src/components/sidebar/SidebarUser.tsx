@@ -35,7 +35,7 @@ import { authClient } from "@/auth/auth-client";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-function SidebarUser() {
+export function SidebarUser() {
   const navigate = useNavigate();
 
   const { data } = authClient.useSession();
@@ -137,5 +137,3 @@ function SidebarUser() {
     </Dialog>
   );
 }
-
-export default SidebarUser;

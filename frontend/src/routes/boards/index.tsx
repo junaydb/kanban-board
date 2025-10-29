@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { authClient } from "@/auth/auth-client";
 import z from "zod";
-import Banner from "@/components/Banners";
+import { Banner } from "@/components/Banners";
 import { toast } from "sonner";
 import { useEffect } from "react";
 

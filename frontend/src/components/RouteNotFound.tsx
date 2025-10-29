@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 
-function RouteNotFound() {
+export function RouteNotFound() {
   return (
     <div className="h-full flex flex-col gap-2">
       <div className="grow rounded-md border-2 border-dashed flex items-center justify-center">
@@ -12,5 +12,3 @@ function RouteNotFound() {
     </div>
   );
 }
-
-export default RouteNotFound;

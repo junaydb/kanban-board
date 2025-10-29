@@ -8,7 +8,7 @@ type Props = {
   banner: "LOGGED_OUT" | "NEW_USER";
 };
 
-function Banner({ banner }: Props) {
+export function Banner({ banner }: Props) {
   const [isDismissed, setIsDismissed] = useState(false);
 
   if (isDismissed) {
@@ -56,5 +56,3 @@ function Banner({ banner }: Props) {
       );
   }
 }
-
-export default Banner;

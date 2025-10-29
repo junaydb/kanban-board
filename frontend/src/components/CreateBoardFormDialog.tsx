@@ -33,7 +33,7 @@ const BoardTitleSchema = z.object({
     .max(50, "Board title cannot be more than 50 characters"),
 });
 
-function CreateBoardFormDialog({ children }: Props) {
+export function CreateBoardFormDialog({ children }: Props) {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -140,5 +140,3 @@ function CreateBoardFormDialog({ children }: Props) {
     </Dialog>
   );
 }
-
-export default CreateBoardFormDialog;

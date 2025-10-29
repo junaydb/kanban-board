@@ -7,10 +7,10 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/shadcn/ui/sidebar";
-import SidebarSignIn from "./SidebarSignIn";
-import OfflineSidebarBoards from "./OfflineSidebarBoards";
+import { SidebarSignIn } from "./SidebarSignIn";
+import { OfflineSidebarBoards } from "./OfflineSidebarBoards";
 
-function OfflineSidebarMaster() {
+export function OfflineSidebarMaster() {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
@@ -31,5 +31,3 @@ function OfflineSidebarMaster() {
     </Sidebar>
   );
 }
-
-export default OfflineSidebarMaster;

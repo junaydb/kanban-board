@@ -7,11 +7,11 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/shadcn/ui/sidebar";
-import SidebarBoards from "./SidebarBoards";
-import SidebarUser from "./SidebarUser";
+import { SidebarBoards } from "./SidebarBoards";
+import { SidebarUser } from "./SidebarUser";
 import { authClient } from "@/auth/auth-client";
 
-function SidebarMaster() {
+export function SidebarMaster() {
   const { isPending } = authClient.useSession();
 
   return (
@@ -32,5 +32,3 @@ function SidebarMaster() {
     </Sidebar>
   );
 }
-
-export default SidebarMaster;

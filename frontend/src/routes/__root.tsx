@@ -5,9 +5,9 @@ import { isMobileAgent } from "@/util/is-mobile-agent";
 import { CircleAlert } from "lucide-react";
 import { authClient } from "@/auth/auth-client";
 import { Toaster } from "sonner";
-import SidebarMaster from "@/components/sidebar/SidebarMaster";
-import OfflineSidebarMaster from "@/components/sidebar/OfflineSidebarMaster";
-import RouteNotFound from "@/components/RouteNotFound";
+import { SidebarMaster } from "@/components/sidebar/SidebarMaster";
+import { OfflineSidebarMaster } from "@/components/sidebar/OfflineSidebarMaster";
+import { RouteNotFound } from "@/components/RouteNotFound";
 
 export const Route = createRootRoute({
   component: Root,

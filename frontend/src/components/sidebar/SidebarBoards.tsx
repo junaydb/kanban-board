@@ -7,13 +7,13 @@ import {
   SidebarMenuItem,
 } from "@/shadcn/ui/sidebar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shadcn/ui/tooltip";
-import Banner from "../Banners";
-import SpinnerBar from "../SpinnerBar";
-import CreateBoardFormDialog from "../CreateBoardFormDialog";
-import SidebarBoardItem from "./SidebarBoardItem";
+import { Banner } from "../Banners";
+import { SpinnerBar } from "../SpinnerBar";
+import { CreateBoardFormDialog } from "../CreateBoardFormDialog";
+import { SidebarBoardItem } from "./SidebarBoardItem";
 import { useGetAllBoards } from "@/trpc/board-hooks";
 
-function SidebarBoards() {
+export function SidebarBoards() {
   const { data, error, isPending } = useGetAllBoards();
 
   const canCreateBoards = data?.meta.boardCount < data?.meta.boardCountLimit;
@@ -69,5 +69,3 @@ function SidebarBoards() {
     </SidebarGroup>
   );
 }
-
-export default SidebarBoards;

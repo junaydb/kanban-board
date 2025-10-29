@@ -20,7 +20,7 @@ import { Button } from "@/shadcn/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shadcn/ui/tooltip";
 import { useHealthCheck } from "@/util/helpers";
 import { toast } from "sonner";
-import SpinnerBar from "../SpinnerBar";
+import { SpinnerBar } from "../SpinnerBar";
 
 type ProviderButtonProps = {
   provider: AuthProviders;
@@ -48,7 +48,7 @@ const providers: ProviderButtonProps[] = [
   },
 ];
 
-function SidebarSignIn() {
+export function SidebarSignIn() {
   const { isLoading, isError } = useHealthCheck();
 
   useEffect(() => {
@@ -114,5 +114,3 @@ function SidebarSignIn() {
     </Dialog>
   );
 }
-
-export default SidebarSignIn;

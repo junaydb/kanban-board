@@ -7,7 +7,7 @@ type Props = {
   delay?: number;
 };
 
-function SpinnerBar({ children, delay = 300 }: Props) {
+export function SpinnerBar({ children, delay = 300 }: Props) {
   const [showSpinner, setShowSpinner] = useState(false);
 
   // only show spinner after the specified delay
@@ -30,5 +30,3 @@ function SpinnerBar({ children, delay = 300 }: Props) {
     </Alert>
   );
 }
-
-export default SpinnerBar;
