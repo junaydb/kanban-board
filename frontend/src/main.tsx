@@ -4,7 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./trpc/trpc";
 import { ServerHealthCheckProvider } from "./context/ServerHealthCheckContext";
-import { OnlineStatusProvider } from "./context/OnlineStatusContext";
+import { ClientOnlineStatusProvider } from "./context/ClientOnlineContext";
 
 import "./css/globals.css";
 
@@ -28,13 +28,13 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <QueryClientProvider client={queryClient}>
-      <OnlineStatusProvider>
+      <ClientOnlineStatusProvider>
         <ServerHealthCheckProvider>
           <StrictMode>
             <RouterProvider router={router} />
           </StrictMode>
         </ServerHealthCheckProvider>
-      </OnlineStatusProvider>
+      </ClientOnlineStatusProvider>
     </QueryClientProvider>,
   );
 }

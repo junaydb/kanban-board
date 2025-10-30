@@ -8,9 +8,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-type OnlineStatusContext = boolean;
+type ClientOnlineStatusContext = boolean;
 
-const OnlineStatusContext = createContext<OnlineStatusContext | null>(null);
+const ClientOnlineStatusContext =
+  createContext<ClientOnlineStatusContext | null>(null);
 
 function getSnapshot() {
   return navigator.onLine;
@@ -25,7 +26,11 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function OnlineStatusProvider({ children }: { children: ReactNode }) {
+export function ClientOnlineStatusProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const isOnline = useSyncExternalStore(subscribe, getSnapshot);
   const toastId = useRef<string | number | null>(null);
 
@@ -39,12 +44,12 @@ export function OnlineStatusProvider({ children }: { children: ReactNode }) {
   }, [isOnline]);
 
   return (
-    <OnlineStatusContext.Provider value={isOnline}>
+    <ClientOnlineStatusContext.Provider value={isOnline}>
       {children}
-    </OnlineStatusContext.Provider>
+    </ClientOnlineStatusContext.Provider>
   );
 }
 
-export function useOnlineStatus() {
-  return useContext(OnlineStatusContext);
+export function useClientOnlineStatus() {
+  return useContext(ClientOnlineStatusContext);
 }
