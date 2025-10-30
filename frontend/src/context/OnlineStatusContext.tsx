@@ -2,8 +2,11 @@ import {
   createContext,
   useContext,
   useSyncExternalStore,
+  useEffect,
+  useRef,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 
 type OnlineStatusContext = boolean;
 
@@ -24,6 +27,16 @@ function subscribe(callback: () => void) {
 
 export function OnlineStatusProvider({ children }: { children: ReactNode }) {
   const isOnline = useSyncExternalStore(subscribe, getSnapshot);
+  const toastId = useRef<string | number | null>(null);
+
+  useEffect(() => {
+    if (!isOnline) {
+      toastId.current = toast("No network connection detected");
+    } else if (toastId.current) {
+      toast.dismiss(toastId.current);
+      toastId.current = null;
+    }
+  }, [isOnline]);
 
   return (
     <OnlineStatusContext.Provider value={isOnline}>
