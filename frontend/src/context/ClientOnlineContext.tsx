@@ -32,15 +32,28 @@ export function ClientOnlineStatusProvider({
   children: ReactNode;
 }) {
   const isOnline = useSyncExternalStore(subscribe, getSnapshot);
-  const toastId = useRef<string | number | null>(null);
+  const prevOnline = useRef<boolean | null>(null);
 
+  // if we lose or regain connection, show a toast
   useEffect(() => {
-    if (!isOnline) {
-      toastId.current = toast("No network connection detected");
-    } else if (toastId.current) {
-      toast.dismiss(toastId.current);
-      toastId.current = null;
+    // store initial network state on first render
+    if (prevOnline.current === null) {
+      prevOnline.current = isOnline;
+      return;
     }
+
+    // connection lost
+    if (!isOnline && prevOnline.current) {
+      toast.dismiss();
+      toast.error("Network connection lost");
+    }
+    // connection restored
+    else if (isOnline && !prevOnline.current) {
+      toast.dismiss();
+      toast.success("Back online");
+    }
+
+    prevOnline.current = isOnline;
   }, [isOnline]);
 
   return (
