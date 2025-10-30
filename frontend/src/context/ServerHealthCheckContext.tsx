@@ -26,6 +26,7 @@ export function ServerHealthCheckProvider({
     queryKey: [HEALTH_CHECK_KEY],
     queryFn: async () => {
       const res = await fetch("/api/health", { method: "GET" });
+
       if (!res.ok) {
         throw new Error(`${res.status}`);
       }
@@ -45,32 +46,42 @@ export function ServerHealthCheckProvider({
 
     // retry and show a toast displaying number of retries
     retry: (failureCount) => {
-      if (!toastId.current) {
-        toastId.current = toast.loading("Retrying 1 time(s)...");
-      } else {
-        toast.loading(`Retrying ${failureCount} time(s)...`, {
-          id: toastId.current,
-        });
-      }
-
-      // show a new toast that has a button for manually reattempting the connection
+      // if we fail 5 times, show an action toast to allow the user to manually trigger a refetch
       if (failureCount > 4) {
-        toast.dismiss(toastId.current);
+        toast.dismiss();
         toastId.current = toast("Could not connect to server", {
+          duration: Infinity,
           action: {
             label: "Retry",
-            onClick: () =>
-              queryClient.resetQueries({
+            onClick: () => {
+              toast.dismiss();
+              toastId.current = null;
+
+              queryClient.invalidateQueries({
                 queryKey: [HEALTH_CHECK_KEY],
                 exact: true,
-              }),
+              });
+            },
           },
         });
         return false;
       }
 
+      // show a toast that displays the current retry attempt number
+      if (!toastId.current) {
+        toastId.current = toast.loading(
+          `Retrying ${failureCount + 1} time(s)...`,
+        );
+      } else {
+        toast.loading(`Retrying ${failureCount + 1} time(s)...`, {
+          id: toastId.current,
+        });
+      }
+
       return true;
     },
+
+    retryDelay: 2000,
 
     // ping the server every 10 seconds if the query is not in an error state
     refetchInterval: (query) => {
