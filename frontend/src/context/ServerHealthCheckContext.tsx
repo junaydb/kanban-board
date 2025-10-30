@@ -29,6 +29,13 @@ export function ServerHealthCheckProvider({
       if (!res.ok) {
         throw new Error(`${res.status}`);
       }
+
+      if (toastId.current) {
+        toast.dismiss();
+        toast.success("Server connection re-established");
+        toastId.current = null;
+      }
+
       return true;
     },
 
@@ -89,10 +96,6 @@ export function ServerHealthCheckProvider({
   );
 }
 
-/**
- * Hook to access the server health check status from anywhere in the app.
- * Must be used within a ServerHealthCheckProvider.
- */
 export function useServerHealthCheck() {
   return useContext(HealthCheckContext);
 }
