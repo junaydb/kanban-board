@@ -1,26 +1,27 @@
 import {
   createContext,
   useContext,
+  useState,
   useEffect,
   useRef,
   type ReactNode,
 } from "react";
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryClient } from "@/trpc/trpc";
 
-type HealthCheckContext = UseQueryResult<boolean, Error>;
-
 const HEALTH_CHECK_KEY = "health-check";
 
-const HealthCheckContext = createContext<HealthCheckContext | null>(null);
+const ServerNetworkStatusContext = createContext<boolean | null>(null);
 
-export function ServerHealthCheckProvider({
+export function ServerNetworkStatusProvider({
   children,
 }: {
   children: ReactNode;
 }) {
+  const [serverIsOnline, setServerIsOnline] = useState<boolean | null>(null);
   const toastId = useRef<string | number | null>(null);
+  const prevServerStatus = useRef<boolean | null>(null);
 
   const healthCheck = useQuery({
     queryKey: [HEALTH_CHECK_KEY],
@@ -37,6 +38,8 @@ export function ServerHealthCheckProvider({
         toastId.current = null;
       }
 
+      setServerIsOnline(true);
+
       return true;
     },
 
@@ -49,7 +52,7 @@ export function ServerHealthCheckProvider({
       // if we fail 5 times, show an action toast to allow the user to manually trigger a refetch
       if (failureCount > 4) {
         toast.dismiss();
-        toastId.current = toast("Could not connect to server", {
+        toastId.current = toast.error("Could not connect to server", {
           duration: Infinity,
           action: {
             label: "Retry",
@@ -100,13 +103,30 @@ export function ServerHealthCheckProvider({
     }
   }, [healthCheck.isSuccess]);
 
+  // show a toast when server connection is lost
+  useEffect(() => {
+    // store initial network state on first render
+    if (prevServerStatus.current === null) {
+      prevServerStatus.current = healthCheck.isSuccess;
+      return;
+    }
+
+    // server connection lost
+    if (healthCheck.isError && prevServerStatus.current) {
+      toast.dismiss();
+      toast.error("Server connection lost");
+    }
+
+    prevServerStatus.current = healthCheck.isSuccess;
+  }, [healthCheck.isSuccess, healthCheck.isError]);
+
   return (
-    <HealthCheckContext.Provider value={healthCheck}>
+    <ServerNetworkStatusContext value={serverIsOnline}>
       {children}
-    </HealthCheckContext.Provider>
+    </ServerNetworkStatusContext>
   );
 }
 
-export function useServerHealthCheck() {
-  return useContext(HealthCheckContext);
+export function useServerNetworkStatus() {
+  return useContext(ServerNetworkStatusContext);
 }

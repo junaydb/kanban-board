@@ -3,8 +3,8 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./trpc/trpc";
-import { ServerHealthCheckProvider } from "./context/ServerHealthCheckContext";
-import { ClientOnlineStatusProvider } from "./context/ClientOnlineContext";
+import { ServerNetworkStatusProvider } from "./context/ServerNetworkStatusContext";
+import { ClientNetworkStatusProvider } from "./context/ClientNetworkStatusContext";
 
 import "./css/globals.css";
 
@@ -28,13 +28,13 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <QueryClientProvider client={queryClient}>
-      <ClientOnlineStatusProvider>
-        <ServerHealthCheckProvider>
+      <ClientNetworkStatusProvider>
+        <ServerNetworkStatusProvider>
           <StrictMode>
             <RouterProvider router={router} />
           </StrictMode>
-        </ServerHealthCheckProvider>
-      </ClientOnlineStatusProvider>
+        </ServerNetworkStatusProvider>
+      </ClientNetworkStatusProvider>
     </QueryClientProvider>,
   );
 }

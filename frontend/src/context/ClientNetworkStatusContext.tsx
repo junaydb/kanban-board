@@ -8,10 +8,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-type ClientOnlineStatusContext = boolean;
-
-const ClientOnlineStatusContext =
-  createContext<ClientOnlineStatusContext | null>(null);
+const ClientNetworkStatusContext = createContext<boolean | null>(null);
 
 function getSnapshot() {
   return navigator.onLine;
@@ -26,7 +23,7 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function ClientOnlineStatusProvider({
+export function ClientNetworkStatusProvider({
   children,
 }: {
   children: ReactNode;
@@ -57,12 +54,12 @@ export function ClientOnlineStatusProvider({
   }, [isOnline]);
 
   return (
-    <ClientOnlineStatusContext.Provider value={isOnline}>
+    <ClientNetworkStatusContext value={isOnline}>
       {children}
-    </ClientOnlineStatusContext.Provider>
+    </ClientNetworkStatusContext>
   );
 }
 
-export function useClientOnlineStatus() {
-  return useContext(ClientOnlineStatusContext);
+export function useClientNetworkStatus() {
+  return useContext(ClientNetworkStatusContext);
 }
