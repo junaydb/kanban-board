@@ -1,11 +1,11 @@
 import { Alert, AlertTitle } from "@/shadcn/ui/alert";
-import { AlertCircleIcon, CheckCircle2 } from "lucide-react";
+import { AlertCircleIcon, CheckCircle2, WifiOff } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shadcn/ui/button";
 import { Badge } from "@/shadcn/ui/badge";
 
 type Props = {
-  banner: "LOGGED_OUT" | "NEW_USER";
+  banner: "LOGGED_OUT" | "NEW_USER" | "CLIENT_OFFLINE" | "SERVER_OFFLINE";
 };
 
 export function Banner({ banner }: Props) {
@@ -50,6 +50,28 @@ export function Banner({ banner }: Props) {
           <CheckCircle2 />
           <AlertTitle>
             Welcome! You can now access your boards from anywhere.
+          </AlertTitle>
+          {dismissButton}
+        </Alert>
+      );
+    case "CLIENT_OFFLINE":
+      return (
+        <Alert className="flex justify-center rounded-md" variant="error">
+          <WifiOff />
+          <AlertTitle>
+            No network connection detected. The application will operate in
+            offline mode.
+          </AlertTitle>
+          {dismissButton}
+        </Alert>
+      );
+    case "SERVER_OFFLINE":
+      return (
+        <Alert className="flex justify-center rounded-md" variant="error">
+          <WifiOff />
+          <AlertTitle>
+            Our servers seem to be down. The application will operate in offline
+            mode.
           </AlertTitle>
           {dismissButton}
         </Alert>

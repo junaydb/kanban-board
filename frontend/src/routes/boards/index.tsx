@@ -4,6 +4,8 @@ import z from "zod";
 import { Banner } from "@/components/Banners";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useClientNetworkStatus } from "@/context/ClientNetworkStatusContext";
+import { useServerNetworkStatus } from "@/context/ServerNetworkStatusContext";
 
 export const Route = createFileRoute("/boards/")({
   validateSearch: z.object({
@@ -24,14 +26,16 @@ export const Route = createFileRoute("/boards/")({
 function Boards() {
   const search = Route.useSearch();
   const { data: session, isPending } = authClient.useSession();
+  const clientOnline = useClientNetworkStatus();
+  const serverOnline = useServerNetworkStatus();
 
   useEffect(() => {
     switch (search.redirect) {
       case "accountRemoved":
-        toast.success("Your account was successfully deleted");
+        toast.success("Account deletion succesful");
         break;
       case "logoutSuccess":
-        toast.success("You were logged out successfully");
+        toast.success("Logout successful");
         break;
       case "boardAuthError":
         toast.error("Authorisation error");
@@ -55,6 +59,8 @@ function Boards() {
       </div>
       {!session && <Banner banner="LOGGED_OUT" />}
       {search.redirect === "newUser" && <Banner banner="NEW_USER" />}
+      {!clientOnline && <Banner banner="CLIENT_OFFLINE" />}
+      {!serverOnline && <Banner banner="SERVER_OFFLINE" />}
     </div>
   );
 }
