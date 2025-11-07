@@ -1,8 +1,6 @@
 import {
   createContext,
   useContext,
-  useState,
-  useEffect,
   useRef,
   type ReactNode,
 } from "react";
@@ -28,8 +26,21 @@ export function ServerNetworkStatusProvider({
       const res = await fetch("/api/health", { method: "GET" });
 
       if (!res.ok) {
+        // show an error toast if we were in a success state
+        if (prevServerStatus.current === true) {
+          toast.dismiss();
+          toast.error("Lost connection to server");
+        }
+        prevServerStatus.current = false;
         throw new Error(`${res.status}`);
       }
+
+      // show an success toast if we were in an error state
+      if (prevServerStatus.current === false) {
+        toast.dismiss();
+        toast.success("Server connection re-established");
+      }
+      prevServerStatus.current = true;
 
       return true;
     },
@@ -62,16 +73,12 @@ export function ServerNetworkStatusProvider({
       }
 
       // show a toast that displays the current retry attempt number
+      const retryingText = `Retrying ${failureCount + 1} time(s)...`;
       if (!toastId.current) {
-        toastId.current = toast.loading(
-          `Retrying ${failureCount + 1} time(s)...`,
-        );
+        toastId.current = toast.loading(retryingText);
       } else {
-        toast.loading(`Retrying ${failureCount + 1} time(s)...`, {
-          id: toastId.current,
-        });
+        toast.loading(retryingText, { id: toastId.current });
       }
-
       return true;
     },
 
@@ -86,36 +93,8 @@ export function ServerNetworkStatusProvider({
     },
   });
 
-  // show a toast when server connection is lost
-  useEffect(() => {
-    if (healthCheck.isPending) {
-      return;
-    }
-
-    // store initial network state on first render after fetch completion
-    if (prevServerStatus.current === null) {
-      prevServerStatus.current = healthCheck.isSuccess;
-      return;
-    }
-
-    // server connection lost
-    if (healthCheck.isError && prevServerStatus.current) {
-      toast.dismiss();
-      toast.error("Server connection lost");
-      toastId.current = null;
-    }
-
-    // server connection restored
-    if (healthCheck.isSuccess && prevServerStatus.current === false) {
-      toast.dismiss();
-      toast.success("Server connection re-established");
-      toastId.current = null;
-    }
-
-    prevServerStatus.current = healthCheck.isSuccess;
-  }, [healthCheck.isPending, healthCheck.isSuccess, healthCheck.isError]);
   return (
-    <ServerNetworkStatusContext value={true}>
+    <ServerNetworkStatusContext value={healthCheck.isSuccess}>
       {children}
     </ServerNetworkStatusContext>
   );
