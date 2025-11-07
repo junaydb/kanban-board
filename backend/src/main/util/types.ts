@@ -45,7 +45,6 @@ export type ByDueDatePageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
 
 /* HTTP response wrapper types */
 export interface ApiResponse<T = any> {
-  success: boolean;
   data: T;
 }
 export interface ApiResponseWithMeta<T, U> extends ApiResponse<T> {

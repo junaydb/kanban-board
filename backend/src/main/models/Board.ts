@@ -89,7 +89,12 @@ class Board {
   }
 
   static async delete({ boardId }: BoardIdParams) {
-    await db.delete(boards).where(eq(boards.id, boardId));
+    const deletedBoard = await db
+      .delete(boards)
+      .where(eq(boards.id, boardId))
+      .returning({ deletedId: boards.id, deletedTitle: boards.title });
+
+    return deletedBoard[0];
   }
 }
 

@@ -1,5 +1,5 @@
 import Task from "../models/Task.js";
-import { successResponseFactory } from "../util/responseWrappers.js";
+import { successResponse } from "../util/responseWrappers.js";
 import {
   CreateTaskSchema,
   UpdateStatusSchema,
@@ -26,7 +26,7 @@ export const tasksRouter = router({
 
       const allTasks = await Task.getAllFromBoard(input);
 
-      return successResponseFactory.array({ tasks: allTasks });
+      return successResponse.array({ tasks: allTasks });
     }),
 
   getCount: publicProcedure
@@ -35,7 +35,7 @@ export const tasksRouter = router({
       await verifyBoardExistenceAndOwnership(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
-      return successResponseFactory.single(numTasks);
+      return successResponse.single(numTasks);
     }),
 
   getPage: publicProcedure
@@ -91,7 +91,7 @@ export const tasksRouter = router({
         }
       }
 
-      return successResponseFactory.arrayWithMeta(
+      return successResponse.arrayWithMeta(
         { tasks: page },
         { cursor: nextCursor },
       );
@@ -110,7 +110,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.single(task);
+      return successResponse.single(task);
     }),
 
   create: publicProcedure
@@ -120,7 +120,7 @@ export const tasksRouter = router({
 
       const task = await Task.create(input);
 
-      return successResponseFactory.single(task);
+      return successResponse.single(task);
     }),
 
   updateStatus: publicProcedure
@@ -136,7 +136,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.single({ newStatus: result.status });
+      return successResponse.single({ newStatus: result.status });
     }),
 
   delete: publicProcedure
@@ -152,6 +152,6 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponseFactory.single(result);
+      return successResponse.single(result);
     }),
 });

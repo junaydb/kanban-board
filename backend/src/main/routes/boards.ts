@@ -1,6 +1,6 @@
 import Board from "../models/Board.js";
 import { BoardIdSchema, BoardTitleSchema } from "./_validators.js";
-import { successResponseFactory } from "../util/responseWrappers.js";
+import { successResponse } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 import { TRPCError } from "@trpc/server";
@@ -21,7 +21,7 @@ export const boardsRouter = router({
       userId: ctx.user.id,
     });
 
-    return successResponseFactory.arrayWithMeta(
+    return successResponse.arrayWithMeta(
       {
         boards: allBoards,
       },
@@ -60,7 +60,7 @@ export const boardsRouter = router({
         });
       }
 
-      return successResponseFactory.single(result);
+      return successResponse.single(result);
     }),
 
   updateTitle: publicProcedure
@@ -78,12 +78,12 @@ export const boardsRouter = router({
       }
 
       if (result === "NO_OP") {
-        return successResponseFactory.single({
+        return successResponse.single({
           message: "Identical title received. No action taken.",
         });
       }
 
-      return successResponseFactory.single(result);
+      return successResponse.single(result);
     }),
 
   delete: publicProcedure
@@ -91,8 +91,8 @@ export const boardsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 
-      await Board.delete(input);
+      const result = await Board.delete(input);
 
-      return successResponseFactory.noData();
+      return successResponse.single(result);
     }),
 });
