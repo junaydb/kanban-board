@@ -1,5 +1,5 @@
 import { authClient } from "./auth-client";
-import type { AuthProviders } from "@/util/types";
+import type { AuthProviders } from "@/util/auth-providers";
 
 function getUrlPrefix(path = "/") {
   return process.env.NODE_ENV === "prod"

@@ -9,10 +9,11 @@ import {
 } from "@/shadcn/ui/sidebar";
 import { SidebarBoards } from "./SidebarBoards";
 import { SidebarUser } from "./SidebarUser";
+import { SidebarSignIn } from "./SidebarSignIn";
 import { authClient } from "@/auth/auth-client";
 
-export function SidebarMaster() {
-  const { isPending } = authClient.useSession();
+export function SidebarRoot() {
+  const { data: session } = authClient.useSession();
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -28,7 +29,9 @@ export function SidebarMaster() {
       <SidebarContent>
         <SidebarBoards />
       </SidebarContent>
-      <SidebarFooter>{isPending ? null : <SidebarUser />}</SidebarFooter>
+      <SidebarFooter>
+        {session ? <SidebarUser /> : <SidebarSignIn />}
+      </SidebarFooter>
     </Sidebar>
   );
 }
