@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useRef,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useRef, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryClient } from "@/trpc/trpc";
@@ -94,7 +89,7 @@ export function ServerNetworkStatusProvider({
   });
 
   return (
-    <ServerNetworkStatusContext value={healthCheck.isSuccess}>
+    <ServerNetworkStatusContext value={healthCheck.failureCount === 0}>
       {children}
     </ServerNetworkStatusContext>
   );
