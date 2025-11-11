@@ -25,7 +25,7 @@ export const Route = createFileRoute("/boards/")({
 
 function Boards() {
   const search = Route.useSearch();
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const clientOnline = useClientNetworkStatus();
   const serverOnline = useServerNetworkStatus();
 
@@ -45,11 +45,6 @@ function Boards() {
         break;
     }
   }, [search]);
-
-  if (isPending) {
-    // TODO: skeleton loading ui
-    return null;
-  }
 
   return (
     <div className="h-full flex flex-col gap-2">
