@@ -27,14 +27,14 @@ const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
-    <QueryClientProvider client={queryClient}>
-      <ClientNetworkStatusProvider>
-        <ServerNetworkStatusProvider>
-          <StrictMode>
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ClientNetworkStatusProvider>
+          <ServerNetworkStatusProvider>
             <RouterProvider router={router} />
-          </StrictMode>
-        </ServerNetworkStatusProvider>
-      </ClientNetworkStatusProvider>
-    </QueryClientProvider>,
+          </ServerNetworkStatusProvider>
+        </ClientNetworkStatusProvider>
+      </QueryClientProvider>
+    </StrictMode>,
   );
 }
