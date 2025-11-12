@@ -8,7 +8,7 @@ export const successResponse = {
   },
 
   array: <T extends Record<string, any[]>>(data: T): ApiResponse<T> => {
-    // Example: { success: true, data: { tasks: [...] } }
+    // Example: { data: { tasks: [...] } }
     return { data };
   },
 
