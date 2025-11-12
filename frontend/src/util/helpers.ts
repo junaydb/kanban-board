@@ -1,4 +1,4 @@
-import type { Status } from "@/util/types";
+import type { Status } from "@/trpc/trpc";
 
 export function statusEnumToDisplay(status: Status) {
   const statusMapper = {
