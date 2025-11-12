@@ -4,9 +4,7 @@ import { SocialIcons } from "./SocialIcons";
 import { toast } from "sonner";
 import { Button } from "@/shadcn/ui/button";
 
-type NameMapType = Record<AuthProvider, string>;
-
-const nameMap: NameMapType = {
+const nameMap: Record<AuthProvider, string> = {
   google: "Google",
   github: "GitHub",
 };
