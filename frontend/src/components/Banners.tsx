@@ -5,7 +5,12 @@ import { Button } from "@/shadcn/ui/button";
 import { Badge } from "@/shadcn/ui/badge";
 
 type Props = {
-  banner: "LOGGED_OUT" | "NEW_USER" | "CLIENT_OFFLINE" | "SERVER_OFFLINE";
+  banner:
+    | "LOGGED_OUT"
+    | "NEW_USER"
+    | "CLIENT_OFFLINE"
+    | "SERVER_OFFLINE"
+    | "FETCH_ERROR";
 };
 
 export function Banner({ banner }: Props) {
@@ -74,6 +79,13 @@ export function Banner({ banner }: Props) {
             mode.
           </AlertTitle>
           {dismissButton}
+        </Alert>
+      );
+    case "FETCH_ERROR":
+      return (
+        <Alert className="flex justify-center rounded-md" variant="error">
+          <AlertCircleIcon />
+          <AlertTitle>Failed to fetch boards</AlertTitle>
         </Alert>
       );
   }
