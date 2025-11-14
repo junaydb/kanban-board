@@ -14,32 +14,10 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/shadcn/ui/sidebar";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/shadcn/ui/tooltip";
 import { SpinnerBar } from "../SpinnerBar";
+import { ErrorTooltip } from "../ErrorTooltip";
 import { AuthProviderButton } from "../AuthProviderButton";
 import { AUTH_PROVIDERS } from "@/util/auth-providers";
-
-function ErrorTooltip({
-  children,
-  text,
-}: {
-  children: React.ReactNode;
-  text: string;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="inline-block w-full cursor-pointer">{children}</span>
-      </TooltipTrigger>
-      <TooltipContent
-        className="bg-red-500"
-        arrowClassName="bg-red-500 fill-red-500"
-      >
-        <p>{text}</p>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
 
 export function SidebarSignIn() {
   const { isPending: authPending } = authClient.useSession();
