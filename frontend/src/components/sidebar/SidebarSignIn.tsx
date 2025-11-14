@@ -28,7 +28,7 @@ export function SidebarSignIn() {
     <SidebarMenuButton
       size="lg"
       className="bg-gray-200/80 hover:bg-gray-200 active:bg-gray-200 data-[state=open]:bg-gray-200 cursor-pointer text-sidebar-accent-foreground justify-center"
-      disabled={!clientOnline || !serverOnline ? true : false}
+      disabled={!clientOnline || !serverOnline}
     >
       Sign in
     </SidebarMenuButton>
