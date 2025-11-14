@@ -19,6 +19,6 @@ export function combineDateAndTimeToISO(date: string, time: string): string {
   return new Date(`${date}T${time}`).toISOString();
 }
 
-export function toLowerKebabCase(str: string) {
+export function toLowerKebabCase(str = "") {
   return str.toLowerCase().replace(/\s/g, "-");
 }
