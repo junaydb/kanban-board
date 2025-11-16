@@ -2,9 +2,11 @@ import { trpc } from "./trpc";
 import { queryClient } from "./trpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-export function useGetAllBoards() {
+export function useGetAllBoards(enabled = true) {
   return useQuery(
     trpc.boards.getAll.queryOptions(undefined, {
+      enabled,
+
       // do not retry query if we get an auth error or not found error
       retry: (failureCount, error) => {
         if (
