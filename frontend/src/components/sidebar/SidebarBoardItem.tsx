@@ -75,7 +75,7 @@ export function SidebarBoardItem({ id, title }: Props) {
           <Link
             to="/boards/$user/$board"
             params={{
-              user: toLowerKebabCase(session?.user.name),
+              user: toLowerKebabCase(session.user.name),
               board: title,
             }}
           >
