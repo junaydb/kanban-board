@@ -57,7 +57,7 @@ export function SidebarSignIn() {
               </DialogDescription>
             </DialogHeader>
             {AUTH_PROVIDERS.map((provider) => (
-              <AuthProviderButton provider={provider} />
+              <AuthProviderButton key={provider} provider={provider} />
             ))}
           </DialogContent>
         </SidebarMenuItem>
