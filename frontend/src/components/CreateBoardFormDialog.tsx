@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/shadcn/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
@@ -22,10 +22,6 @@ import { toast } from "sonner";
 
 // TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
 
-type Props = {
-  children: React.ReactNode;
-};
-
 const BoardTitleSchema = z.object({
   title: z
     .string()
@@ -33,10 +29,15 @@ const BoardTitleSchema = z.object({
     .max(50, "Board title cannot be more than 50 characters"),
 });
 
-export function CreateBoardFormDialog({ children }: Props) {
-  const [open, setOpen] = useState(false);
-
+export function CreateBoardFormDialog({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const { data: session } = authClient.useSession();
+  const { mutate } = useCreateBoard();
 
   const { handleSubmit, control, reset, setError } = useForm<
     z.infer<typeof BoardTitleSchema>
@@ -49,50 +50,63 @@ export function CreateBoardFormDialog({ children }: Props) {
     reValidateMode: "onSubmit",
   });
 
-  const { mutate, data, isSuccess, isError, error } = useCreateBoard();
-
-  const { data: session } = authClient.useSession();
-
   function onSubmit({ title }: z.infer<typeof BoardTitleSchema>) {
-    mutate({ title });
+    if (session) {
+      mutate(
+        { title },
+        {
+          onSuccess: (data) => {
+            invalidateBoardsCache();
+
+            navigate({
+              to: "/boards/$user/$board",
+              params: {
+                user: toLowerKebabCase(session.user.name),
+                board: toLowerKebabCase(data.data.title),
+              },
+            });
+
+            setOpen(false);
+          },
+
+          onError: (error) => {
+            switch (error.data?.code) {
+              case "CONFLICT":
+                setError("title", {
+                  type: error.data.code,
+                  message: error.message,
+                });
+                break;
+              case "UNAUTHORIZED":
+                toast.error("Authorisation error");
+                break;
+            }
+          },
+        },
+      );
+    } else {
+      console.log("TODO: save to local storage");
+      // TODO: save to local storage
+
+      navigate({
+        to: "/boards/$board",
+        params: {
+          board: toLowerKebabCase(title),
+        },
+      });
+
+      setOpen(false);
+    }
   }
 
   function handleOpenChange(open: boolean) {
     setOpen(open);
 
-    // to avoid a flash of the error resetting, reset the form when it opens, _not_ when it closes
+    // to avoid a flash caused by the error resetting, reset the form when it opens, _not_ when it closes
     if (open) {
       reset();
     }
   }
-
-  useEffect(() => {
-    if (isSuccess) {
-      invalidateBoardsCache();
-
-      navigate({
-        to: "/boards/$user/$board",
-        params: {
-          user: toLowerKebabCase(session?.user.name!),
-          board: toLowerKebabCase(data.data.title),
-        },
-      });
-
-      setOpen(!open);
-    }
-
-    if (isError) {
-      if (error.data?.code === "CONFLICT") {
-        setError("title", {
-          type: error.data.code,
-          message: error.message,
-        });
-      }
-      if (error.data?.code === "UNAUTHORIZED") {
-        toast.error("Authorisation error");
-      }
-    }
-  }, [isSuccess, isError]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
