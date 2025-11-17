@@ -1,5 +1,5 @@
 import { authClient } from "./auth-client";
-import type { AuthProviders } from "@/util/auth-providers";
+import type { AuthProvider } from "@/util/auth-providers";
 
 function getUrlPrefix(path = "/") {
   return process.env.NODE_ENV === "prod"
@@ -7,7 +7,7 @@ function getUrlPrefix(path = "/") {
     : `http://localhost:5173/${path}`;
 }
 
-export async function socialSignIn(provider: AuthProviders) {
+export async function socialSignIn(provider: AuthProvider) {
   const res = await authClient.signIn.social({
     provider: provider,
     callbackURL: getUrlPrefix(),
@@ -15,5 +15,5 @@ export async function socialSignIn(provider: AuthProviders) {
     errorCallbackURL: getUrlPrefix("/boards?redirect=oauthError"),
   });
 
-  return res
+  return res;
 }
