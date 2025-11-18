@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -30,36 +30,38 @@ type Props = {
 export function SidebarBoardItem({ id, title }: Props) {
   const [open, setOpen] = useState(false);
   const { data: session } = authClient.useSession();
-  const { mutate, isSuccess, error } = useDeleteBoard();
+  const { mutate } = useDeleteBoard();
   const routerState = useRouterState();
   const navigate = useNavigate();
 
   function handleBoardDelete() {
-    mutate({ boardId: id });
-  }
+    mutate(
+      { boardId: id },
+      {
+        onSuccess: () => {
+          invalidateBoardsCache();
 
-  useEffect(() => {
-    switch (error?.data?.code) {
-      case "NOT_FOUND":
-        toast.error("Board not found (maybe it was already deleted?)");
-        break;
-      case "UNAUTHORIZED":
-        toast.error("Authorisation error");
-        break;
-    }
-  }, [error]);
+          // if this was the actively open board, navigate to /boards,
+          // i.e., close this board
+          const pathTail = routerState.location.pathname.split("/").pop();
+          if (pathTail === title) {
+            navigate({ to: "/boards" });
+          }
 
-  if (isSuccess) {
-    invalidateBoardsCache();
-
-    // if this was the actively open board, navigate to /boards,
-    // i.e., close this board
-    const pathTail = routerState.location.pathname.split("/").pop();
-    if (pathTail === title) {
-      navigate({ to: "/boards" });
-    }
-
-    setOpen(!open);
+          setOpen(!open);
+        },
+        onError: (error) => {
+          switch (error?.data?.code) {
+            case "NOT_FOUND":
+              toast.error("Board not found (maybe it was already deleted?)");
+              break;
+            case "UNAUTHORIZED":
+              toast.error("Authorisation error");
+              break;
+          }
+        },
+      },
+    );
   }
 
   return (
