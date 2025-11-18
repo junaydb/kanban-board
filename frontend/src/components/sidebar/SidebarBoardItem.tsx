@@ -49,6 +49,8 @@ export function SidebarBoardItem({ id, title }: Props) {
           }
 
           setOpen(!open);
+
+          toast.success("Board deleted");
         },
         onError: (error) => {
           switch (error?.data?.code) {
