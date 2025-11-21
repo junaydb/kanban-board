@@ -32,6 +32,12 @@ export const boardsRouter = router({
     );
   }),
 
+  lookup: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
+    await verifyBoardExistenceAndOwnership(ctx, input);
+
+    return successResponse.single({});
+  }),
+
   create: publicProcedure
     .input(BoardTitleSchema)
     .mutation(async ({ ctx, input }) => {

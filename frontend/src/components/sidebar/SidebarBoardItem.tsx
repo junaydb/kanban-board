@@ -77,16 +77,17 @@ export function SidebarBoardItem({ id, title }: Props) {
         {/* link to user boards if the user logged in, otherwise link to offline boards */}
         {session ? (
           <Link
-            to="/boards/$user/$board"
+            to="/boards/$user/$boardId/$boardTitle"
             params={{
               user: toLowerKebabCase(session.user.name),
-              board: title,
+              boardId: String(id),
+              boardTitle: title,
             }}
           >
             {title}
           </Link>
         ) : (
-          <Link to="/boards/$board" params={{ board: title }}>
+          <Link to="/boards/$boardTitle" params={{ boardTitle: title }}>
             {title}
           </Link>
         )}

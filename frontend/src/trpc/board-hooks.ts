@@ -1,6 +1,7 @@
 import { trpc } from "./trpc";
 import { queryClient } from "./trpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import type { BoardIdParams } from "@backend/util/types";
 
 export function useGetAllBoards(enabled = true) {
   return useQuery(
@@ -8,6 +9,22 @@ export function useGetAllBoards(enabled = true) {
       enabled,
 
       // do not retry query if we get an auth error or not found error
+      retry: (failureCount, error) => {
+        if (
+          error?.data?.code === "UNAUTHORIZED" ||
+          error?.data?.code === "NOT_FOUND"
+        ) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+    }),
+  );
+}
+
+export function useBoardLookup(boardId: BoardIdParams) {
+  return useQuery(
+    trpc.boards.lookup.queryOptions(boardId, {
       retry: (failureCount, error) => {
         if (
           error?.data?.code === "UNAUTHORIZED" ||

@@ -64,9 +64,8 @@ export function SidebarBoards() {
     );
   }
 
-  console.log("TODO: return from local storage");
-
   // local storage mode
+  console.log("TODO: return from local storage");
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
