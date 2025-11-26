@@ -5,7 +5,7 @@ export const Route = createFileRoute("/boards/$boardTitle")({
 });
 
 function Board() {
-  const { board } = Route.useParams();
+  const { boardTitle } = Route.useParams();
 
-  return <div>Hello from offline Board {board}</div>;
+  return <div>Hello from offline Board {boardTitle}</div>;
 }

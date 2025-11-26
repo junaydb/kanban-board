@@ -24,12 +24,17 @@ export const Route = createFileRoute("/boards/$user/$boardId/$boardTitle")({
 });
 
 function Board() {
-  const { boardId, boardTitle } = Route.useParams();
-  const { error } = useBoardLookup({ boardId: parseInt(boardId) });
+  const { boardId } = Route.useParams();
+  const {
+    data: board,
+    isSuccess: boardSuccess,
+    isPending: lookupPending,
+    error,
+  } = useBoardLookup({ boardId: parseInt(boardId) });
   const {
     data: tasks,
-    isSuccess,
-    isPending,
+    isSuccess: tasksSuccess,
+    isPending: tasksPending,
   } = useGetAllTasks({
     boardId: parseInt(boardId),
   });
@@ -46,15 +51,18 @@ function Board() {
     );
   } else if (error?.data?.code === "UNAUTHORIZED") {
     toast.error("You do not own the requested resource");
+  } else if (error) {
+    toast.error(
+      "An error ocurred whilst opening this board, please refresh the page.",
+    );
   }
 
-  if (isPending) {
+  if (tasksPending || lookupPending) {
     // TODO: show skeleton loading ui
   }
 
-  if (isSuccess) {
+  if (boardSuccess && tasksSuccess) {
     console.log(tasks);
+    return <div>Hello from Board {board.data.title}</div>;
   }
-
-  return <div>Hello from Board {boardTitle}</div>;
 }

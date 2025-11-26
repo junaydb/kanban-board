@@ -81,7 +81,7 @@ export function SidebarBoardItem({ id, title }: Props) {
             params={{
               user: toLowerKebabCase(session.user.name),
               boardId: String(id),
-              boardTitle: title,
+              boardTitle: toLowerKebabCase(title),
             }}
           >
             {title}
