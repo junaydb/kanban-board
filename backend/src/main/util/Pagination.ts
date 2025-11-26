@@ -13,23 +13,23 @@ import type { Cursors } from "./types.js";
 // Could opt for strategy pattern in the future if more sort strategies are added,
 // but this works for now.
 class Pagination {
-  static #decodeCursor(cursor: string) {
-    return JSON.parse(Buffer.from(cursor, "base64").toString());
-  }
-
-  static #encodeCursor(cursor: Cursors) {
+  static encodeCursor(cursor: Cursors) {
     return Buffer.from(JSON.stringify(cursor)).toString("base64");
   }
 
+  static decodeCursor(cursor: string) {
+    return JSON.parse(Buffer.from(cursor, "base64").toString());
+  }
+
   static getNextByCreatedCursor(lastTask: TTask) {
-    return Pagination.#encodeCursor({
+    return Pagination.encodeCursor({
       prevId: lastTask.id,
       prevCreatedAt: lastTask.createdAt,
     });
   }
 
   static getNextByDueDateCursor(lastTask: TTask) {
-    return Pagination.#encodeCursor({
+    return Pagination.encodeCursor({
       prevId: lastTask.id,
       prevDueDate: lastTask.dueDate,
     });
@@ -40,7 +40,7 @@ class Pagination {
 
     let generated: ByCreatedPageParams;
     if (encodedCursor) {
-      const decodedCursor = Pagination.#decodeCursor(encodedCursor);
+      const decodedCursor = Pagination.decodeCursor(encodedCursor);
       const validatedCursor = ByCreatedCursorSchema.parse(decodedCursor);
       generated = { ...paramsWithoutEncodedCursor, cursor: validatedCursor };
     } else {
@@ -55,7 +55,7 @@ class Pagination {
 
     let generated: ByDueDatePageParams;
     if (encodedCursor) {
-      const decodedCursor = Pagination.#decodeCursor(encodedCursor);
+      const decodedCursor = Pagination.decodeCursor(encodedCursor);
       const validatedCursor = ByDueDateCursorSchema.parse(decodedCursor);
       generated = { ...paramsWithoutEncodedCursor, cursor: validatedCursor };
     } else {
