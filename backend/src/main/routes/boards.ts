@@ -35,7 +35,9 @@ export const boardsRouter = router({
   lookup: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
     await verifyBoardExistenceAndOwnership(ctx, input);
 
-    return successResponse.single({});
+    const boardTitle = await Board.getTitle(input);
+
+    return successResponse.single({ title: boardTitle });
   }),
 
   create: publicProcedure
