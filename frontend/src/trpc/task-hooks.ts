@@ -1,5 +1,5 @@
 import { trpc, queryClient } from "./trpc";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { defaultRetry } from "./_helpers";
 import type { BoardIdParams, PageQuery } from "@backend/util/types";
 
@@ -23,12 +23,13 @@ export function useGetTaskPage(
   }: PageQuery,
   enabled = true,
 ) {
-  return useQuery(
-    trpc.tasks.getPage.queryOptions(
+  return useInfiniteQuery(
+    trpc.tasks.getPage.infiniteQueryOptions(
       { boardId, status, cursor, sortBy, pageSize, sortOrder },
       {
         enabled,
         retry: defaultRetry,
+        getNextPageParam: (lastPage) => lastPage.meta.cursor,
       },
     ),
   );
