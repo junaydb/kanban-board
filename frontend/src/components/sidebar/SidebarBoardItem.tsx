@@ -87,7 +87,7 @@ export function SidebarBoardItem({ id, title }: Props) {
             {title}
           </Link>
         ) : (
-          <Link to="/boards/$boardTitle" params={{ boardTitle: title }}>
+          <Link to="/boards/$boardTitle" params={{ boardTitle: toLowerKebabCase(title) }}>
             {title}
           </Link>
         )}
