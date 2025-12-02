@@ -1,22 +1,35 @@
-import { trpc } from "./trpc";
-import { queryClient } from "./trpc";
+import { trpc, queryClient } from "./trpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import type { BoardIdParams } from "@backend/util/types";
+import { defaultRetry } from "./_helpers";
+import type { BoardIdParams, PageQuery } from "@backend/util/types";
 
 export function useGetAllTasks(boardId: BoardIdParams, enabled = true) {
   return useQuery(
     trpc.tasks.getAllFromBoard.queryOptions(boardId, {
       enabled,
-
-      retry: (failureCount, error) => {
-        if (
-          error?.data?.code === "UNAUTHORIZED" ||
-          error?.data?.code === "NOT_FOUND"
-        ) {
-          return false;
-        }
-        return failureCount < 3;
-      },
+      retry: defaultRetry,
     }),
+  );
+}
+
+export function useGetTaskPage(
+  {
+    boardId,
+    status,
+    cursor,
+    sortBy = "created",
+    pageSize = 10,
+    sortOrder = "ASC",
+  }: PageQuery,
+  enabled = true,
+) {
+  return useQuery(
+    trpc.tasks.getPage.queryOptions(
+      { boardId, status, cursor, sortBy, pageSize, sortOrder },
+      {
+        enabled,
+        retry: defaultRetry,
+      },
+    ),
   );
 }
