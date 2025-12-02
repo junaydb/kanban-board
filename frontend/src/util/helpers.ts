@@ -1,6 +1,6 @@
-import type { Status } from "@/trpc/trpc";
+import type { TaskStatusEnum } from "@backend/util/types";
 
-export function statusEnumToDisplay(status: Status) {
+export function statusEnumToDisplay(status: TaskStatusEnum) {
   const statusMapper = {
     TODO: "To do",
     IN_PROGRESS: "In progress",
@@ -10,8 +10,8 @@ export function statusEnumToDisplay(status: Status) {
   return statusMapper[status];
 }
 
-export function getSetStatusOptions(status: Status) {
-  const statusArr: Status[] = ["TODO", "IN_PROGRESS", "DONE"];
+export function getSetStatusOptions(status: TaskStatusEnum) {
+  const statusArr: TaskStatusEnum[] = ["TODO", "IN_PROGRESS", "DONE"];
   return statusArr.filter((cur) => status !== cur);
 }
 
