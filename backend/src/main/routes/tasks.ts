@@ -1,5 +1,6 @@
 import Task from "../models/Task.js";
 import { successResponse } from "../util/responseWrappers.js";
+import { z } from "zod";
 import {
   CreateTaskSchema,
   UpdateStatusSchema,
@@ -153,5 +154,15 @@ export const tasksRouter = router({
       }
 
       return successResponse.single(result);
+    }),
+
+  search: publicProcedure
+    .input(BoardIdSchema.merge(z.object({ query: z.string() })))
+    .query(async ({ ctx, input }) => {
+      await verifyBoardExistenceAndOwnership(ctx, input);
+
+      const results = await Task.search(input);
+
+      return successResponse.array({ tasks: results });
     }),
 });

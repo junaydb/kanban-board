@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { tasks } from "../db/schema.js";
-import { eq, and, lt, gt, desc, asc, count, or, sql } from "drizzle-orm";
+import { eq, and, lt, gt, desc, asc, count, or, sql, ilike } from "drizzle-orm";
 import type {
   TTask,
   CreateTaskParams,
@@ -251,6 +251,24 @@ class Task {
   static async create(params: CreateTaskParams) {
     const result = await db.insert(tasks).values(params).returning();
     return result[0];
+  }
+
+  /**
+   * Returns all tasks in the board whose title begins with the given query string.
+   */
+  static async search({
+    boardId,
+    query,
+  }: BoardIdParams & { query: string }) {
+    const results = await db
+      .select()
+      .from(tasks)
+      .where(
+        and(eq(tasks.boardId, boardId), ilike(tasks.title, `${query}%`)),
+      )
+      .orderBy(desc(tasks.createdAt));
+
+    return results;
   }
 }
 
