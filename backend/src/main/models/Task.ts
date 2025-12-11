@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { tasks } from "../db/schema.js";
-import { eq, and, lt, gt, desc, asc, count, or } from "drizzle-orm";
+import { eq, and, lt, gt, desc, asc, count, or, sql } from "drizzle-orm";
 import type {
   TTask,
   CreateTaskParams,
@@ -116,6 +116,7 @@ class Task {
    * Returns the next page of size `pageSize` from the database
    * where the tasks have a status equal to `pageParams.status`,
    * ordered by due date in ascending or descending order, depending on `sortOrder`.
+   * NULL due dates are always placed at the end, regardless of sort order.
    */
   static async getTasksByDueDate({
     sortOrder,
@@ -136,17 +137,23 @@ class Task {
               eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
-                ? or(
-                    gt(tasks.dueDate, cursor.prevDueDate),
-                    and(
-                      eq(tasks.dueDate, cursor.prevDueDate),
+                ? !cursor.prevDueDate
+                  ? and(
+                      sql`${tasks.dueDate} IS NULL`,
                       gt(tasks.id, cursor.prevId),
-                    ),
-                  )
+                    )
+                  : or(
+                      gt(tasks.dueDate, cursor.prevDueDate),
+                      and(
+                        eq(tasks.dueDate, cursor.prevDueDate),
+                        gt(tasks.id, cursor.prevId),
+                      ),
+                      sql`${tasks.dueDate} IS NULL`,
+                    )
                 : undefined,
             ),
           )
-          .orderBy(asc(tasks.dueDate), asc(tasks.id))
+          .orderBy(sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id))
           .limit(pageSize);
         break;
 
@@ -159,19 +166,29 @@ class Task {
               eq(tasks.boardId, boardId),
               eq(tasks.status, status),
               cursor
-                ? or(
-                    lt(tasks.dueDate, cursor.prevDueDate),
-                    and(
-                      eq(tasks.dueDate, cursor.prevDueDate),
+                ? !cursor.prevDueDate
+                  ? and(
+                      sql`${tasks.dueDate} IS NULL`,
                       lt(tasks.id, cursor.prevId),
-                    ),
-                  )
+                    )
+                  : or(
+                      lt(tasks.dueDate, cursor.prevDueDate),
+                      and(
+                        eq(tasks.dueDate, cursor.prevDueDate),
+                        lt(tasks.id, cursor.prevId),
+                      ),
+                      sql`${tasks.dueDate} IS NULL`,
+                    )
                 : undefined,
             ),
           )
-          .orderBy(desc(tasks.dueDate), desc(tasks.id))
+          .orderBy(sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id))
           .limit(pageSize);
         break;
+    }
+
+    if (page.length === 0) {
+      return null;
     }
 
     return page;

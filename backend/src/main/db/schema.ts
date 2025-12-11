@@ -31,8 +31,8 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   status: taskStatusEnum("status").default("TODO").notNull(),
-  dueDate: timestamp("due_date", { mode: "date" }).notNull(),
-  hasDueTime: boolean("has_due_time").default(false).notNull(),
+  dueDate: timestamp("due_date", { mode: "date" }),
+  dueTime: timestamp("due_time", { withTimezone: true, mode: "date" }),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),

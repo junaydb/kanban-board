@@ -20,19 +20,46 @@ export const TaskIdSchema = z.object({
   taskId: IdSchema,
 });
 
-export const CreateTaskSchema = z.object({
-  title: z.string().min(1).max(100),
-  description: z.string().max(10000).optional(),
-  status: StatusEnum.default("TODO"),
-  dueDate: DateSchema.refine(
-    (date) => {
-      return typeof date === "string" || date > new Date();
+export const CreateTaskSchema = z
+  .object({
+    title: z.string().min(1).max(100),
+    description: z.string().max(10000).optional(),
+    status: StatusEnum.default("TODO"),
+    dueDate: DateSchema.refine(
+      (date) => {
+        return typeof date === "string" || date > new Date();
+      },
+      { message: "Due date must be in the future" },
+    ).optional(),
+    dueTime: DateSchema.optional(),
+    boardId: IdSchema,
+  })
+  .refine(
+    (data) => {
+      // Validate: dueTime requires dueDate
+      if (data.dueTime && !data.dueDate) {
+        return false;
+      }
+      return true;
     },
-    { message: "Due date must be in the future" },
-  ),
-  hasDueTime: z.boolean().default(false),
-  boardId: IdSchema,
-});
+    {
+      message: "dueTime can only be set when dueDate is also provided",
+      path: ["dueTime"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Validate: dueTime must be in future if provided
+      if (data.dueTime) {
+        return typeof data.dueTime === "string" || data.dueTime > new Date();
+      }
+      return true;
+    },
+    {
+      message: "Due time must be in the future",
+      path: ["dueTime"],
+    },
+  );
 
 export const UpdateStatusSchema = z.object({
   taskId: IdSchema,
@@ -46,7 +73,7 @@ export const ByCreatedCursorSchema = z.object({
 
 export const ByDueDateCursorSchema = z.object({
   prevId: IdSchema,
-  prevDueDate: DateSchema,
+  prevDueDate: DateSchema.nullable(),
 });
 
 export const PageQuerySchema = z.object({
