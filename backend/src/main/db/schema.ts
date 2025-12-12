@@ -41,6 +41,15 @@ export const tasks = pgTable("tasks", {
     .notNull(),
 });
 
+export const taskPositions = pgTable("task_positions", {
+  boardId: integer("board_id")
+    .primaryKey()
+    .references(() => boards.id, { onDelete: "cascade" }),
+  todoPos: integer("todo_pos").array().notNull().default([]),
+  inProgressPos: integer("in_progress_pos").array().notNull().default([]),
+  donePos: integer("done_pos").array().notNull().default([]),
+});
+
 /*
  * BETTER AUTH SCHEMA
  * */

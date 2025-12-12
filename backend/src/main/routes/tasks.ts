@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   CreateTaskSchema,
   UpdateStatusSchema,
+  UpdatePositionsSchema,
   PageQuerySchema,
   BoardIdSchema,
   TaskIdSchema,
@@ -90,6 +91,29 @@ export const tasksRouter = router({
           }
           break;
         }
+
+        case "position": {
+          const startIndex = input.cursor ? parseInt(input.cursor) : 0;
+          page = await Task.getTasksByPosition({
+            status: input.status,
+            pageSize: input.pageSize,
+            cursor: startIndex,
+            boardId: input.boardId,
+          });
+
+          if (!page) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Tasks not found",
+            });
+          }
+
+          const nextPageExists = page.length === pageSize;
+          if (nextPageExists) {
+            nextCursor = String(startIndex + pageSize);
+          }
+          break;
+        }
       }
 
       return successResponse.arrayWithMeta(
@@ -164,5 +188,15 @@ export const tasksRouter = router({
       const results = await Task.search(input);
 
       return successResponse.array({ tasks: results });
+    }),
+
+  updatePositions: publicProcedure
+    .input(UpdatePositionsSchema)
+    .mutation(async ({ ctx, input }) => {
+      await verifyBoardExistenceAndOwnership(ctx, input);
+
+      await Task.updatePositions(input);
+
+      return successResponse.single({ success: true });
     }),
 });

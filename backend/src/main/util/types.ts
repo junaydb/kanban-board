@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import { tasks, boards } from "../db/schema.js";
+import { tasks, boards, taskPositions } from "../db/schema.js";
 import {
   BoardIdSchema,
   ByCreatedCursorSchema,
@@ -8,6 +8,7 @@ import {
   PageQuerySchema,
   TaskIdSchema,
   UpdateStatusSchema,
+  UpdatePositionsSchema,
   BoardTitleSchema,
   UserIdSchema,
   TaskCountSchema,
@@ -18,6 +19,7 @@ export type TTask = InferSelectModel<typeof tasks>;
 export type CreateTaskParams = InferInsertModel<typeof tasks>;
 export type TaskStatusEnum = TTask["status"];
 export type InsertBoardParams = InferInsertModel<typeof boards>;
+export type TTaskPositions = InferSelectModel<typeof taskPositions>;
 
 /* Types derived from Zod schemas */
 export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
@@ -42,6 +44,13 @@ export type ByCreatedPageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
 export type ByDueDatePageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
   cursor?: ByDueDateCursor;
 };
+export type ByPositionPageParams = Omit<
+  PageQuery,
+  "cursor" | "sortBy" | "sortOrder"
+> & {
+  cursor?: number; // cursor is the start index in the position array
+};
+export type UpdatePositionsParams = z.infer<typeof UpdatePositionsSchema>;
 
 /* HTTP response wrapper types */
 export interface ApiResponse<T = any> {

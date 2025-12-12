@@ -1,12 +1,26 @@
 import db from "../db/index.js";
-import { tasks } from "../db/schema.js";
-import { eq, and, lt, gt, desc, asc, count, or, sql, ilike } from "drizzle-orm";
+import { tasks, taskPositions } from "../db/schema.js";
+import {
+  eq,
+  and,
+  lt,
+  gt,
+  desc,
+  asc,
+  count,
+  or,
+  sql,
+  ilike,
+  inArray,
+} from "drizzle-orm";
 import type {
   TTask,
   CreateTaskParams,
   UpdateStatusParams,
+  UpdatePositionsParams,
   ByDueDatePageParams,
   ByCreatedPageParams,
+  ByPositionPageParams,
   BoardIdParams,
   TaskIdParams,
   TaskCountParams,
@@ -195,6 +209,67 @@ class Task {
   }
 
   /**
+   * Returns tasks by their IDs, sorted by the order in the provided array.
+   */
+  static async getTasksByIds(taskIds: number[]) {
+    if (taskIds.length === 0) {
+      return [];
+    }
+
+    const tasksUnordered = await db
+      .select()
+      .from(tasks)
+      .where(inArray(tasks.id, taskIds));
+
+    const taskMap = new Map(tasksUnordered.map((t) => [t.id, t]));
+    return taskIds.map((id) => taskMap.get(id)).filter(Boolean) as TTask[];
+  }
+
+  /**
+   * Returns a page of tasks ordered by user-defined position.
+   * Uses the position arrays stored in the taskPositions table.
+   */
+  static async getTasksByPosition({
+    status,
+    pageSize,
+    cursor,
+    boardId,
+  }: ByPositionPageParams) {
+    const [positions] = await db
+      .select()
+      .from(taskPositions)
+      .where(eq(taskPositions.boardId, boardId));
+
+    if (!positions) {
+      return null;
+    }
+
+    let posArray: number[];
+    switch (status) {
+      case "TODO":
+        posArray = positions.todoPos;
+        break;
+      case "IN_PROGRESS":
+        posArray = positions.inProgressPos;
+        break;
+      case "DONE":
+        posArray = positions.donePos;
+        break;
+    }
+
+    const startIndex = cursor ?? 0;
+    const taskIds = posArray.slice(startIndex, startIndex + pageSize);
+
+    const page = await Task.getTasksByIds(taskIds);
+
+    if (page.length === 0) {
+      return null;
+    }
+
+    return page;
+  }
+
+  /**
    * Returns the task with id `id` from the database.
    */
   static async findById({ taskId }: TaskIdParams) {
@@ -256,19 +331,33 @@ class Task {
   /**
    * Returns all tasks in the board whose title begins with the given query string.
    */
-  static async search({
-    boardId,
-    query,
-  }: BoardIdParams & { query: string }) {
+  static async search({ boardId, query }: BoardIdParams & { query: string }) {
     const results = await db
       .select()
       .from(tasks)
-      .where(
-        and(eq(tasks.boardId, boardId), ilike(tasks.title, `${query}%`)),
-      )
+      .where(and(eq(tasks.boardId, boardId), ilike(tasks.title, `${query}%`)))
       .orderBy(desc(tasks.createdAt));
 
     return results;
+  }
+
+  /**
+   * Updates the position arrays for a board.
+   */
+  static async updatePositions({
+    boardId,
+    todoPos,
+    inProgressPos,
+    donePos,
+  }: UpdatePositionsParams) {
+    await db
+      .update(taskPositions)
+      .set({
+        todoPos,
+        inProgressPos,
+        donePos,
+      })
+      .where(eq(taskPositions.boardId, boardId));
   }
 }
 

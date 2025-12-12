@@ -78,11 +78,18 @@ export const ByDueDateCursorSchema = z.object({
 
 export const PageQuerySchema = z.object({
   status: StatusEnum,
-  sortBy: z.enum(["created", "dueDate"]).default("created"),
+  sortBy: z.enum(["created", "dueDate", "position"]).default("position"),
   sortOrder: z.enum(["ASC", "DESC"]).default("DESC"),
   pageSize: z.coerce.number().int(),
   cursor: z.string().base64().optional(),
   boardId: IdSchema,
+});
+
+export const UpdatePositionsSchema = z.object({
+  boardId: IdSchema,
+  todoPos: z.array(IdSchema),
+  inProgressPos: z.array(IdSchema),
+  donePos: z.array(IdSchema),
 });
 
 export const BoardIdSchema = z.object({

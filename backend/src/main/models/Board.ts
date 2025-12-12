@@ -1,5 +1,5 @@
 import db from "../db/index.js";
-import { boards } from "../db/schema.js";
+import { boards, taskPositions } from "../db/schema.js";
 import { eq, and, count } from "drizzle-orm";
 import type {
   BoardIdParams,
@@ -60,6 +60,10 @@ class Board {
     }
 
     const board = await db.insert(boards).values(params).returning();
+
+    await db.insert(taskPositions).values({
+      boardId: board[0].id,
+    });
 
     return board[0];
   }
