@@ -80,7 +80,7 @@ export const PageQuerySchema = z.object({
   status: StatusEnum,
   sortBy: z.enum(["created", "dueDate", "position"]).default("position"),
   sortOrder: z.enum(["ASC", "DESC"]).default("DESC"),
-  pageSize: z.coerce.number().int(),
+  pageSize: z.coerce.number().int().default(10),
   cursor: z.string().base64().optional(),
   boardId: IdSchema,
 });
