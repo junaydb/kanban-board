@@ -10,12 +10,8 @@ import {
   TaskIdSchema,
   TaskCountSchema,
 } from "./_validators.js";
-import type {
-  TTask,
-  ByCreatedPageParams,
-  ByDueDatePageParams,
-} from "../util/types.js";
-import Pagination from "../util/Pagination.js";
+import type { TTask } from "../util/types.js";
+import { Pagination } from "../util/Pagination.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
@@ -53,8 +49,7 @@ export const tasksRouter = router({
       // Lots of repetition, may need refactoring if more sort strategies are added
       switch (sortBy) {
         case "created": {
-          let params: ByCreatedPageParams;
-          params = Pagination.generateByCreatedParams(input);
+          const params = Pagination.created.generateParams(input);
           page = await Task.getTasksByCreated(params);
 
           if (!page) {
@@ -67,14 +62,13 @@ export const tasksRouter = router({
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {
             const lastTask = page[page.length - 1];
-            nextCursor = Pagination.getNextByCreatedCursor(lastTask);
+            nextCursor = Pagination.created.getNextCursor(lastTask);
           }
           break;
         }
 
         case "dueDate": {
-          let params: ByDueDatePageParams;
-          params = Pagination.generateByDueDateParams(input);
+          const params = Pagination.dueDate.generateParams(input);
           page = await Task.getTasksByDueDate(params);
 
           if (!page) {
@@ -87,19 +81,14 @@ export const tasksRouter = router({
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {
             const lastTask = page[page.length - 1];
-            nextCursor = Pagination.getNextByDueDateCursor(lastTask);
+            nextCursor = Pagination.dueDate.getNextCursor(lastTask);
           }
           break;
         }
 
         case "position": {
-          const startIndex = input.cursor ? parseInt(input.cursor) : 0;
-          page = await Task.getTasksByPosition({
-            status: input.status,
-            pageSize: input.pageSize,
-            cursor: startIndex,
-            boardId: input.boardId,
-          });
+          const params = Pagination.position.generateParams(input);
+          page = await Task.getTasksByPosition(params);
 
           if (!page) {
             throw new TRPCError({
@@ -110,7 +99,10 @@ export const tasksRouter = router({
 
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {
-            nextCursor = String(startIndex + pageSize);
+            nextCursor = Pagination.position.getNextCursor(
+              pageSize,
+              input.cursor,
+            );
           }
           break;
         }
