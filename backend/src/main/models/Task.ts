@@ -209,23 +209,6 @@ class Task {
   }
 
   /**
-   * Returns tasks by their IDs, sorted by the order in the provided array.
-   */
-  static async getTasksByIds(taskIds: number[]) {
-    if (taskIds.length === 0) {
-      return [];
-    }
-
-    const tasksUnordered = await db
-      .select()
-      .from(tasks)
-      .where(inArray(tasks.id, taskIds));
-
-    const taskMap = new Map(tasksUnordered.map((t) => [t.id, t]));
-    return taskIds.map((id) => taskMap.get(id)).filter(Boolean) as TTask[];
-  }
-
-  /**
    * Returns a page of tasks ordered by user-defined position.
    * Uses the position arrays stored in the taskPositions table.
    */
@@ -260,9 +243,16 @@ class Task {
     const startIndex = cursor ?? 0;
     const taskIds = posArray.slice(startIndex, startIndex + pageSize);
 
-    const page = await Task.getTasksByIds(taskIds);
+    const tasksUnordered = await db
+      .select()
+      .from(tasks)
+      .where(inArray(tasks.id, taskIds));
 
-    if (page.length === 0) {
+    // re-order the tasks so they're in the user-defined order
+    const taskMap = new Map(tasksUnordered.map((task) => [task.id, task]));
+    let page = taskIds.map((id) => taskMap.get(id)!);
+
+    if (!page || page.length === 0) {
       return null;
     }
 
