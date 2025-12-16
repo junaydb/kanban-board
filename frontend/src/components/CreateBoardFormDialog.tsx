@@ -59,10 +59,11 @@ export function CreateBoardFormDialog({
             invalidateBoardsCache();
 
             navigate({
-              to: "/boards/$user/$board",
+              to: "/boards/$user/$boardId/$boardTitle",
               params: {
                 user: toLowerKebabCase(session.user.name),
-                board: toLowerKebabCase(data.data.title),
+                boardId: String(data.data.id),
+                boardTitle: toLowerKebabCase(data.data.title),
               },
             });
 
@@ -89,9 +90,9 @@ export function CreateBoardFormDialog({
       // TODO: save to local storage
 
       navigate({
-        to: "/boards/$board",
+        to: "/boards/$boardTitle",
         params: {
-          board: toLowerKebabCase(title),
+          boardTitle: toLowerKebabCase(title),
         },
       });
 
