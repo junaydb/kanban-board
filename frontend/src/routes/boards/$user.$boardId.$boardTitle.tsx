@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { redirect } from "@tanstack/react-router";
 import { authClient } from "@/auth/auth-client";
 import { toast } from "sonner";
-import { useBoardLookup } from "@/trpc/board-hooks";
-import { useGetAllTasks } from "@/trpc/task-hooks";
+import { Board } from "@/components/kanban-board/Board";
 
 export const Route = createFileRoute("/boards/$user/$boardId/$boardTitle")({
   beforeLoad: async () => {
@@ -20,49 +19,11 @@ export const Route = createFileRoute("/boards/$user/$boardId/$boardTitle")({
     }
   },
 
-  component: Board,
+  component: BoardRoot,
 });
 
-function Board() {
+function BoardRoot() {
   const { boardId } = Route.useParams();
-  const {
-    data: board,
-    isSuccess: boardSuccess,
-    isPending: lookupPending,
-    error,
-  } = useBoardLookup({ boardId: parseInt(boardId) });
-  const {
-    data: tasks,
-    isSuccess: tasksSuccess,
-    isPending: tasksPending,
-  } = useGetAllTasks({
-    boardId: parseInt(boardId),
-  });
 
-  if (error?.data?.code === "NOT_FOUND") {
-    return (
-      <div className="h-full flex flex-col gap-2">
-        <div className="grow rounded-md border-2 border-dashed flex items-center justify-center">
-          <p className="text-muted-foreground">
-            The board you are trying to open does not exist
-          </p>
-        </div>
-      </div>
-    );
-  } else if (error?.data?.code === "UNAUTHORIZED") {
-    toast.error("You do not own the requested resource");
-  } else if (error) {
-    toast.error(
-      "An error ocurred whilst opening this board, please refresh the page.",
-    );
-  }
-
-  if (tasksPending || lookupPending) {
-    // TODO: show skeleton loading ui
-  }
-
-  if (boardSuccess && tasksSuccess) {
-    console.log(tasks);
-    return <div>Hello from Board {board.data.title}</div>;
-  }
+  return <Board boardId={parseInt(boardId)} />;
 }

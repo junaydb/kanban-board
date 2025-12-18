@@ -27,6 +27,8 @@ dist-ssr
 .cursor/
 CLAUDE.md
 
+plan.md
+
 *.gen.ts
 
 todo.md
