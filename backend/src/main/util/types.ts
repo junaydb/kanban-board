@@ -33,6 +33,9 @@ export type UpdateBoardNameParams = z.infer<
 export type VerifyBoardOwnershipParams = z.infer<
   typeof UserIdSchema & typeof BoardIdSchema
 >;
+export type TaskSearchParams = z.infer<typeof BoardIdSchema> & {
+  query: string;
+};
 // Pagination types
 export type ByCreatedCursor = z.infer<typeof ByCreatedCursorSchema>;
 export type ByDueDateCursor = z.infer<typeof ByDueDateCursorSchema>;
