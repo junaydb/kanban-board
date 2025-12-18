@@ -97,7 +97,10 @@ export const BoardIdSchema = z.object({
 });
 
 export const BoardTitleSchema = z.object({
-  title: z.string().min(1).max(50),
+  title: z
+    .string()
+    .min(1, { message: "Title cannot be blank" })
+    .max(50, { message: "Title cannot be over 50 characters" }),
 });
 
 export const TaskCountSchema = z.object({
