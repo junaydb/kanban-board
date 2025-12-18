@@ -2,22 +2,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/shadcn/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shadcn/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+} from "@/shadcn/ui/field";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Input } from "@/shadcn/ui/input";
 import {
   Dialog,
   DialogTrigger,
-  DialogTitle,
   DialogContent,
+  DialogTitle,
   DialogDescription,
-  DialogHeader,
   DialogFooter,
 } from "@/shadcn/ui/dialog";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
-import { useCreateBoard, invalidateBoardsCache } from "@/trpc/board-hooks";
+import {
+  useCreateBoard,
+  invalidateGetAllBoardsCache,
+} from "@/trpc/board-hooks";
 import { toast } from "sonner";
 
 // TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
@@ -56,7 +65,7 @@ export function CreateBoardFormDialog({
         { title },
         {
           onSuccess: (data) => {
-            invalidateBoardsCache();
+            invalidateGetAllBoardsCache();
 
             navigate({
               to: "/boards/$user/$boardId/$boardTitle",
@@ -113,12 +122,10 @@ export function CreateBoardFormDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="w-full sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create board</DialogTitle>
-          <DialogDescription>
-            Choose a name for your new board
-          </DialogDescription>
-        </DialogHeader>
+        <VisuallyHidden>
+          <DialogTitle>Create a new board</DialogTitle>
+          <DialogDescription>Enter a name for your new board</DialogDescription>
+        </VisuallyHidden>
         <form id="create-board-form" onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
@@ -136,6 +143,7 @@ export function CreateBoardFormDialog({
                     placeholder="Enter a title"
                     autoComplete="off"
                   />
+                  <FieldDescription>This can be changed later</FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
