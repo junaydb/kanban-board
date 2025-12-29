@@ -19,7 +19,10 @@ import { authClient } from "@/auth/auth-client";
 import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
-import { invalidateBoardsCache, useDeleteBoard } from "@/trpc/board-hooks";
+import {
+  invalidateGetAllBoardsCache,
+  useDeleteBoard,
+} from "@/trpc/board-hooks";
 import { toast } from "sonner";
 
 type Props = {
@@ -39,7 +42,7 @@ export function SidebarBoardItem({ id, title }: Props) {
       { boardId: id },
       {
         onSuccess: () => {
-          invalidateBoardsCache();
+          invalidateGetAllBoardsCache();
 
           // if this was the actively open board, navigate to /boards,
           // i.e., close this board
@@ -77,6 +80,7 @@ export function SidebarBoardItem({ id, title }: Props) {
         {/* link to user boards if the user logged in, otherwise link to offline boards */}
         {session ? (
           <Link
+            className="truncate"
             to="/boards/$user/$boardId/$boardTitle"
             params={{
               user: toLowerKebabCase(session.user.name),
@@ -87,7 +91,11 @@ export function SidebarBoardItem({ id, title }: Props) {
             {title}
           </Link>
         ) : (
-          <Link to="/boards/$boardTitle" params={{ boardTitle: toLowerKebabCase(title) }}>
+          <Link
+            className="truncate"
+            to="/boards/$boardTitle"
+            params={{ boardTitle: toLowerKebabCase(title) }}
+          >
             {title}
           </Link>
         )}
