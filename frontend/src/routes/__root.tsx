@@ -32,7 +32,9 @@ function Root() {
   return (
     <SidebarProvider>
       <SidebarRoot />
+      {/*
       <SidebarTrigger />
+        */}
       <main className="w-full h-screen p-2">
         <Outlet />
       </main>
