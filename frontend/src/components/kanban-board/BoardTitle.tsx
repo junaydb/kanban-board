@@ -88,7 +88,7 @@ export function BoardTitle({ boardId, title }: BoardTitleProps) {
         disabled={isUpdating}
         maxLength={50}
         className={cn(
-          "w-fit field-sizing-content text-2xl font-semibold bg-transparent border-2 border-muted-foreground/50 rounded px-1 outline-none",
+          "mt-2 ml-2 w-fit field-sizing-content text-2xl font-semibold bg-transparent border-2 border-muted-foreground/50 rounded-md px-1 outline-none",
           isUpdating && "opacity-50",
         )}
       />
@@ -98,7 +98,7 @@ export function BoardTitle({ boardId, title }: BoardTitleProps) {
   return (
     <h1
       onClick={handleStartEditing}
-      className="w-fit text-2xl font-semibold cursor-text hover:text-muted-foreground transition-colors border-2 border-transparent rounded px-1"
+      className="mt-2 ml-2 w-fit text-2xl font-semibold cursor-text hover:text-muted-foreground transition-colors border-2 border-transparent rounded px-1"
     >
       {title}
     </h1>
