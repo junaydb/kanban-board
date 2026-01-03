@@ -22,7 +22,12 @@ import {
   useUpdateTaskStatus,
   invalidateTaskPageCache,
 } from "@/trpc/task-hooks";
-import type { TaskStatusEnum, PageQuery, TTask, BoardIdParams } from "@backend/util/types";
+import type {
+  TaskStatusEnum,
+  PageQuery,
+  TTask,
+  BoardIdParams,
+} from "@backend/util/types";
 import { Task } from "./Task";
 
 type TasksByStatus = Record<TaskStatusEnum, TTask[]>;
@@ -293,23 +298,19 @@ export function Board({ boardId }: BoardIdParams) {
               items={tasks.TODO.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column tasks={tasks.TODO} status="TODO" containerId="TODO" />
+              <Column tasks={tasks.TODO} status="TODO" />
             </SortableContext>
             <SortableContext
               items={tasks.IN_PROGRESS.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column
-                tasks={tasks.IN_PROGRESS}
-                status="IN_PROGRESS"
-                containerId="IN_PROGRESS"
-              />
+              <Column tasks={tasks.IN_PROGRESS} status="IN_PROGRESS" />
             </SortableContext>
             <SortableContext
               items={tasks.DONE.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column tasks={tasks.DONE} status="DONE" containerId="DONE" />
+              <Column tasks={tasks.DONE} status="DONE" />
             </SortableContext>
             <DragOverlay
               dropAnimation={{
