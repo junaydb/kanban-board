@@ -1,30 +1,26 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import type { CSSProperties, HTMLAttributes, Ref } from "react";
 import { Badge } from "@/shadcn/ui/badge";
 import { cn } from "@/shadcn/utils";
-import { Calendar, Clock } from "lucide-react";
 import type { TTask } from "@backend/util/types";
+import { Calendar, Clock } from "lucide-react";
 
-type TaskProps = {
+type TaskProps = HTMLAttributes<HTMLDivElement> & {
   task: TTask;
   isOverlay?: boolean;
+  isDragging?: boolean;
+  style?: CSSProperties;
+  ref?: Ref<HTMLDivElement>;
 };
 
-export function Task({ task, isOverlay = false }: TaskProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
+export function Task({
+  task,
+  isOverlay = false,
+  isDragging = false,
+  style,
+  className,
+  ref,
+  ...props
+}: TaskProps) {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-GB", {
       day: "numeric",
@@ -41,15 +37,15 @@ export function Task({ task, isOverlay = false }: TaskProps) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={ref}
       style={style}
-      {...attributes}
-      {...listeners}
       className={cn(
         "bg-white rounded-sm border shadow-sm p-3 cursor-grab active:cursor-grabbing m-2",
         isDragging && "opacity-50",
         isOverlay && "shadow-lg ring-2 ring-primary",
+        className,
       )}
+      {...props}
     >
       <h4 className="font-medium text-sm mb-1">{task.title}</h4>
 

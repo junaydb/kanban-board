@@ -3,7 +3,6 @@ import { BoardTitle } from "./BoardTitle";
 import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import {
-  closestCorners,
   DndContext,
   DragOverlay,
   type DragStartEvent,

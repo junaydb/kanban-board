@@ -1,5 +1,5 @@
 import { Droppable } from "./Droppable";
-import { Task } from "./Task";
+import { SortableTask } from "./SortableTask";
 import type { TaskStatusEnum, TTask } from "@backend/util/types";
 
 type Props = {
@@ -30,14 +30,14 @@ export function Column({ tasks, status }: Props) {
   const statusProps = getStatusProps(status);
 
   return (
-    <div className="h-full">
+    <div className="h-fit">
       <h2 className="font-medium text-lg p-1">{statusProps.text}</h2>
       <Droppable
-        className="p-1 h-full rounded-sm bg-gray-50 border min-h-[100px]"
+        className="p-1 h-fit mb-4 rounded-sm bg-gray-50 border min-h-[100px]"
         id={status}
       >
         {tasks.map((task) => (
-          <Task key={task.id} task={task} />
+          <SortableTask key={task.id} task={task} />
         ))}
       </Droppable>
     </div>
