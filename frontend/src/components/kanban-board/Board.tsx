@@ -1,5 +1,6 @@
 import { Column } from "./Column";
 import { BoardTitle } from "./BoardTitle";
+import { BoardToolbar } from "./BoardToolbar";
 import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import {
@@ -19,6 +20,7 @@ import { useState, useEffect } from "react";
 import {
   useGetTaskPage,
   useUpdateTaskStatus,
+  useUpdateTaskPositions,
   invalidateTaskPageCache,
 } from "@/trpc/task-hooks";
 import type {
@@ -39,12 +41,17 @@ export function Board({ boardId }: BoardIdParams) {
   });
 
   const [activeTask, setActiveTask] = useState<TTask | null>(null);
+  const [originalContainer, setOriginalContainer] =
+    useState<TaskStatusEnum | null>(null);
 
-  const [sortBy, setSortBy] = useState<PageQuery["sortBy"]>("created");
+  const [sortBy, setSortBy] = useState<PageQuery["sortBy"]>("dueDate");
   const [sortOrder, setSortOrder] = useState<PageQuery["sortOrder"]>("DESC");
   const [pageSize, setPageSize] = useState(10);
 
-  const updateStatusMutation = useUpdateTaskStatus();
+  const { mutate: updateTaskStatus, isPending: isPending_statusUpdate } =
+    useUpdateTaskStatus();
+  const { mutate: updateTaskPos, isPending: isPending_taskPosUpdate } =
+    useUpdateTaskPositions();
 
   const {
     tasks: tasks_todos,
@@ -144,6 +151,7 @@ export function Board({ boardId }: BoardIdParams) {
       tasks.DONE.find((t) => t.id === taskId);
 
     setActiveTask(task ?? null);
+    setOriginalContainer(findContainer(taskId));
   }
 
   function handleDragOver(event: DragOverEvent) {
@@ -211,6 +219,7 @@ export function Board({ boardId }: BoardIdParams) {
 
     if (!over) {
       setActiveTask(null);
+      setOriginalContainer(null);
       return;
     }
 
@@ -222,6 +231,7 @@ export function Board({ boardId }: BoardIdParams) {
 
     if (!activeContainer || !overContainer) {
       setActiveTask(null);
+      setOriginalContainer(null);
       return;
     }
 
@@ -246,9 +256,26 @@ export function Board({ boardId }: BoardIdParams) {
       }
     }
 
-    // TODO: Call API to persist the new status/position
+    if (originalContainer && originalContainer !== overContainer) {
+      updateTaskStatus(
+        {
+          taskId: activeId as number,
+          boardId: boardId,
+          newStatus: overContainer,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Status updated");
+          },
+          onError: () => {
+            toast.error("Failed to update status");
+          },
+        },
+      );
+    }
 
     setActiveTask(null);
+    setOriginalContainer(null);
   }
 
   if (error?.data?.code === "NOT_FOUND") {
@@ -269,15 +296,6 @@ export function Board({ boardId }: BoardIdParams) {
     );
   }
 
-  if (
-    isPending_boardLookUp ||
-    isPending_todos ||
-    isPending_inProgress ||
-    isPending_done
-  ) {
-    // TODO: render skeleton loading ui
-  }
-
   if (isError_todos || isError_inProgress || isError_done) {
     toast.error("Failed to fetch tasks");
   }
@@ -286,6 +304,14 @@ export function Board({ boardId }: BoardIdParams) {
     return (
       <div className="h-full flex flex-col">
         <BoardTitle boardId={boardId} title={boardData.data.title} />
+        <BoardToolbar
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+        />
         <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
           <DndContext
             onDragStart={handleDragStart}
@@ -297,19 +323,19 @@ export function Board({ boardId }: BoardIdParams) {
               items={tasks.TODO.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column tasks={tasks.TODO} status="TODO" />
+              <Column tasks={tasks.TODO} status="TODO" isPending={isPending_todos} />
             </SortableContext>
             <SortableContext
               items={tasks.IN_PROGRESS.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column tasks={tasks.IN_PROGRESS} status="IN_PROGRESS" />
+              <Column tasks={tasks.IN_PROGRESS} status="IN_PROGRESS" isPending={isPending_inProgress} />
             </SortableContext>
             <SortableContext
               items={tasks.DONE.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <Column tasks={tasks.DONE} status="DONE" />
+              <Column tasks={tasks.DONE} status="DONE" isPending={isPending_done} />
             </SortableContext>
             <DragOverlay
               dropAnimation={{

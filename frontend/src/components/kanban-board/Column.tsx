@@ -1,10 +1,12 @@
 import { Droppable } from "./Droppable";
 import { SortableTask } from "./SortableTask";
+import { Spinner } from "@/shadcn/ui/spinner";
 import type { TaskStatusEnum, TTask } from "@backend/util/types";
 
 type Props = {
   tasks: TTask[];
   status: TaskStatusEnum;
+  isPending?: boolean;
 };
 
 function getStatusProps(status: TaskStatusEnum) {
@@ -26,7 +28,7 @@ function getStatusProps(status: TaskStatusEnum) {
   return statusMapper[status];
 }
 
-export function Column({ tasks, status }: Props) {
+export function Column({ tasks, status, isPending }: Props) {
   const statusProps = getStatusProps(status);
 
   return (
@@ -36,9 +38,15 @@ export function Column({ tasks, status }: Props) {
         className="p-1 h-fit mb-4 rounded-sm bg-gray-50 border min-h-[100px]"
         id={status}
       >
-        {tasks.map((task) => (
-          <SortableTask key={task.id} task={task} />
-        ))}
+        {isPending ? (
+          <div className="flex items-center justify-center py-8">
+            <Spinner />
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <SortableTask key={task.id} task={task} />
+          ))
+        )}
       </Droppable>
     </div>
   );
