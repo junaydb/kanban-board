@@ -52,13 +52,6 @@ export const tasksRouter = router({
           const params = Pagination.created.generateParams(input);
           page = await Task.getTasksByCreated(params);
 
-          if (!page) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Tasks not found",
-            });
-          }
-
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {
             const lastTask = page[page.length - 1];

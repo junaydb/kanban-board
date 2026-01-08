@@ -119,10 +119,6 @@ class Task {
         break;
     }
 
-    if (page.length === 0) {
-      return null;
-    }
-
     return page;
   }
 
