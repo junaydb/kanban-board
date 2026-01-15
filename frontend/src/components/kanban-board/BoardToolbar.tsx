@@ -1,68 +1,53 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shadcn/ui/dropdown-menu";
 import { Button } from "@/shadcn/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { BrushCleaning } from "lucide-react";
 import type { PageQuery } from "@backend/util/types";
+import { Skeleton } from "@/shadcn/ui/skeleton";
 
 type SortBy = PageQuery["sortBy"];
-type SortOrder = PageQuery["sortOrder"];
 
 interface BoardToolbarProps {
-  sortBy: SortBy;
   setSortBy: (value: SortBy) => void;
-  sortOrder: SortOrder;
-  setSortOrder: (value: SortOrder) => void;
+  sortOrder: PageQuery["sortOrder"];
+  setSortOrder: (value: PageQuery["sortOrder"]) => void;
   pageSize: number;
   setPageSize: (value: number) => void;
 }
 
-const sortByLabels: Record<NonNullable<SortBy>, string> = {
+const sortByLabels: Record<Exclude<SortBy, "position">, string> = {
   dueDate: "Due date",
-  created: "Creation date",
-  position: "User defined",
+  created: "Created",
 };
 
-export function BoardToolbar({
-  sortBy,
-  setSortBy,
-  sortOrder,
-  setSortOrder,
-}: BoardToolbarProps) {
+export function BoardToolbar({ setSortBy }: BoardToolbarProps) {
   return (
     <div className="flex items-center gap-2 mx-3 mt-3 p-2 rounded-sm bg-gray-50 border">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
-            <ArrowUpDown className="mr-2 h-4 w-4" />
-            Sort: {sortByLabels[sortBy ?? "position"]}
+            <BrushCleaning className="h-4 w-4" />
+            Sort
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as SortBy)}
-          >
-            <DropdownMenuRadioItem value="dueDate">
-              Due date
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="created">
-              Creation date
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="position">
-              User defined
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
+          {(Object.keys(sortByLabels) as (keyof typeof sortByLabels)[]).map(
+            (key) => (
+              <DropdownMenuItem key={key} onClick={() => setSortBy(key)}>
+                {sortByLabels[key]}
+              </DropdownMenuItem>
+            ),
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
   );
+}
+
+export function BoardToolbarSkeleton() {
+  return <Skeleton className="mx-3 mt-3 h-12 rounded-sm" />;
 }

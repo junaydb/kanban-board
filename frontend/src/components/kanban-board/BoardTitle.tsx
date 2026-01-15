@@ -3,6 +3,7 @@ import { useUpdateBoardTitle } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import { cn } from "@/shadcn/utils";
 import { BoardTitleSchema } from "@backend/routes/_validators";
+import { Skeleton } from "@/shadcn/ui/skeleton";
 
 type BoardTitleProps = {
   boardId: number;
@@ -103,4 +104,8 @@ export function BoardTitle({ boardId, title }: BoardTitleProps) {
       {title}
     </h1>
   );
+}
+
+export function BoardTitleSkeleton() {
+  return <Skeleton className="mt-2 ml-2 h-9 w-48 rounded-md" />;
 }

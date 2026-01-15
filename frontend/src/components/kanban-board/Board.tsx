@@ -1,6 +1,6 @@
 import { Column } from "./Column";
-import { BoardTitle } from "./BoardTitle";
-import { BoardToolbar } from "./BoardToolbar";
+import { BoardTitle, BoardTitleSkeleton } from "./BoardTitle";
+import { BoardToolbar, BoardToolbarSkeleton } from "./BoardToolbar";
 import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import {
@@ -21,7 +21,6 @@ import {
   useGetTaskPage,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
-  invalidateTaskPageCache,
 } from "@/trpc/task-hooks";
 import type {
   TaskStatusEnum,
@@ -300,53 +299,70 @@ export function Board({ boardId }: BoardIdParams) {
     toast.error("Failed to fetch tasks");
   }
 
-  if (boardData && tasks_todos && tasks_inProgress && tasks_done) {
-    return (
-      <div className="h-full flex flex-col">
-        <BoardTitle boardId={boardId} title={boardData.data.title} />
+  return (
+    <div className="h-full flex flex-col">
+      {isPending_boardLookUp ? (
+        <BoardTitleSkeleton />
+      ) : (
+        <BoardTitle boardId={boardId} title={boardData!.data.title} />
+      )}
+      {isPending_boardLookUp ? (
+        <BoardToolbarSkeleton />
+      ) : (
         <BoardToolbar
-          sortBy={sortBy}
           setSortBy={setSortBy}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
           pageSize={pageSize}
           setPageSize={setPageSize}
         />
-        <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
-          <DndContext
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            // collisionDetection={closestCorners}
+      )}
+      <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
+        <DndContext
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          // collisionDetection={closestCorners}
+        >
+          <SortableContext
+            items={tasks.TODO.map((t) => t.id)}
+            strategy={verticalListSortingStrategy}
           >
-            <SortableContext
-              items={tasks.TODO.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Column tasks={tasks.TODO} status="TODO" isPending={isPending_todos} />
-            </SortableContext>
-            <SortableContext
-              items={tasks.IN_PROGRESS.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Column tasks={tasks.IN_PROGRESS} status="IN_PROGRESS" isPending={isPending_inProgress} />
-            </SortableContext>
-            <SortableContext
-              items={tasks.DONE.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Column tasks={tasks.DONE} status="DONE" isPending={isPending_done} />
-            </SortableContext>
-            <DragOverlay
-              dropAnimation={{
-                duration: 100,
-              }}
-            >
-              {activeTask ? <Task task={activeTask} isOverlay /> : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
+            <Column
+              tasks={tasks.TODO}
+              status="TODO"
+              isPending={isPending_todos}
+            />
+          </SortableContext>
+          <SortableContext
+            items={tasks.IN_PROGRESS.map((t) => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <Column
+              tasks={tasks.IN_PROGRESS}
+              status="IN_PROGRESS"
+              isPending={isPending_inProgress}
+            />
+          </SortableContext>
+          <SortableContext
+            items={tasks.DONE.map((t) => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <Column
+              tasks={tasks.DONE}
+              status="DONE"
+              isPending={isPending_done}
+            />
+          </SortableContext>
+          <DragOverlay
+            dropAnimation={{
+              duration: 100,
+            }}
+          >
+            {activeTask ? <Task task={activeTask} isOverlay /> : null}
+          </DragOverlay>
+        </DndContext>
       </div>
-    );
-  }
+    </div>
+  );
 }
