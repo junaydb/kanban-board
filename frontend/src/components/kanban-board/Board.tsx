@@ -43,14 +43,29 @@ export function Board({ boardId }: BoardIdParams) {
   const [originalContainer, setOriginalContainer] =
     useState<TaskStatusEnum | null>(null);
 
-  const [sortBy, setSortBy] = useState<PageQuery["sortBy"]>("dueDate");
+  const [sortBy, setSortBy] = useState<PageQuery["sortBy"]>(() => {
+    const stored = localStorage.getItem("boardSortBy");
+    if (stored) {
+      const parsed = JSON.parse(stored) as Record<string, PageQuery["sortBy"]>;
+      return parsed[boardId] ?? "dueDate";
+    }
+    return "dueDate";
+  });
+
+  useEffect(() => {
+    const stored = localStorage.getItem("boardSortBy");
+    const parsed: Record<string, PageQuery["sortBy"]> = stored
+      ? JSON.parse(stored)
+      : {};
+    parsed[boardId] = sortBy;
+    localStorage.setItem("boardSortBy", JSON.stringify(parsed));
+  }, [sortBy, boardId]);
+
   const [sortOrder, setSortOrder] = useState<PageQuery["sortOrder"]>("DESC");
   const [pageSize, setPageSize] = useState(10);
 
-  const { mutate: updateTaskStatus, isPending: isPending_statusUpdate } =
-    useUpdateTaskStatus();
-  const { mutate: updateTaskPos, isPending: isPending_taskPosUpdate } =
-    useUpdateTaskPositions();
+  const { mutate: updateTaskStatus } = useUpdateTaskStatus();
+  const { mutate: updateTaskPos } = useUpdateTaskPositions();
 
   const {
     tasks: tasks_todos,
@@ -234,6 +249,8 @@ export function Board({ boardId }: BoardIdParams) {
       return;
     }
 
+    let updatedTasks = tasks;
+
     // Handle reordering within the same column
     if (activeContainer === overContainer) {
       const activeIndex = tasks[activeContainer].findIndex(
@@ -244,16 +261,36 @@ export function Board({ boardId }: BoardIdParams) {
       );
 
       if (activeIndex !== overIndex && overIndex !== -1) {
-        setTasks((prev) => ({
-          ...prev,
+        updatedTasks = {
+          ...tasks,
           [activeContainer]: arrayMove(
-            prev[activeContainer],
+            tasks[activeContainer],
             activeIndex,
             overIndex,
           ),
-        }));
+        };
+        setTasks(updatedTasks);
       }
+    } else {
+      // Task was moved to a different column - tasks state already updated by handleDragOver
+      updatedTasks = tasks;
     }
+
+    const positionData = {
+      boardId,
+      todoPos: updatedTasks.TODO.map((t) => t.id),
+      inProgressPos: updatedTasks.IN_PROGRESS.map((t) => t.id),
+      donePos: updatedTasks.DONE.map((t) => t.id),
+    };
+
+    updateTaskPos(positionData, {
+      onSuccess: () => {
+        setSortBy("position");
+      },
+      onError: () => {
+        toast.error("Failed to save task positions");
+      },
+    });
 
     if (originalContainer && originalContainer !== overContainer) {
       updateTaskStatus(
