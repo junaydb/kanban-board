@@ -24,7 +24,7 @@ export const tasksRouter = router({
 
       const allTasks = await Task.getAllFromBoard(input);
 
-      return successResponse.array({ tasks: allTasks });
+      return successResponse.standard({ tasks: allTasks });
     }),
 
   getCount: publicProcedure
@@ -33,7 +33,7 @@ export const tasksRouter = router({
       await verifyBoardExistenceAndOwnership(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
-      return successResponse.single(numTasks);
+      return successResponse.standard({ taskCount: numTasks });
     }),
 
   getPage: publicProcedure
@@ -101,10 +101,7 @@ export const tasksRouter = router({
         }
       }
 
-      return successResponse.arrayWithMeta(
-        { tasks: page },
-        { cursor: nextCursor },
-      );
+      return successResponse.withMeta({ tasks: page }, { cursor: nextCursor });
     }),
 
   getById: publicProcedure
@@ -120,7 +117,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.single(task);
+      return successResponse.standard(task);
     }),
 
   create: publicProcedure
@@ -130,7 +127,7 @@ export const tasksRouter = router({
 
       const task = await Task.create(input);
 
-      return successResponse.single(task);
+      return successResponse.standard(task);
     }),
 
   updateStatus: publicProcedure
@@ -146,7 +143,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.single({ newStatus: result.status });
+      return successResponse.standard({ newStatus: result.status });
     }),
 
   delete: publicProcedure
@@ -162,7 +159,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.single(result);
+      return successResponse.standard(result);
     }),
 
   search: publicProcedure
@@ -172,7 +169,7 @@ export const tasksRouter = router({
 
       const results = await Task.search(input);
 
-      return successResponse.array({ tasks: results });
+      return successResponse.standard({ tasks: results });
     }),
 
   updatePositions: publicProcedure
@@ -182,6 +179,6 @@ export const tasksRouter = router({
 
       await Task.updatePositions(input);
 
-      return successResponse.single({ success: true });
+      return successResponse.standard({ success: true });
     }),
 });

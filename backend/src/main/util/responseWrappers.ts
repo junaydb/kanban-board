@@ -1,18 +1,12 @@
 import type { ApiResponse, ApiResponseWithMeta } from "./types.js";
 
 export const successResponse = {
-  single: <T extends any>(
-    data: T extends any[] ? never : T,
-  ): ApiResponse<T> => {
+  standard: <T extends Record<string, any>>(data: T): ApiResponse<T> => {
+    // Example: { data: { tasks: [...] } } or { data: { user: {...} } }
     return { data };
   },
 
-  array: <T extends Record<string, any[]>>(data: T): ApiResponse<T> => {
-    // Example: { data: { tasks: [...] } }
-    return { data };
-  },
-
-  arrayWithMeta: <T extends Record<string, any[]>, U>(
+  withMeta: <T extends Record<string, any>, U>(
     data: T,
     meta: U,
   ): ApiResponseWithMeta<T, U> => {

@@ -24,11 +24,13 @@ import type {
   BoardIdParams,
   TaskIdParams,
   TaskCountParams,
+  PageQuery,
 } from "../util/types.js";
 
 class Task {
   /**
-   * Returns all tasks belonging to this board, ordered by creation date in descending order.
+   * Returns all tasks belonging to this board, grouped by status.
+   * Ordered by creation date in descending order.
    */
   static async getAllFromBoard({ boardId }: BoardIdParams) {
     const allTasks = await db
@@ -37,7 +39,59 @@ class Task {
       .where(eq(tasks.boardId, boardId))
       .orderBy(desc(tasks.createdAt));
 
-    return allTasks;
+    // Group by status
+    const todo = allTasks.filter((t) => t.status === "TODO");
+    const in_progress = allTasks.filter((t) => t.status === "IN_PROGRESS");
+    const done = allTasks.filter((t) => t.status === "DONE");
+
+    return { todo, in_progress, done };
+  }
+
+  /**
+   * Returns all task IDs belonging to this board, grouped by status.
+   * Task IDs are ordered based on sortBy and sortOrder parameters.
+   */
+  static async getAllTaskIdsFromBoard({
+    boardId,
+    sortBy,
+    sortOrder,
+  }: BoardIdParams & {
+    sortBy: PageQuery["sortBy"];
+    sortOrder: PageQuery["sortOrder"];
+  }) {
+    let orderByClause;
+
+    switch (sortBy) {
+      case "created":
+        orderByClause =
+          sortOrder === "ASC"
+            ? [asc(tasks.createdAt), asc(tasks.id)]
+            : [desc(tasks.createdAt), desc(tasks.id)];
+        break;
+      case "dueDate":
+        orderByClause =
+          sortOrder === "ASC"
+            ? [sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id)]
+            : [sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id)];
+        break;
+      default:
+        orderByClause = [desc(tasks.createdAt), desc(tasks.id)];
+        break;
+    }
+
+    const allTasks = await db
+      .select({ id: tasks.id, status: tasks.status })
+      .from(tasks)
+      .where(eq(tasks.boardId, boardId))
+      .orderBy(...orderByClause);
+
+    const TODO = allTasks.filter((t) => t.status === "TODO").map((t) => t.id);
+    const IN_PROGRESS = allTasks
+      .filter((t) => t.status === "IN_PROGRESS")
+      .map((t) => t.id);
+    const DONE = allTasks.filter((t) => t.status === "DONE").map((t) => t.id);
+
+    return { TODO, IN_PROGRESS, DONE };
   }
 
   /**

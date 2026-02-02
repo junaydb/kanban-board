@@ -21,7 +21,7 @@ export const boardsRouter = router({
       userId: ctx.user.id,
     });
 
-    return successResponse.arrayWithMeta(
+    return successResponse.withMeta(
       {
         boards: allBoards,
       },
@@ -37,7 +37,7 @@ export const boardsRouter = router({
 
     const boardTitle = await Board.getTitle(input);
 
-    return successResponse.single({ title: boardTitle });
+    return successResponse.standard({ title: boardTitle });
   }),
 
   create: publicProcedure
@@ -68,7 +68,7 @@ export const boardsRouter = router({
         });
       }
 
-      return successResponse.single(result);
+      return successResponse.standard(result);
     }),
 
   updateTitle: publicProcedure
@@ -86,12 +86,12 @@ export const boardsRouter = router({
       }
 
       if (result === "NO_OP") {
-        return successResponse.single({
+        return successResponse.standard({
           message: "Identical title received. No action taken.",
         });
       }
 
-      return successResponse.single(result);
+      return successResponse.standard(result);
     }),
 
   delete: publicProcedure
@@ -101,6 +101,6 @@ export const boardsRouter = router({
 
       const result = await Board.delete(input);
 
-      return successResponse.single(result);
+      return successResponse.standard(result);
     }),
 });
