@@ -3,6 +3,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/shadcn/ui/dropdown-menu";
 import { Button } from "@/shadcn/ui/button";
 import { BrushCleaning } from "lucide-react";
@@ -24,7 +27,15 @@ const sortByLabels: Record<Exclude<SortBy, "position">, string> = {
   created: "Created",
 };
 
-export function BoardToolbar({ setSortBy }: BoardToolbarProps) {
+export function BoardToolbar({ setSortBy, setSortOrder }: BoardToolbarProps) {
+  const handleSortSelect = (
+    sortByValue: Exclude<SortBy, "position">,
+    sortOrderValue: PageQuery["sortOrder"],
+  ) => {
+    setSortBy(sortByValue);
+    setSortOrder(sortOrderValue);
+  };
+
   return (
     <div className="flex items-center gap-2 mx-3 mt-3 p-2 rounded-sm bg-gray-50 border">
       <DropdownMenu>
@@ -37,9 +48,23 @@ export function BoardToolbar({ setSortBy }: BoardToolbarProps) {
         <DropdownMenuContent align="start">
           {(Object.keys(sortByLabels) as (keyof typeof sortByLabels)[]).map(
             (key) => (
-              <DropdownMenuItem key={key} onClick={() => setSortBy(key)}>
-                {sortByLabels[key]}
-              </DropdownMenuItem>
+              <DropdownMenuSub key={key}>
+                <DropdownMenuSubTrigger>
+                  {sortByLabels[key]}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={() => handleSortSelect(key, "ASC")}
+                  >
+                    Ascending
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleSortSelect(key, "DESC")}
+                  >
+                    Descending
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
             ),
           )}
         </DropdownMenuContent>
