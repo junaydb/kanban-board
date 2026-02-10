@@ -16,7 +16,29 @@ export const boardsRouter = router({
     const allBoards = await Board.getAll({
       userId: ctx.user.id,
     });
+    const boardCount = await Board.getNumBoards({
+      userId: ctx.user.id,
+    });
 
+    return successResponse.withMeta(
+      {
+        boards: allBoards,
+      },
+      {
+        boardCount: boardCount,
+        boardCountLimit: MAX_BOARD_COUNT,
+      },
+    );
+  }),
+
+  getAllIdsAndTitles: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const allBoards = await Board.getAllIdsAndTitles({
+      userId: ctx.user.id,
+    });
     const boardCount = await Board.getNumBoards({
       userId: ctx.user.id,
     });

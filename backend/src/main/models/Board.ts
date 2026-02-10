@@ -18,6 +18,15 @@ class Board {
     return allBoards;
   }
 
+  static async getAllIdsAndTitles({ userId }: UserIdParams) {
+    const allBoards = await db
+      .select({ id: boards.id, title: boards.title })
+      .from(boards)
+      .where(eq(boards.userId, userId));
+
+    return allBoards;
+  }
+
   static async getTitle({ boardId }: BoardIdParams) {
     const boardTitle = await db
       .select({ title: boards.title })
