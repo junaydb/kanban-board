@@ -64,13 +64,6 @@ export const tasksRouter = router({
           const params = Pagination.dueDate.generateParams(input);
           page = await Task.getTasksByDueDate(params);
 
-          if (!page) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Tasks not found",
-            });
-          }
-
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {
             const lastTask = page[page.length - 1];
@@ -82,13 +75,6 @@ export const tasksRouter = router({
         case "position": {
           const params = Pagination.position.generateParams(input);
           page = await Task.getTasksByPosition(params);
-
-          if (!page) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Tasks not found",
-            });
-          }
 
           const nextPageExists = page.length === pageSize;
           if (nextPageExists) {

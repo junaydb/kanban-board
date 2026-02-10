@@ -251,10 +251,6 @@ class Task {
         break;
     }
 
-    if (page.length === 0) {
-      return null;
-    }
-
     return page;
   }
 
@@ -272,10 +268,6 @@ class Task {
       .select()
       .from(taskPositions)
       .where(eq(taskPositions.boardId, boardId));
-
-    if (!positions) {
-      return null;
-    }
 
     let posArray: number[];
     switch (status) {
@@ -301,10 +293,6 @@ class Task {
     // re-order the tasks so they're in the user-defined order
     const taskMap = new Map(tasksUnordered.map((task) => [task.id, task]));
     let page = taskIds.map((id) => taskMap.get(id)!);
-
-    if (!page || page.length === 0) {
-      return null;
-    }
 
     return page;
   }
