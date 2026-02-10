@@ -23,10 +23,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
-import {
-  useCreateBoard,
-  invalidateGetAllBoardIdsAndTitleCache,
-} from "@/trpc/board-hooks";
+import { useCreateBoard } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 
 // TODO: prevent form resubmission when form is in CONFLICT error state and user has not changed input
@@ -65,8 +62,6 @@ export function CreateBoardFormDialog({
         { title },
         {
           onSuccess: (data) => {
-            invalidateGetAllBoardIdsAndTitleCache();
-
             navigate({
               to: "/boards/$user/$boardId/$boardTitle",
               params: {

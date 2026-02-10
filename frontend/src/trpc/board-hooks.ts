@@ -30,11 +30,23 @@ export function useBoardLookup(boardId: BoardIdParams) {
 }
 
 export function useCreateBoard() {
-  return useMutation(trpc.boards.create.mutationOptions());
+  return useMutation(
+    trpc.boards.create.mutationOptions({
+      onSuccess: () => {
+        invalidateGetAllBoardIdsAndTitleCache();
+      },
+    }),
+  );
 }
 
 export function useDeleteBoard() {
-  return useMutation(trpc.boards.delete.mutationOptions());
+  return useMutation(
+    trpc.boards.delete.mutationOptions({
+      onSuccess: () => {
+        invalidateGetAllBoardIdsAndTitleCache();
+      },
+    }),
+  );
 }
 
 export function useUpdateBoardTitle() {

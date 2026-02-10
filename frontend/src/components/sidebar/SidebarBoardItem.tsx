@@ -19,10 +19,7 @@ import { authClient } from "@/auth/auth-client";
 import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
-import {
-  invalidateGetAllBoardIdsAndTitleCache,
-  useDeleteBoard,
-} from "@/trpc/board-hooks";
+import { useDeleteBoard } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 
 type Props = {
@@ -42,8 +39,6 @@ export function SidebarBoardItem({ id, title }: Props) {
       { boardId: id },
       {
         onSuccess: () => {
-          invalidateGetAllBoardIdsAndTitleCache();
-
           // if this was the actively open board, navigate to /boards,
           // i.e., close this board
           const pathTail = routerState.location.pathname.split("/").pop();
