@@ -25,5 +25,5 @@ export const Route = createFileRoute("/boards/$user/$boardId/$boardTitle")({
 function BoardRoot() {
   const { boardId } = Route.useParams();
 
-  return <Board boardId={parseInt(boardId)} />;
+  return <Board key={boardId} boardId={parseInt(boardId)} />;
 }
