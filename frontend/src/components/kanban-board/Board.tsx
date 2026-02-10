@@ -374,7 +374,7 @@ export function Board({ boardId }: BoardIdParams) {
             <Column
               tasks={tasks.TODO}
               status="TODO"
-              isPending={isPending_todos}
+              isPending={isPending_todos && tasks.TODO.length === 0}
             />
           </SortableContext>
           <SortableContext
@@ -384,7 +384,7 @@ export function Board({ boardId }: BoardIdParams) {
             <Column
               tasks={tasks.IN_PROGRESS}
               status="IN_PROGRESS"
-              isPending={isPending_inProgress}
+              isPending={isPending_inProgress && tasks.IN_PROGRESS.length === 0}
             />
           </SortableContext>
           <SortableContext
@@ -394,7 +394,7 @@ export function Board({ boardId }: BoardIdParams) {
             <Column
               tasks={tasks.DONE}
               status="DONE"
-              isPending={isPending_done}
+              isPending={isPending_done && tasks.DONE.length === 0}
             />
           </SortableContext>
           <DragOverlay
