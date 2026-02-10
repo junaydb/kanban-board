@@ -314,6 +314,22 @@ export function Board({ boardId }: BoardIdParams) {
     setOriginalContainer(null);
   }
 
+  useEffect(() => {
+    if (error?.data?.code === "UNAUTHORIZED") {
+      toast.error("You do not own the requested resource");
+    } else if (error) {
+      toast.error(
+        "An error occurred whilst opening this board, please refresh the page.",
+      );
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (isError_todos || isError_inProgress || isError_done) {
+      toast.error("Failed to fetch tasks");
+    }
+  }, [isError_todos, isError_inProgress, isError_done]);
+
   if (error?.data?.code === "NOT_FOUND") {
     return (
       <div className="h-full flex flex-col gap-2">
@@ -324,16 +340,6 @@ export function Board({ boardId }: BoardIdParams) {
         </div>
       </div>
     );
-  } else if (error?.data?.code === "UNAUTHORIZED") {
-    toast.error("You do not own the requested resource");
-  } else if (error) {
-    toast.error(
-      "An error occurred whilst opening this board, please refresh the page.",
-    );
-  }
-
-  if (isError_todos || isError_inProgress || isError_done) {
-    toast.error("Failed to fetch tasks");
   }
 
   return (
