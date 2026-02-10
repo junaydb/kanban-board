@@ -12,6 +12,15 @@ export function useGetAllBoards(enabled = true) {
   );
 }
 
+export function useGetAllBoardIdsAndTitles(enabled = true) {
+  return useQuery(
+    trpc.boards.getAllIdsAndTitles.queryOptions(undefined, {
+      enabled,
+      retry: defaultRetry,
+    }),
+  );
+}
+
 export function useBoardLookup(boardId: BoardIdParams) {
   return useQuery(
     trpc.boards.lookup.queryOptions(boardId, {
@@ -32,34 +41,65 @@ export function useUpdateBoardTitle() {
   return useMutation(
     trpc.boards.updateTitle.mutationOptions({
       onMutate: async ({ boardId, title }: UpdateBoardNameParams) => {
+        await Promise.all([
+          queryClient.cancelQueries({
+            queryKey: trpc.boards.lookup.queryKey({ boardId }),
+          }),
+          queryClient.cancelQueries({
+            queryKey: trpc.boards.getAllIdsAndTitles.queryKey(),
+          }),
+        ]);
+
         const prevTitle = queryClient.getQueryData(
-          trpc.boards.lookup.queryKey(),
+          trpc.boards.lookup.queryKey({ boardId }),
+        );
+        const prevBoards = queryClient.getQueryData(
+          trpc.boards.getAllIdsAndTitles.queryKey(),
         );
 
+        // Optimistically update the board title on the board and in the sidebar
         queryClient.setQueryData(trpc.boards.lookup.queryKey({ boardId }), {
           data: { title },
         });
+        queryClient.setQueryData(trpc.boards.getAllIdsAndTitles.queryKey(), {
+          ...prevBoards!,
+          data: {
+            boards: prevBoards!.data.boards.map((board) =>
+              board.id === boardId ? { ...board, title } : board,
+            ),
+          },
+        });
 
-        return prevTitle;
+        return { prevTitle, prevBoards };
       },
+
       onError: (_err, params, onMutateResult) => {
         const { boardId } = params;
-        queryClient.setQueryData(trpc.boards.lookup.queryKey({ boardId }), {
-          data: { title: onMutateResult!.data.title },
-        });
+
+        // Rollback to previous cached values if we error
+        queryClient.setQueryData(
+          trpc.boards.lookup.queryKey({ boardId }),
+          onMutateResult!.prevTitle,
+        );
+        queryClient.setQueryData(
+          trpc.boards.getAllIdsAndTitles.queryKey(),
+          onMutateResult!.prevBoards,
+        );
       },
+
+      // Refetch after error or success
       onSettled: (_data, _error, variables) => {
         const { boardId } = variables;
-        invalidateGetAllBoardsCache();
+        invalidateGetAllBoardIdsAndTitleCache();
         invalidateLookUpBoardsCache({ boardId });
       },
     }),
   );
 }
 
-export function invalidateGetAllBoardsCache() {
+export function invalidateGetAllBoardIdsAndTitleCache() {
   queryClient.invalidateQueries({
-    queryKey: trpc.boards.getAll.queryKey(),
+    queryKey: trpc.boards.getAllIdsAndTitles.queryKey(),
   });
 }
 

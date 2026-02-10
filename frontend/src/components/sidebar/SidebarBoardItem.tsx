@@ -20,7 +20,7 @@ import { Button } from "@/shadcn/ui/button";
 import { toLowerKebabCase } from "@/util/helpers";
 import { Trash2 } from "lucide-react";
 import {
-  invalidateGetAllBoardsCache,
+  invalidateGetAllBoardIdsAndTitleCache,
   useDeleteBoard,
 } from "@/trpc/board-hooks";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ export function SidebarBoardItem({ id, title }: Props) {
       { boardId: id },
       {
         onSuccess: () => {
-          invalidateGetAllBoardsCache();
+          invalidateGetAllBoardIdsAndTitleCache();
 
           // if this was the actively open board, navigate to /boards,
           // i.e., close this board

@@ -25,7 +25,7 @@ import { toLowerKebabCase } from "@/util/helpers";
 import { authClient } from "@/auth/auth-client";
 import {
   useCreateBoard,
-  invalidateGetAllBoardsCache,
+  invalidateGetAllBoardIdsAndTitleCache,
 } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 
@@ -65,7 +65,7 @@ export function CreateBoardFormDialog({
         { title },
         {
           onSuccess: (data) => {
-            invalidateGetAllBoardsCache();
+            invalidateGetAllBoardIdsAndTitleCache();
 
             navigate({
               to: "/boards/$user/$boardId/$boardTitle",
