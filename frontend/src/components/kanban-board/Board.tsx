@@ -22,6 +22,7 @@ import {
   useUpdateTaskStatus,
   useUpdateTaskPositions,
 } from "@/trpc/task-hooks";
+import { queryClient, trpc } from "@/trpc/trpc";
 import type {
   TaskStatusEnum,
   PageQuery,
@@ -285,6 +286,13 @@ export function Board({ boardId }: BoardIdParams) {
 
     updateTaskPos(positionData, {
       onSuccess: () => {
+        // Remove stale position query cache before switching sortBy.
+        // Without this, TanStack Query immediately serves cached data from
+        // a previous "position" query (which has a different order), causing
+        // tasks to visually reshuffle before the refetch completes.
+        queryClient.removeQueries({
+          queryKey: trpc.tasks.getPage.queryKey({ boardId }),
+        });
         setSortBy("position");
       },
       onError: () => {
