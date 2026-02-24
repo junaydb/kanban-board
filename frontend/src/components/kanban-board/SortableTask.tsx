@@ -1,37 +1,26 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import type { TTask } from "@backend/util/types";
+import { useSortable } from "@dnd-kit/react/sortable";
+import type { TTask, TaskStatusEnum } from "@backend/util/types";
 import { Task } from "./Task";
 
 type SortableTaskProps = {
   task: TTask;
-  isOverlay?: boolean;
+  index: number;
+  group: TaskStatusEnum;
 };
 
-export function SortableTask({ task, isOverlay = false }: SortableTaskProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+export function SortableTask({ task, index, group }: SortableTaskProps) {
+  const { ref, isDragging } = useSortable({
+    id: task.id,
+    index,
+    group,
+    data: { task },
+  });
 
   return (
     <Task
-      ref={setNodeRef}
+      ref={ref}
       task={task}
-      isOverlay={isOverlay}
       isDragging={isDragging}
-      style={style}
-      {...attributes}
-      {...listeners}
     />
   );
 }

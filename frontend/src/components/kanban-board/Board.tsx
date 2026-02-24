@@ -3,26 +3,14 @@ import { BoardTitle, BoardTitleSkeleton } from "./BoardTitle";
 import { BoardToolbar, BoardToolbarSkeleton } from "./BoardToolbar";
 import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
-import {
-  DndContext,
-  DragOverlay,
-  type DragStartEvent,
-  type DragOverEvent,
-  type DragEndEvent,
-  type UniqueIdentifier,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import { move } from "@dnd-kit/helpers";
 import { useState, useEffect } from "react";
 import {
   useGetTaskPage,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
 } from "@/trpc/task-hooks";
-import { queryClient, trpc } from "@/trpc/trpc";
 import type {
   TaskStatusEnum,
   PageQuery,
@@ -40,7 +28,6 @@ export function Board({ boardId }: BoardIdParams) {
     DONE: [],
   });
 
-  const [activeTask, setActiveTask] = useState<TTask | null>(null);
   const [originalContainer, setOriginalContainer] =
     useState<TaskStatusEnum | null>(null);
 
@@ -140,186 +127,15 @@ export function Board({ boardId }: BoardIdParams) {
     }
   }, [tasks_done]);
 
-  // Find which container a task or container ID belongs to
-  function findContainer(id: UniqueIdentifier): TaskStatusEnum | null {
-    // Check if id is a container ID
-    if (id in tasks) {
-      return id as TaskStatusEnum;
-    }
-
-    // Otherwise check if it's a task ID
-    if (tasks.TODO.some((t) => t.id === id)) return "TODO";
-    if (tasks.IN_PROGRESS.some((t) => t.id === id)) return "IN_PROGRESS";
-    if (tasks.DONE.some((t) => t.id === id)) return "DONE";
-
+  function findTaskContainer(
+    taskId: number,
+    tasksMap: TasksByStatus = tasks,
+  ): TaskStatusEnum | null {
+    if (tasksMap.TODO.some((t) => t.id === taskId)) return "TODO";
+    if (tasksMap.IN_PROGRESS.some((t) => t.id === taskId))
+      return "IN_PROGRESS";
+    if (tasksMap.DONE.some((t) => t.id === taskId)) return "DONE";
     return null;
-  }
-
-  // for knowing when to show drag overlay
-  function handleDragStart(event: DragStartEvent) {
-    const { active } = event;
-    const taskId = active.id as number;
-
-    const task =
-      tasks.TODO.find((t) => t.id === taskId) ||
-      tasks.IN_PROGRESS.find((t) => t.id === taskId) ||
-      tasks.DONE.find((t) => t.id === taskId);
-
-    setActiveTask(task ?? null);
-    setOriginalContainer(findContainer(taskId));
-  }
-
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const { id: activeId } = active;
-    const { id: overId } = over;
-
-    const activeContainer = findContainer(activeId);
-    const overContainer = findContainer(overId);
-
-    // we're not over a valid container or we're over the same container so no
-    // special handling for moving to another container is required
-    if (
-      !activeContainer ||
-      !overContainer ||
-      activeContainer === overContainer
-    ) {
-      return;
-    }
-
-    setTasks((prev) => {
-      const activeItems = prev[activeContainer];
-      const overItems = prev[overContainer];
-
-      // find the indexes of the active task and the task being hovered over
-      const activeIndex = activeItems.findIndex((task) => task.id === activeId);
-      const overIndex = overItems.findIndex((task) => task.id === overId);
-
-      // Get the task being moved
-      const movedTask = activeItems[activeIndex];
-      if (!movedTask) return prev;
-
-      let newIndex;
-      if (overIndex in prev) {
-        // we're hovering over the container itself, not a task, so insert at the end
-        newIndex = overItems.length + 1;
-      } else {
-        const isBelowLastItem =
-          overIndex === overItems.length - 1 &&
-          active.rect.current.translated &&
-          active.rect.current.translated.top > over.rect.top + over.rect.height;
-
-        const positionShift = isBelowLastItem ? 1 : 0;
-        newIndex = overIndex + positionShift;
-      }
-
-      // Create new arrays with the task moved
-      return {
-        ...prev,
-        [activeContainer]: activeItems.filter((task) => task.id !== activeId),
-        [overContainer]: [
-          ...overItems.slice(0, newIndex),
-          movedTask,
-          ...overItems.slice(newIndex),
-        ],
-      };
-    });
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-
-    if (!over) {
-      setActiveTask(null);
-      setOriginalContainer(null);
-      return;
-    }
-
-    const { id: activeId } = active;
-    const { id: overId } = over;
-
-    const activeContainer = findContainer(activeId);
-    const overContainer = findContainer(overId);
-
-    if (!activeContainer || !overContainer) {
-      setActiveTask(null);
-      setOriginalContainer(null);
-      return;
-    }
-
-    let updatedTasks = tasks;
-
-    // Handle reordering within the same column
-    if (activeContainer === overContainer) {
-      const activeIndex = tasks[activeContainer].findIndex(
-        (task) => task.id === activeId,
-      );
-      const overIndex = tasks[overContainer].findIndex(
-        (task) => task.id === overId,
-      );
-
-      if (activeIndex !== overIndex && overIndex !== -1) {
-        updatedTasks = {
-          ...tasks,
-          [activeContainer]: arrayMove(
-            tasks[activeContainer],
-            activeIndex,
-            overIndex,
-          ),
-        };
-        setTasks(updatedTasks);
-      }
-    } else {
-      // Task was moved to a different column - tasks state already updated by handleDragOver
-      updatedTasks = tasks;
-    }
-
-    const positionData = {
-      boardId,
-      todoPos: updatedTasks.TODO.map((t) => t.id),
-      inProgressPos: updatedTasks.IN_PROGRESS.map((t) => t.id),
-      donePos: updatedTasks.DONE.map((t) => t.id),
-    };
-
-    updateTaskPos(positionData, {
-      onSuccess: () => {
-        // Remove stale position query cache before switching sortBy.
-        // Without this, TanStack Query immediately serves cached data from
-        // a previous "position" query (which has a different order), causing
-        // tasks to visually reshuffle before the refetch completes.
-        queryClient.removeQueries({
-          queryKey: trpc.tasks.getPage.queryKey({ boardId }),
-        });
-        setSortBy("position");
-      },
-      onError: () => {
-        toast.error("Failed to save task positions");
-      },
-    });
-
-    if (originalContainer && originalContainer !== overContainer) {
-      updateTaskStatus(
-        {
-          taskId: activeId as number,
-          boardId: boardId,
-          newStatus: overContainer,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Status updated");
-          },
-          onError: () => {
-            toast.error("Failed to update status");
-          },
-        },
-      );
-    }
-
-    setActiveTask(null);
-    setOriginalContainer(null);
   }
 
   useEffect(() => {
@@ -369,50 +185,99 @@ export function Board({ boardId }: BoardIdParams) {
         />
       )}
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
-        <DndContext
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-          // collisionDetection={closestCorners}
+        <DragDropProvider
+          onDragStart={(event) => {
+            const { source } = event.operation;
+            if (!source) return;
+            setOriginalContainer(
+              findTaskContainer(source.id as number),
+            );
+          }}
+          onDragOver={(event) => {
+            setTasks((prev) => move(prev, event));
+          }}
+          onDragEnd={(event) => {
+            const { source } = event.operation;
+
+            if (event.canceled || !source) {
+              setOriginalContainer(null);
+              return;
+            }
+
+            const updatedTasks = move(tasks, event);
+            setTasks(updatedTasks);
+
+            const positionData = {
+              boardId,
+              todoPos: updatedTasks.TODO.map((t) => t.id),
+              inProgressPos: updatedTasks.IN_PROGRESS.map((t) => t.id),
+              donePos: updatedTasks.DONE.map((t) => t.id),
+            };
+
+            updateTaskPos(positionData, {
+              onSuccess: () => {
+                setSortBy("position");
+              },
+              onError: () => {
+                toast.error("Failed to save task positions");
+              },
+            });
+
+            const newContainer = findTaskContainer(
+              source.id as number,
+              updatedTasks,
+            );
+            if (
+              originalContainer &&
+              newContainer &&
+              originalContainer !== newContainer
+            ) {
+              updateTaskStatus(
+                {
+                  taskId: source.id as number,
+                  boardId: boardId,
+                  newStatus: newContainer,
+                },
+                {
+                  onSuccess: () => {
+                    toast.success("Status updated");
+                  },
+                  onError: () => {
+                    toast.error("Failed to update status");
+                  },
+                },
+              );
+            }
+
+            setOriginalContainer(null);
+          }}
         >
-          <SortableContext
-            items={tasks.TODO.map((t) => t.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Column
-              tasks={tasks.TODO}
-              status="TODO"
-              isPending={isPending_todos && tasks.TODO.length === 0}
-            />
-          </SortableContext>
-          <SortableContext
-            items={tasks.IN_PROGRESS.map((t) => t.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Column
-              tasks={tasks.IN_PROGRESS}
-              status="IN_PROGRESS"
-              isPending={isPending_inProgress && tasks.IN_PROGRESS.length === 0}
-            />
-          </SortableContext>
-          <SortableContext
-            items={tasks.DONE.map((t) => t.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Column
-              tasks={tasks.DONE}
-              status="DONE"
-              isPending={isPending_done && tasks.DONE.length === 0}
-            />
-          </SortableContext>
+          <Column
+            tasks={tasks.TODO}
+            status="TODO"
+            isPending={isPending_todos && tasks.TODO.length === 0}
+          />
+          <Column
+            tasks={tasks.IN_PROGRESS}
+            status="IN_PROGRESS"
+            isPending={isPending_inProgress && tasks.IN_PROGRESS.length === 0}
+          />
+          <Column
+            tasks={tasks.DONE}
+            status="DONE"
+            isPending={isPending_done && tasks.DONE.length === 0}
+          />
           <DragOverlay
-            dropAnimation={{
-              duration: 100,
-            }}
+            dropAnimation={{ duration: 100 }}
           >
-            {activeTask ? <Task task={activeTask} isOverlay /> : null}
+            {(source) => (
+              <Task
+                task={(source.data as { task: TTask }).task}
+                isOverlay
+              />
+            )}
           </DragOverlay>
-        </DndContext>
+        </DragDropProvider>
       </div>
     </div>
   );

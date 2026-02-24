@@ -43,8 +43,8 @@ export function Column({ tasks, status, isPending }: Props) {
             <Spinner />
           </div>
         ) : (
-          tasks.map((task) => (
-            <SortableTask key={task.id} task={task} />
+          tasks.map((task, index) => (
+            <SortableTask key={task.id} task={task} index={index} group={status} />
           ))
         )}
       </Droppable>
