@@ -3,9 +3,7 @@ import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { tasks, boards, taskPositions } from "../db/schema.js";
 import {
   BoardIdSchema,
-  ByCreatedCursorSchema,
-  ByDueDateCursorSchema,
-  PageQuerySchema,
+  ColumnQuerySchema,
   TaskIdSchema,
   UpdateStatusSchema,
   UpdatePositionsSchema,
@@ -36,23 +34,11 @@ export type VerifyBoardOwnershipParams = z.infer<
 export type TaskSearchParams = z.infer<typeof BoardIdSchema> & {
   query: string;
 };
-// Pagination types
-export type ByCreatedCursor = z.infer<typeof ByCreatedCursorSchema>;
-export type ByDueDateCursor = z.infer<typeof ByDueDateCursorSchema>;
-export type Cursors = ByCreatedCursor | ByDueDateCursor;
-export type PageQuery = z.infer<typeof PageQuerySchema>;
-export type ByCreatedPageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
-  cursor?: ByCreatedCursor;
-};
-export type ByDueDatePageParams = Omit<PageQuery, "cursor" | "sortBy"> & {
-  cursor?: ByDueDateCursor;
-};
-export type ByPositionPageParams = Omit<
-  PageQuery,
-  "cursor" | "sortBy" | "sortOrder"
-> & {
-  cursor?: number; // cursor is the start index in the position array
-};
+
+export type ColumnQuery = z.infer<typeof ColumnQuerySchema>;
+export type ByCreatedColParams = Omit<ColumnQuery, "sortBy">;
+export type ByDueDateColParams = Omit<ColumnQuery, "sortBy">;
+export type ByPositionColParams = Omit<ColumnQuery, "sortBy" | "sortOrder">;
 export type UpdatePositionsParams = z.infer<typeof UpdatePositionsSchema>;
 
 /* HTTP response wrapper types */

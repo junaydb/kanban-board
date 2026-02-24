@@ -35,8 +35,6 @@ This is a TypeScript backend for a kanban board application built with:
 
 **Authentication**: Uses Better Auth with social providers (Google/GitHub). Auth configuration in `src/main/util/auth.ts` with database adapter integration.
 
-**Cursor-Based Pagination**: Implements cursor-based pagination for task lists with support for sorting by creation date or due date. Pagination logic in `src/main/util/Pagination.ts`.
-
 **Error Handling**: Uses tRPC error handling with `TRPCError` for consistent API responses. Custom response wrappers in `src/main/util/responseWrappers.ts`.
 
 ## Database Setup
@@ -70,7 +68,6 @@ This is a TypeScript backend for a kanban board application built with:
 ### Task Model (`src/main/models/Task.ts`)
 
 - CRUD operations using Drizzle ORM
-- Pagination support with multiple sort strategies
 - Methods: `getAllFromBoard`, `getNumTasks`, `getTasksByCreated`, `getTasksByDueDate`, `findById`, `updateStatus`, `delete`, `create`
 
 ### Board Model (`src/main/models/Board.ts`)
@@ -89,7 +86,6 @@ This is a TypeScript backend for a kanban board application built with:
 
 - `getAllFromBoard` - Get all tasks for a board
 - `getCount` - Get task count for a board
-- Pagination endpoints for tasks by creation date and due date
 - CRUD operations with proper ownership verification
 
 ### Boards Router (`/api/trpc/boards`)
@@ -106,5 +102,5 @@ This is a TypeScript backend for a kanban board application built with:
   - `trpc/` - tRPC configuration and routers
   - `routes/` - Domain-specific tRPC routers and validation schemas
   - `models/` - Business logic models using Drizzle ORM
-  - `util/` - Shared utilities (auth, pagination, response wrappers, types)
+  - `util/` - Shared utilities (auth, response wrappers, types)
 - `src/test/` - Test suites organized by type

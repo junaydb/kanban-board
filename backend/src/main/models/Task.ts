@@ -1,30 +1,17 @@
 import db from "../db/index.js";
 import { tasks, taskPositions } from "../db/schema.js";
-import {
-  eq,
-  and,
-  lt,
-  gt,
-  desc,
-  asc,
-  count,
-  or,
-  sql,
-  ilike,
-  inArray,
-} from "drizzle-orm";
+import { eq, and, desc, asc, count, sql, ilike, inArray } from "drizzle-orm";
 import type {
   TTask,
   CreateTaskParams,
   UpdateStatusParams,
   UpdatePositionsParams,
-  ByDueDatePageParams,
-  ByCreatedPageParams,
-  ByPositionPageParams,
+  ByDueDateColParams,
+  ByCreatedColParams,
+  ByPositionColParams,
   BoardIdParams,
   TaskIdParams,
   TaskCountParams,
-  PageQuery,
 } from "../util/types.js";
 
 class Task {
@@ -48,53 +35,6 @@ class Task {
   }
 
   /**
-   * Returns all task IDs belonging to this board, grouped by status.
-   * Task IDs are ordered based on sortBy and sortOrder parameters.
-   */
-  static async getAllTaskIdsFromBoard({
-    boardId,
-    sortBy,
-    sortOrder,
-  }: BoardIdParams & {
-    sortBy: PageQuery["sortBy"];
-    sortOrder: PageQuery["sortOrder"];
-  }) {
-    let orderByClause;
-
-    switch (sortBy) {
-      case "created":
-        orderByClause =
-          sortOrder === "ASC"
-            ? [asc(tasks.createdAt), asc(tasks.id)]
-            : [desc(tasks.createdAt), desc(tasks.id)];
-        break;
-      case "dueDate":
-        orderByClause =
-          sortOrder === "ASC"
-            ? [sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id)]
-            : [sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id)];
-        break;
-      default:
-        orderByClause = [desc(tasks.createdAt), desc(tasks.id)];
-        break;
-    }
-
-    const allTasks = await db
-      .select({ id: tasks.id, status: tasks.status })
-      .from(tasks)
-      .where(eq(tasks.boardId, boardId))
-      .orderBy(...orderByClause);
-
-    const TODO = allTasks.filter((t) => t.status === "TODO").map((t) => t.id);
-    const IN_PROGRESS = allTasks
-      .filter((t) => t.status === "IN_PROGRESS")
-      .map((t) => t.id);
-    const DONE = allTasks.filter((t) => t.status === "DONE").map((t) => t.id);
-
-    return { TODO, IN_PROGRESS, DONE };
-  }
-
-  /**
    * Returns the total number of tasks for this board.
    */
   static async getNumTasks({ boardId, status }: TaskCountParams) {
@@ -112,158 +52,75 @@ class Task {
   }
 
   /**
-   * Returns the next page of size `pageSize` from the database
-   * where the tasks have a status equal to `pageParams.status`,
-   * ordered by creation date in ascending or descending order, depending on `sortOrder`.
+   * Returns tasks with the given status, ordered by creation date
+   * in ascending or descending order depending on `sortOrder`.
    */
   static async getTasksByCreated({
     sortOrder,
     status,
-    pageSize,
-    cursor,
     boardId,
-  }: ByCreatedPageParams) {
-    let page: TTask[];
+  }: ByCreatedColParams) {
+    let result: TTask[];
 
     switch (sortOrder) {
       case "ASC":
-        page = await db
+        result = await db
           .select()
           .from(tasks)
-          .where(
-            and(
-              eq(tasks.boardId, boardId),
-              eq(tasks.status, status),
-              cursor
-                ? or(
-                    gt(tasks.createdAt, cursor.prevCreatedAt),
-                    and(
-                      eq(tasks.createdAt, cursor.prevCreatedAt),
-                      gt(tasks.id, cursor.prevId),
-                    ),
-                  )
-                : undefined,
-            ),
-          )
-          .orderBy(asc(tasks.createdAt), asc(tasks.id))
-          .limit(pageSize);
+          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
+          .orderBy(asc(tasks.createdAt), asc(tasks.id));
         break;
 
       case "DESC":
-        page = await db
+        result = await db
           .select()
           .from(tasks)
-          .where(
-            and(
-              eq(tasks.boardId, boardId),
-              eq(tasks.status, status),
-              cursor
-                ? or(
-                    lt(tasks.createdAt, cursor.prevCreatedAt),
-                    and(
-                      eq(tasks.createdAt, cursor.prevCreatedAt),
-                      lt(tasks.id, cursor.prevId),
-                    ),
-                  )
-                : undefined,
-            ),
-          )
-          .orderBy(desc(tasks.createdAt), desc(tasks.id))
-          .limit(pageSize);
+          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
+          .orderBy(desc(tasks.createdAt), desc(tasks.id));
         break;
     }
 
-    return page;
+    return result;
   }
 
   /**
-   * Returns the next page of size `pageSize` from the database
-   * where the tasks have a status equal to `pageParams.status`,
-   * ordered by due date in ascending or descending order, depending on `sortOrder`.
+   * Returns tasks with the given status, ordered by due date
+   * in ascending or descending order depending on `sortOrder`.
    * NULL due dates are always placed at the end, regardless of sort order.
    */
   static async getTasksByDueDate({
     sortOrder,
     status,
-    pageSize,
-    cursor,
     boardId,
-  }: ByDueDatePageParams) {
-    let page: TTask[];
+  }: ByDueDateColParams) {
+    let result: TTask[];
 
     switch (sortOrder) {
       case "ASC":
-        page = await db
+        result = await db
           .select()
           .from(tasks)
-          .where(
-            and(
-              eq(tasks.boardId, boardId),
-              eq(tasks.status, status),
-              cursor
-                ? !cursor.prevDueDate
-                  ? and(
-                      sql`${tasks.dueDate} IS NULL`,
-                      gt(tasks.id, cursor.prevId),
-                    )
-                  : or(
-                      gt(tasks.dueDate, cursor.prevDueDate),
-                      and(
-                        eq(tasks.dueDate, cursor.prevDueDate),
-                        gt(tasks.id, cursor.prevId),
-                      ),
-                      sql`${tasks.dueDate} IS NULL`,
-                    )
-                : undefined,
-            ),
-          )
-          .orderBy(sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id))
-          .limit(pageSize);
+          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
+          .orderBy(sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id));
         break;
 
       case "DESC":
-        page = await db
+        result = await db
           .select()
           .from(tasks)
-          .where(
-            and(
-              eq(tasks.boardId, boardId),
-              eq(tasks.status, status),
-              cursor
-                ? !cursor.prevDueDate
-                  ? and(
-                      sql`${tasks.dueDate} IS NULL`,
-                      lt(tasks.id, cursor.prevId),
-                    )
-                  : or(
-                      lt(tasks.dueDate, cursor.prevDueDate),
-                      and(
-                        eq(tasks.dueDate, cursor.prevDueDate),
-                        lt(tasks.id, cursor.prevId),
-                      ),
-                      sql`${tasks.dueDate} IS NULL`,
-                    )
-                : undefined,
-            ),
-          )
-          .orderBy(sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id))
-          .limit(pageSize);
+          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
+          .orderBy(sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id));
         break;
     }
 
-    return page;
+    return result;
   }
 
   /**
-   * Returns a page of tasks ordered by user-defined position.
+   * Returns  tasks ordered by user-defined position.
    * Uses the position arrays stored in the taskPositions table.
    */
-  static async getTasksByPosition({
-    status,
-    pageSize,
-    cursor,
-    boardId,
-  }: ByPositionPageParams) {
+  static async getTasksByPosition({ status, boardId }: ByPositionColParams) {
     const [positions] = await db
       .select()
       .from(taskPositions)
@@ -282,19 +139,16 @@ class Task {
         break;
     }
 
-    const startIndex = cursor ?? 0;
-    const taskIds = posArray.slice(startIndex, startIndex + pageSize);
-
     const tasksUnordered = await db
       .select()
       .from(tasks)
-      .where(inArray(tasks.id, taskIds));
+      .where(inArray(tasks.id, posArray));
 
     // re-order the tasks so they're in the user-defined order
     const taskMap = new Map(tasksUnordered.map((task) => [task.id, task]));
-    let page = taskIds.map((id) => taskMap.get(id)!);
+    const result = posArray.map((id) => taskMap.get(id)!);
 
-    return page;
+    return result;
   }
 
   /**

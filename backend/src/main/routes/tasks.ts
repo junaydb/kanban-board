@@ -5,13 +5,11 @@ import {
   CreateTaskSchema,
   UpdateStatusSchema,
   UpdatePositionsSchema,
-  PageQuerySchema,
+  ColumnQuerySchema,
   BoardIdSchema,
   TaskIdSchema,
   TaskCountSchema,
 } from "./_validators.js";
-import type { TTask } from "../util/types.js";
-import { Pagination } from "../util/Pagination.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
@@ -36,58 +34,24 @@ export const tasksRouter = router({
       return successResponse.standard({ taskCount: numTasks });
     }),
 
-  getPage: publicProcedure
-    .input(PageQuerySchema)
+  getByCreated: publicProcedure
+    .input(ColumnQuerySchema)
     .query(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 
-      const { sortBy, pageSize } = input;
+      const tasks = await Task.getTasksByCreated(input);
 
-      let page: TTask[] | null;
-      let nextCursor: string | null = null;
+      return successResponse.standard({ tasks });
+    }),
 
-      // Lots of repetition, may need refactoring if more sort strategies are added
-      switch (sortBy) {
-        case "created": {
-          const params = Pagination.created.generateParams(input);
-          page = await Task.getTasksByCreated(params);
+  getByDueDate: publicProcedure
+    .input(ColumnQuerySchema)
+    .query(async ({ ctx, input }) => {
+      await verifyBoardExistenceAndOwnership(ctx, input);
 
-          const nextPageExists = page.length === pageSize;
-          if (nextPageExists) {
-            const lastTask = page[page.length - 1];
-            nextCursor = Pagination.created.getNextCursor(lastTask);
-          }
-          break;
-        }
+      const tasks = await Task.getTasksByDueDate(input);
 
-        case "dueDate": {
-          const params = Pagination.dueDate.generateParams(input);
-          page = await Task.getTasksByDueDate(params);
-
-          const nextPageExists = page.length === pageSize;
-          if (nextPageExists) {
-            const lastTask = page[page.length - 1];
-            nextCursor = Pagination.dueDate.getNextCursor(lastTask);
-          }
-          break;
-        }
-
-        case "position": {
-          const params = Pagination.position.generateParams(input);
-          page = await Task.getTasksByPosition(params);
-
-          const nextPageExists = page.length === pageSize;
-          if (nextPageExists) {
-            nextCursor = Pagination.position.getNextCursor(
-              pageSize,
-              input.cursor,
-            );
-          }
-          break;
-        }
-      }
-
-      return successResponse.withMeta({ tasks: page }, { cursor: nextCursor });
+      return successResponse.standard({ tasks });
     }),
 
   getById: publicProcedure
