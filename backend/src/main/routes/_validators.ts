@@ -66,11 +66,9 @@ export const UpdateStatusSchema = z.object({
   newStatus: StatusEnum,
 });
 
-export const ColumnQuerySchema = z.object({
-  status: StatusEnum,
-  sortBy: z.enum(["created", "dueDate", "position"]).default("position"),
-  sortOrder: z.enum(["ASC", "DESC"]).default("DESC"),
-  boardId: IdSchema,
+export const SortSchema = z.object({
+  sortBy: z.enum(["created", "dueDate", "position"]),
+  sortOrder: z.enum(["ASC", "DESC"]),
 });
 
 export const UpdatePositionsSchema = z.object({

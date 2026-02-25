@@ -5,7 +5,7 @@ import {
   CreateTaskSchema,
   UpdateStatusSchema,
   UpdatePositionsSchema,
-  ColumnQuerySchema,
+  SortSchema,
   BoardIdSchema,
   TaskIdSchema,
   TaskCountSchema,
@@ -16,7 +16,7 @@ import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
-    .input(BoardIdSchema)
+    .input(BoardIdSchema.extend({ sort: SortSchema.optional() }))
     .query(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 
@@ -32,26 +32,6 @@ export const tasksRouter = router({
 
       const numTasks = await Task.getNumTasks(input);
       return successResponse.standard({ taskCount: numTasks });
-    }),
-
-  getByCreated: publicProcedure
-    .input(ColumnQuerySchema)
-    .query(async ({ ctx, input }) => {
-      await verifyBoardExistenceAndOwnership(ctx, input);
-
-      const tasks = await Task.getTasksByCreated(input);
-
-      return successResponse.standard({ tasks });
-    }),
-
-  getByDueDate: publicProcedure
-    .input(ColumnQuerySchema)
-    .query(async ({ ctx, input }) => {
-      await verifyBoardExistenceAndOwnership(ctx, input);
-
-      const tasks = await Task.getTasksByDueDate(input);
-
-      return successResponse.standard({ tasks });
     }),
 
   getById: publicProcedure

@@ -1,14 +1,12 @@
 import db from "../db/index.js";
 import { tasks, taskPositions } from "../db/schema.js";
-import { eq, and, desc, asc, count, sql, ilike, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, count, sql, ilike } from "drizzle-orm";
 import type {
   TTask,
   CreateTaskParams,
   UpdateStatusParams,
   UpdatePositionsParams,
-  ByDueDateColParams,
-  ByCreatedColParams,
-  ByPositionColParams,
+  SortParams,
   BoardIdParams,
   TaskIdParams,
   TaskCountParams,
@@ -17,21 +15,71 @@ import type {
 class Task {
   /**
    * Returns all tasks belonging to this board, grouped by status.
-   * Ordered by creation date in descending order.
+   * Optionally sorted by creation date, due date, or user-defined position (default).
    */
-  static async getAllFromBoard({ boardId }: BoardIdParams) {
-    const allTasks = await db
+  static async getAllFromBoard({
+    boardId,
+    sort,
+  }: BoardIdParams & { sort?: SortParams }) {
+    const sortBy = sort?.sortBy ?? "position";
+    const sortOrder = sort?.sortOrder ?? "DESC";
+
+    if (sortBy === "created") {
+      const allTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.boardId, boardId))
+        .orderBy(
+          sortOrder === "ASC" ? asc(tasks.createdAt) : desc(tasks.createdAt),
+          sortOrder === "ASC" ? asc(tasks.id) : desc(tasks.id),
+        );
+
+      return {
+        todo: allTasks.filter((t) => t.status === "TODO"),
+        in_progress: allTasks.filter((t) => t.status === "IN_PROGRESS"),
+        done: allTasks.filter((t) => t.status === "DONE"),
+      };
+    }
+
+    if (sortBy === "dueDate") {
+      const allTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.boardId, boardId))
+        .orderBy(
+          sortOrder === "ASC"
+            ? sql`${tasks.dueDate} ASC NULLS LAST`
+            : sql`${tasks.dueDate} DESC NULLS LAST`,
+          sortOrder === "ASC" ? asc(tasks.id) : desc(tasks.id),
+        );
+
+      return {
+        todo: allTasks.filter((t) => t.status === "TODO"),
+        in_progress: allTasks.filter((t) => t.status === "IN_PROGRESS"),
+        done: allTasks.filter((t) => t.status === "DONE"),
+      };
+    }
+
+    // position (default): use stored position arrays
+    const [positions] = await db
+      .select()
+      .from(taskPositions)
+      .where(eq(taskPositions.boardId, boardId));
+
+    const allTasksUnordered = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.boardId, boardId))
-      .orderBy(desc(tasks.createdAt));
+      .where(eq(tasks.boardId, boardId));
 
-    // Group by status
-    const todo = allTasks.filter((t) => t.status === "TODO");
-    const in_progress = allTasks.filter((t) => t.status === "IN_PROGRESS");
-    const done = allTasks.filter((t) => t.status === "DONE");
+    const taskMap = new Map(allTasksUnordered.map((t) => [t.id, t]));
+    const orderByPos = (posArray: number[]) =>
+      posArray.map((id) => taskMap.get(id)!).filter(Boolean);
 
-    return { todo, in_progress, done };
+    return {
+      todo: orderByPos(positions.todoPos),
+      in_progress: orderByPos(positions.inProgressPos),
+      done: orderByPos(positions.donePos),
+    };
   }
 
   /**
@@ -49,106 +97,6 @@ class Task {
       );
 
     return result[0].count;
-  }
-
-  /**
-   * Returns tasks with the given status, ordered by creation date
-   * in ascending or descending order depending on `sortOrder`.
-   */
-  static async getTasksByCreated({
-    sortOrder,
-    status,
-    boardId,
-  }: ByCreatedColParams) {
-    let result: TTask[];
-
-    switch (sortOrder) {
-      case "ASC":
-        result = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
-          .orderBy(asc(tasks.createdAt), asc(tasks.id));
-        break;
-
-      case "DESC":
-        result = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
-          .orderBy(desc(tasks.createdAt), desc(tasks.id));
-        break;
-    }
-
-    return result;
-  }
-
-  /**
-   * Returns tasks with the given status, ordered by due date
-   * in ascending or descending order depending on `sortOrder`.
-   * NULL due dates are always placed at the end, regardless of sort order.
-   */
-  static async getTasksByDueDate({
-    sortOrder,
-    status,
-    boardId,
-  }: ByDueDateColParams) {
-    let result: TTask[];
-
-    switch (sortOrder) {
-      case "ASC":
-        result = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
-          .orderBy(sql`${tasks.dueDate} ASC NULLS LAST`, asc(tasks.id));
-        break;
-
-      case "DESC":
-        result = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.boardId, boardId), eq(tasks.status, status)))
-          .orderBy(sql`${tasks.dueDate} DESC NULLS LAST`, desc(tasks.id));
-        break;
-    }
-
-    return result;
-  }
-
-  /**
-   * Returns  tasks ordered by user-defined position.
-   * Uses the position arrays stored in the taskPositions table.
-   */
-  static async getTasksByPosition({ status, boardId }: ByPositionColParams) {
-    const [positions] = await db
-      .select()
-      .from(taskPositions)
-      .where(eq(taskPositions.boardId, boardId));
-
-    let posArray: number[];
-    switch (status) {
-      case "TODO":
-        posArray = positions.todoPos;
-        break;
-      case "IN_PROGRESS":
-        posArray = positions.inProgressPos;
-        break;
-      case "DONE":
-        posArray = positions.donePos;
-        break;
-    }
-
-    const tasksUnordered = await db
-      .select()
-      .from(tasks)
-      .where(inArray(tasks.id, posArray));
-
-    // re-order the tasks so they're in the user-defined order
-    const taskMap = new Map(tasksUnordered.map((task) => [task.id, task]));
-    const result = posArray.map((id) => taskMap.get(id)!);
-
-    return result;
   }
 
   /**

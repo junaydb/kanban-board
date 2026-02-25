@@ -3,7 +3,7 @@ import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { tasks, boards, taskPositions } from "../db/schema.js";
 import {
   BoardIdSchema,
-  ColumnQuerySchema,
+  SortSchema,
   TaskIdSchema,
   UpdateStatusSchema,
   UpdatePositionsSchema,
@@ -35,10 +35,7 @@ export type TaskSearchParams = z.infer<typeof BoardIdSchema> & {
   query: string;
 };
 
-export type ColumnQuery = z.infer<typeof ColumnQuerySchema>;
-export type ByCreatedColParams = Omit<ColumnQuery, "sortBy">;
-export type ByDueDateColParams = Omit<ColumnQuery, "sortBy">;
-export type ByPositionColParams = Omit<ColumnQuery, "sortBy" | "sortOrder">;
+export type SortParams = z.infer<typeof SortSchema>;
 export type UpdatePositionsParams = z.infer<typeof UpdatePositionsSchema>;
 
 /* HTTP response wrapper types */
