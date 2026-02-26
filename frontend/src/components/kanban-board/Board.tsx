@@ -19,10 +19,10 @@ import type {
 } from "@backend/util/types";
 import { Task } from "./Task";
 
-type TasksByStatus = Record<TaskStatusEnum, TTask[]>;
+type TasksMap = Record<TaskStatusEnum, TTask[]>;
 
 export function Board({ boardId }: BoardIdParams) {
-  const [tasks, setTasks] = useState<TasksByStatus>({
+  const [tasks, setTasks] = useState<TasksMap>({
     TODO: [],
     IN_PROGRESS: [],
     DONE: [],
@@ -47,26 +47,31 @@ export function Board({ boardId }: BoardIdParams) {
 
   const {
     data: fetchedTasks,
-    isPending: isPending_tasks,
+    isPending: isPending_fetchedTasks,
     isError: isError_tasks,
   } = useGetAllTasks({ boardId, sortBy, sortOrder });
 
   const {
     data: boardData,
-    isPending: isPending_boardLookUp,
     isSuccess: isSuccess_boardLookUp,
-    error,
+    error: boardLookupError,
   } = useBoardLookup({ boardId });
 
   function findTaskContainer(
     taskId: number,
-    tasksMap: TasksByStatus = tasks,
+    tasksMap: TasksMap = tasks,
   ): TaskStatusEnum | null {
     if (tasksMap.TODO.some((t) => t.id === taskId)) return "TODO";
     if (tasksMap.IN_PROGRESS.some((t) => t.id === taskId)) return "IN_PROGRESS";
     if (tasksMap.DONE.some((t) => t.id === taskId)) return "DONE";
     return null;
   }
+
+  const showColumnLoading =
+    isPending_fetchedTasks &&
+    tasks.TODO.length === 0 &&
+    tasks.IN_PROGRESS.length === 0 &&
+    tasks.DONE.length === 0;
 
   useEffect(() => {
     if (fetchedTasks) {
@@ -84,14 +89,14 @@ export function Board({ boardId }: BoardIdParams) {
   }, [sortBy, boardId]);
 
   useEffect(() => {
-    if (error?.data?.code === "UNAUTHORIZED") {
+    if (boardLookupError?.data?.code === "UNAUTHORIZED") {
       toast.error("You do not own the requested resource");
-    } else if (error) {
+    } else if (boardLookupError) {
       toast.error(
         "An error occurred whilst opening this board, please refresh the page.",
       );
     }
-  }, [error]);
+  }, [boardLookupError]);
 
   useEffect(() => {
     if (isError_tasks) {
@@ -99,7 +104,7 @@ export function Board({ boardId }: BoardIdParams) {
     }
   }, [isError_tasks]);
 
-  if (error?.data?.code === "NOT_FOUND") {
+  if (boardLookupError?.data?.code === "NOT_FOUND") {
     return (
       <div className="h-full flex flex-col gap-2">
         <div className="grow rounded-md border-2 border-dashed flex items-center justify-center">
@@ -192,17 +197,17 @@ export function Board({ boardId }: BoardIdParams) {
           <Column
             tasks={tasks.TODO}
             status="TODO"
-            isPending={isPending_tasks && tasks.TODO.length === 0}
+            isPending={showColumnLoading}
           />
           <Column
             tasks={tasks.IN_PROGRESS}
             status="IN_PROGRESS"
-            isPending={isPending_tasks && tasks.IN_PROGRESS.length === 0}
+            isPending={showColumnLoading}
           />
           <Column
             tasks={tasks.DONE}
             status="DONE"
-            isPending={isPending_tasks && tasks.DONE.length === 0}
+            isPending={showColumnLoading}
           />
           <DragOverlay dropAnimation={{ duration: 100 }}>
             {(source) => (
