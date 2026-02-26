@@ -32,6 +32,9 @@ dependencies:
   pg:
     specifier: ^8.16.3
     version: 8.16.3
+  superjson:
+    specifier: ^2.2.6
+    version: 2.2.6
   zod:
     specifier: ^3.25.76
     version: 3.25.76
@@ -1089,6 +1092,13 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /copy-anything@4.0.5:
+    resolution: {integrity: sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==}
+    engines: {node: '>=18'}
+    dependencies:
+      is-what: 5.5.0
+    dev: false
+
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
     peerDependencies:
@@ -1545,6 +1555,11 @@ packages:
     engines: {node: '>= 0.10'}
     dev: false
 
+  /is-what@5.5.0:
+    resolution: {integrity: sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw==}
+    engines: {node: '>=18'}
+    dev: false
+
   /jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
     dev: false
@@ -1994,6 +2009,13 @@ packages:
     dependencies:
       js-tokens: 9.0.1
     dev: true
+
+  /superjson@2.2.6:
+    resolution: {integrity: sha512-H+ue8Zo4vJmV2nRjpx86P35lzwDT3nItnIsocgumgr0hHMQ+ZGq5vrERg9kJBo5AWGmxZDhzDo+WVIJqkB0cGA==}
+    engines: {node: '>=16'}
+    dependencies:
+      copy-anything: 4.0.5
+    dev: false
 
   /tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
