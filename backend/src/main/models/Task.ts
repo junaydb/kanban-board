@@ -2,10 +2,10 @@ import db from "../db/index.js";
 import { tasks, taskPositions } from "../db/schema.js";
 import { eq, and, desc, asc, count, sql, ilike } from "drizzle-orm";
 import type {
+  GetAllFromBoardParams,
   CreateTaskParams,
   UpdateStatusParams,
   UpdatePositionsParams,
-  SortParams,
   BoardIdParams,
   TaskIdParams,
   TaskCountParams,
@@ -18,11 +18,9 @@ class Task {
    */
   static async getAllFromBoard({
     boardId,
-    sort,
-  }: BoardIdParams & { sort?: SortParams }) {
-    const sortBy = sort?.sortBy ?? "position";
-    const sortOrder = sort?.sortOrder ?? "DESC";
-
+    sortBy,
+    sortOrder,
+  }: GetAllFromBoardParams) {
     if (sortBy === "created") {
       const allTasks = await db
         .select()
@@ -59,26 +57,27 @@ class Task {
       };
     }
 
-    // position (default): use stored position arrays
-    const [positions] = await db
-      .select()
-      .from(taskPositions)
-      .where(eq(taskPositions.boardId, boardId));
+    if (sortBy === "position") {
+      const [positions] = await db
+        .select()
+        .from(taskPositions)
+        .where(eq(taskPositions.boardId, boardId));
 
-    const allTasksUnordered = await db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.boardId, boardId));
+      const allTasksUnordered = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.boardId, boardId));
 
-    const taskMap = new Map(allTasksUnordered.map((t) => [t.id, t]));
-    const orderByPos = (posArray: number[]) =>
-      posArray.map((id) => taskMap.get(id)!).filter(Boolean);
+      const taskMap = new Map(allTasksUnordered.map((t) => [t.id, t]));
+      const orderByPos = (posArray: number[]) =>
+        posArray.map((id) => taskMap.get(id)!).filter(Boolean);
 
-    return {
-      todo: orderByPos(positions.todoPos),
-      in_progress: orderByPos(positions.inProgressPos),
-      done: orderByPos(positions.donePos),
-    };
+      return {
+        todo: orderByPos(positions.todoPos),
+        in_progress: orderByPos(positions.inProgressPos),
+        done: orderByPos(positions.donePos),
+      };
+    }
   }
 
   /**

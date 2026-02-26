@@ -16,7 +16,7 @@ import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
-    .input(BoardIdSchema.extend({ sort: SortSchema.optional() }))
+    .input(BoardIdSchema.extend(SortSchema.shape))
     .query(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 
