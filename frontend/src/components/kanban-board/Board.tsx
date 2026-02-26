@@ -5,21 +5,30 @@ import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-  useGetTaskPage,
+  useGetAllTasks,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
 } from "@/trpc/task-hooks";
 import type {
   TaskStatusEnum,
-  PageQuery,
+  SortParams,
   TTask,
   BoardIdParams,
 } from "@backend/util/types";
 import { Task } from "./Task";
 
 type TasksByStatus = Record<TaskStatusEnum, TTask[]>;
+
+function parseDates(tasks: TTask[]) {
+  return tasks.map((task) => ({
+    ...task,
+    createdAt: new Date(task.createdAt),
+    dueDate: task.dueDate ? new Date(task.dueDate) : null,
+    dueTime: task.dueTime ? new Date(task.dueTime) : null,
+  }));
+}
 
 export function Board({ boardId }: BoardIdParams) {
   const [tasks, setTasks] = useState<TasksByStatus>({
@@ -31,77 +40,25 @@ export function Board({ boardId }: BoardIdParams) {
   const [originalContainer, setOriginalContainer] =
     useState<TaskStatusEnum | null>(null);
 
-  const [sortBy, setSortBy] = useState<PageQuery["sortBy"]>(() => {
+  const [sortBy, setSortBy] = useState<SortParams["sortBy"]>(() => {
     const stored = localStorage.getItem("boardSortBy");
     if (stored) {
-      const parsed = JSON.parse(stored) as Record<string, PageQuery["sortBy"]>;
-      return parsed[boardId] ?? "dueDate";
+      const parsed = JSON.parse(stored) as Record<string, SortParams["sortBy"]>;
+      return parsed[boardId] ?? "position";
     }
-    return "dueDate";
+    return "position";
   });
 
-  useEffect(() => {
-    const stored = localStorage.getItem("boardSortBy");
-    const parsed: Record<string, PageQuery["sortBy"]> = stored
-      ? JSON.parse(stored)
-      : {};
-    parsed[boardId] = sortBy;
-    localStorage.setItem("boardSortBy", JSON.stringify(parsed));
-  }, [sortBy, boardId]);
-
-  const [sortOrder, setSortOrder] = useState<PageQuery["sortOrder"]>("DESC");
-  const [pageSize, setPageSize] = useState(10);
+  const [sortOrder, setSortOrder] = useState<SortParams["sortOrder"]>("DESC");
 
   const { mutate: updateTaskStatus } = useUpdateTaskStatus();
   const { mutate: updateTaskPos } = useUpdateTaskPositions();
 
   const {
-    tasks: tasks_todos,
-    isLoading: isLoading_todos,
-    isPending: isPending_todos,
-    hasNextPage: hasNextPage_todos,
-    fetchNextPage: fetchNextPage_todos,
-    isFetchingNextPage: isFetchingNextPage_todos,
-    isError: isError_todos,
-  } = useGetTaskPage({
-    boardId,
-    status: "TODO",
-    sortBy,
-    sortOrder,
-    pageSize,
-  });
-
-  const {
-    tasks: tasks_inProgress,
-    isLoading: isLoading_inProgress,
-    isPending: isPending_inProgress,
-    hasNextPage: hasNextPage_inProgress,
-    fetchNextPage: fetchNextPage_inProgress,
-    isFetchingNextPage: isFetchingNextPage_inProgress,
-    isError: isError_inProgress,
-  } = useGetTaskPage({
-    boardId,
-    status: "IN_PROGRESS",
-    sortBy,
-    sortOrder,
-    pageSize,
-  });
-
-  const {
-    tasks: tasks_done,
-    isLoading: isLoading_done,
-    isPending: isPending_done,
-    hasNextPage: hasNextPage_done,
-    fetchNextPage: fetchNextPage_done,
-    isFetchingNextPage: isFetchingNextPage_done,
-    isError: isError_done,
-  } = useGetTaskPage({
-    boardId,
-    status: "DONE",
-    sortBy,
-    sortOrder,
-    pageSize,
-  });
+    data: allTasksData,
+    isPending: isPending_tasks,
+    isError: isError_tasks,
+  } = useGetAllTasks({ boardId, sortBy, sortOrder });
 
   const {
     data: boardData,
@@ -109,34 +66,42 @@ export function Board({ boardId }: BoardIdParams) {
     error,
   } = useBoardLookup({ boardId });
 
-  useEffect(() => {
-    if (tasks_todos) {
-      setTasks((prev) => ({ ...prev, TODO: tasks_todos }));
-    }
-  }, [tasks_todos]);
+  const fetchedTasks = useMemo(() => {
+    if (!allTasksData) return null;
 
-  useEffect(() => {
-    if (tasks_inProgress) {
-      setTasks((prev) => ({ ...prev, IN_PROGRESS: tasks_inProgress }));
-    }
-  }, [tasks_inProgress]);
+    const { todo, in_progress, done } = allTasksData.data.tasks;
 
-  useEffect(() => {
-    if (tasks_done) {
-      setTasks((prev) => ({ ...prev, DONE: tasks_done }));
-    }
-  }, [tasks_done]);
+    return {
+      TODO: parseDates(todo),
+      IN_PROGRESS: parseDates(in_progress),
+      DONE: parseDates(done),
+    };
+  }, [allTasksData]);
 
   function findTaskContainer(
     taskId: number,
     tasksMap: TasksByStatus = tasks,
   ): TaskStatusEnum | null {
     if (tasksMap.TODO.some((t) => t.id === taskId)) return "TODO";
-    if (tasksMap.IN_PROGRESS.some((t) => t.id === taskId))
-      return "IN_PROGRESS";
+    if (tasksMap.IN_PROGRESS.some((t) => t.id === taskId)) return "IN_PROGRESS";
     if (tasksMap.DONE.some((t) => t.id === taskId)) return "DONE";
     return null;
   }
+
+  useEffect(() => {
+    if (fetchedTasks) {
+      setTasks(fetchedTasks);
+    }
+  }, [fetchedTasks]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("boardSortBy");
+    const parsed: Record<string, SortParams["sortBy"]> = stored
+      ? JSON.parse(stored)
+      : {};
+    parsed[boardId] = sortBy;
+    localStorage.setItem("boardSortBy", JSON.stringify(parsed));
+  }, [sortBy, boardId]);
 
   useEffect(() => {
     if (error?.data?.code === "UNAUTHORIZED") {
@@ -149,10 +114,10 @@ export function Board({ boardId }: BoardIdParams) {
   }, [error]);
 
   useEffect(() => {
-    if (isError_todos || isError_inProgress || isError_done) {
+    if (isError_tasks) {
       toast.error("Failed to fetch tasks");
     }
-  }, [isError_todos, isError_inProgress, isError_done]);
+  }, [isError_tasks]);
 
   if (error?.data?.code === "NOT_FOUND") {
     return (
@@ -176,22 +141,14 @@ export function Board({ boardId }: BoardIdParams) {
       {isPending_boardLookUp ? (
         <BoardToolbarSkeleton />
       ) : (
-        <BoardToolbar
-          setSortBy={setSortBy}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
+        <BoardToolbar setSortBy={setSortBy} setSortOrder={setSortOrder} />
       )}
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
         <DragDropProvider
           onDragStart={(event) => {
             const { source } = event.operation;
             if (!source) return;
-            setOriginalContainer(
-              findTaskContainer(source.id as number),
-            );
+            setOriginalContainer(findTaskContainer(source.id as number));
           }}
           onDragOver={(event) => {
             setTasks((prev) => move(prev, event));
@@ -255,26 +212,21 @@ export function Board({ boardId }: BoardIdParams) {
           <Column
             tasks={tasks.TODO}
             status="TODO"
-            isPending={isPending_todos && tasks.TODO.length === 0}
+            isPending={isPending_tasks && tasks.TODO.length === 0}
           />
           <Column
             tasks={tasks.IN_PROGRESS}
             status="IN_PROGRESS"
-            isPending={isPending_inProgress && tasks.IN_PROGRESS.length === 0}
+            isPending={isPending_tasks && tasks.IN_PROGRESS.length === 0}
           />
           <Column
             tasks={tasks.DONE}
             status="DONE"
-            isPending={isPending_done && tasks.DONE.length === 0}
+            isPending={isPending_tasks && tasks.DONE.length === 0}
           />
-          <DragOverlay
-            dropAnimation={{ duration: 100 }}
-          >
+          <DragOverlay dropAnimation={{ duration: 100 }}>
             {(source) => (
-              <Task
-                task={(source.data as { task: TTask }).task}
-                isOverlay
-              />
+              <Task task={(source.data as { task: TTask }).task} isOverlay />
             )}
           </DragOverlay>
         </DragDropProvider>

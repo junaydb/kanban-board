@@ -9,32 +9,29 @@ import {
 } from "@/shadcn/ui/dropdown-menu";
 import { Button } from "@/shadcn/ui/button";
 import { BrushCleaning } from "lucide-react";
-import type { PageQuery } from "@backend/util/types";
 import { Skeleton } from "@/shadcn/ui/skeleton";
+import type { SortParams } from "@backend/util/types";
 
-type SortBy = PageQuery["sortBy"];
+type SortBy = Exclude<SortParams["sortBy"], "position">;
 
 interface BoardToolbarProps {
   setSortBy: (value: SortBy) => void;
-  sortOrder: PageQuery["sortOrder"];
-  setSortOrder: (value: PageQuery["sortOrder"]) => void;
-  pageSize: number;
-  setPageSize: (value: number) => void;
+  setSortOrder: (value: SortParams["sortOrder"]) => void;
 }
 
-const sortByLabels: Record<Exclude<SortBy, "position">, string> = {
+const sortByLabels: Record<SortBy, string> = {
   dueDate: "Due date",
   created: "Created",
 };
 
 export function BoardToolbar({ setSortBy, setSortOrder }: BoardToolbarProps) {
-  const handleSortSelect = (
-    sortByValue: Exclude<SortBy, "position">,
-    sortOrderValue: PageQuery["sortOrder"],
-  ) => {
+  function handleSortSelect(
+    sortByValue: SortBy,
+    sortOrderValue: SortParams["sortOrder"],
+  ) {
     setSortBy(sortByValue);
     setSortOrder(sortOrderValue);
-  };
+  }
 
   return (
     <div className="flex items-center gap-2 mx-3 mt-3 p-2 rounded-sm bg-gray-50 border">
