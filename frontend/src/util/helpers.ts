@@ -8,3 +8,22 @@ export function getSetStatusOptions(status: TaskStatusEnum) {
 export function toLowerKebabCase(str = "") {
   return str.toLowerCase().replace(/\s/g, "-");
 }
+
+export function getStatusProps(status: TaskStatusEnum) {
+  const statusMapper = {
+    TODO: {
+      text: "To-do",
+      colour: "#fff",
+    },
+    IN_PROGRESS: {
+      text: "In progress",
+      colour: "#fff",
+    },
+    DONE: {
+      text: "Done",
+      colour: "#fff",
+    },
+  };
+
+  return statusMapper[status];
+}

@@ -1,6 +1,7 @@
 import { Droppable } from "./Droppable";
 import { SortableTask } from "./SortableTask";
 import { Spinner } from "@/shadcn/ui/spinner";
+import { getStatusProps } from "@/util/helpers";
 import type { TaskStatusEnum, TTask } from "@backend/util/types";
 
 type Props = {
@@ -8,25 +9,6 @@ type Props = {
   status: TaskStatusEnum;
   isPending?: boolean;
 };
-
-function getStatusProps(status: TaskStatusEnum) {
-  const statusMapper = {
-    TODO: {
-      text: "To-do",
-      colour: "#fff",
-    },
-    IN_PROGRESS: {
-      text: "In progress",
-      colour: "#fff",
-    },
-    DONE: {
-      text: "Done",
-      colour: "#fff",
-    },
-  };
-
-  return statusMapper[status];
-}
 
 export function Column({ tasks, status, isPending }: Props) {
   const statusProps = getStatusProps(status);
@@ -44,7 +26,12 @@ export function Column({ tasks, status, isPending }: Props) {
           </div>
         ) : (
           tasks.map((task, index) => (
-            <SortableTask key={task.id} task={task} index={index} group={status} />
+            <SortableTask
+              key={task.id}
+              task={task}
+              index={index}
+              group={status}
+            />
           ))
         )}
       </Droppable>
