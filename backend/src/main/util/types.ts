@@ -23,6 +23,7 @@ export type TTaskPositions = InferSelectModel<typeof taskPositions>;
 export type GetAllFromBoardParams = z.infer<
   typeof BoardIdSchema & typeof SortSchema
 >;
+export type SortParams = z.infer<typeof SortSchema>;
 export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
 export type TaskIdParams = z.infer<typeof TaskIdSchema>;
 export type BoardIdParams = z.infer<typeof BoardIdSchema>;
