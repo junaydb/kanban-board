@@ -20,10 +20,10 @@ export function SidebarBoards() {
     useGetAllBoardIdsAndTitles(!!session);
 
   const boardLimitReached = !!(
-    data && data.meta.boardCount >= data.meta.boardCountLimit
+    data && data.boardCount >= data.boardCountLimit
   );
 
-  const boardData = data?.data.boards;
+  const boardData = data?.boards;
 
   const createBoardButton = (
     <SidebarMenuItem>

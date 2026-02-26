@@ -66,8 +66,8 @@ export function CreateBoardFormDialog({
               to: "/boards/$user/$boardId/$boardTitle",
               params: {
                 user: toLowerKebabCase(session.user.name),
-                boardId: String(data.data.id),
-                boardTitle: toLowerKebabCase(data.data.title),
+                boardId: String(data.id),
+                boardTitle: toLowerKebabCase(data.title),
               },
             });
 

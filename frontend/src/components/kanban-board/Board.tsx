@@ -54,6 +54,7 @@ export function Board({ boardId }: BoardIdParams) {
   const {
     data: boardData,
     isPending: isPending_boardLookUp,
+    isSuccess: isSuccess_boardLookUp,
     error,
   } = useBoardLookup({ boardId });
 
@@ -112,15 +113,15 @@ export function Board({ boardId }: BoardIdParams) {
 
   return (
     <div className="h-full flex flex-col">
-      {isPending_boardLookUp ? (
+      {isSuccess_boardLookUp ? (
+        <BoardTitle boardId={boardId} title={boardData.title} />
+      ) : (
         <BoardTitleSkeleton />
-      ) : (
-        <BoardTitle boardId={boardId} title={boardData!.data.title} />
       )}
-      {isPending_boardLookUp ? (
-        <BoardToolbarSkeleton />
-      ) : (
+      {isSuccess_boardLookUp ? (
         <BoardToolbar setSortBy={setSortBy} setSortOrder={setSortOrder} />
+      ) : (
+        <BoardToolbarSkeleton />
       )}
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
         <DragDropProvider

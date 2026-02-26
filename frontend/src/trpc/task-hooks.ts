@@ -23,7 +23,7 @@ export function useGetAllTasks({
       {
         retry: defaultRetry,
         select: (data) => {
-          const { todo, in_progress, done } = data.data.tasks;
+          const { todo, in_progress, done } = data.tasks;
           return {
             TODO: parseDates(todo),
             IN_PROGRESS: parseDates(in_progress),

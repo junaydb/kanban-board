@@ -71,16 +71,16 @@ export function useUpdateBoardTitle() {
 
         // Optimistically update the board title on the board and in the sidebar
         queryClient.setQueryData(trpc.boards.lookup.queryKey({ boardId }), {
-          data: { title },
+          title,
         });
-        queryClient.setQueryData(trpc.boards.getAllIdsAndTitles.queryKey(), {
-          ...prevBoards!,
-          data: {
-            boards: prevBoards!.data.boards.map((board) =>
+        if (prevBoards) {
+          queryClient.setQueryData(trpc.boards.getAllIdsAndTitles.queryKey(), {
+            ...prevBoards,
+            boards: prevBoards.boards.map((board) =>
               board.id === boardId ? { ...board, title } : board,
             ),
-          },
-        });
+          });
+        }
 
         return { prevTitle, prevBoards };
       },
@@ -91,11 +91,11 @@ export function useUpdateBoardTitle() {
         // Rollback to previous cached values if we error
         queryClient.setQueryData(
           trpc.boards.lookup.queryKey({ boardId }),
-          onMutateResult!.prevTitle,
+          onMutateResult?.prevTitle,
         );
         queryClient.setQueryData(
           trpc.boards.getAllIdsAndTitles.queryKey(),
-          onMutateResult!.prevBoards,
+          onMutateResult?.prevBoards,
         );
       },
 
