@@ -21,19 +21,19 @@ export function Task({
   ref,
   ...props
 }: TaskProps) {
-  const formatDate = (date: Date) => {
+  function formatDate(date: Date) {
     return new Date(date).toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
     });
-  };
+  }
 
-  const formatTime = (date: Date) => {
+  function formatTime(date: Date) {
     return new Date(date).toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+  }
 
   return (
     <div
