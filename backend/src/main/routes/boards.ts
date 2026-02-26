@@ -1,6 +1,5 @@
 import Board from "../models/Board.js";
 import { BoardIdSchema, BoardTitleSchema } from "./_validators.js";
-import { successResponse } from "../util/responseWrappers.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
 import { TRPCError } from "@trpc/server";
@@ -20,15 +19,11 @@ export const boardsRouter = router({
       userId: ctx.user.id,
     });
 
-    return successResponse.withMeta(
-      {
-        boards: allBoards,
-      },
-      {
-        boardCount: boardCount,
-        boardCountLimit: MAX_BOARD_COUNT,
-      },
-    );
+    return {
+      boards: allBoards,
+      boardCount: boardCount,
+      boardCountLimit: MAX_BOARD_COUNT,
+    };
   }),
 
   getAllIdsAndTitles: publicProcedure.query(async ({ ctx }) => {
@@ -43,15 +38,11 @@ export const boardsRouter = router({
       userId: ctx.user.id,
     });
 
-    return successResponse.withMeta(
-      {
-        boards: allBoards,
-      },
-      {
-        boardCount: boardCount,
-        boardCountLimit: MAX_BOARD_COUNT,
-      },
-    );
+    return {
+      boards: allBoards,
+      boardCount: boardCount,
+      boardCountLimit: MAX_BOARD_COUNT,
+    };
   }),
 
   lookup: publicProcedure.input(BoardIdSchema).query(async ({ ctx, input }) => {
@@ -59,7 +50,7 @@ export const boardsRouter = router({
 
     const boardTitle = await Board.getTitle(input);
 
-    return successResponse.standard({ title: boardTitle });
+    return { title: boardTitle };
   }),
 
   create: publicProcedure
@@ -90,7 +81,7 @@ export const boardsRouter = router({
         });
       }
 
-      return successResponse.standard(result);
+      return result;
     }),
 
   updateTitle: publicProcedure
@@ -108,12 +99,10 @@ export const boardsRouter = router({
       }
 
       if (result === "NO_OP") {
-        return successResponse.standard({
-          message: "Identical title received. No action taken.",
-        });
+        return { message: "Identical title received. No action taken." };
       }
 
-      return successResponse.standard(result);
+      return result;
     }),
 
   delete: publicProcedure
@@ -123,6 +112,6 @@ export const boardsRouter = router({
 
       const result = await Board.delete(input);
 
-      return successResponse.standard(result);
+      return result;
     }),
 });

@@ -1,5 +1,4 @@
 import Task from "../models/Task.js";
-import { successResponse } from "../util/responseWrappers.js";
 import { z } from "zod";
 import {
   CreateTaskSchema,
@@ -22,7 +21,7 @@ export const tasksRouter = router({
 
       const allTasks = await Task.getAllFromBoard(input);
 
-      return successResponse.standard({ tasks: allTasks });
+      return { tasks: allTasks };
     }),
 
   getCount: publicProcedure
@@ -31,7 +30,7 @@ export const tasksRouter = router({
       await verifyBoardExistenceAndOwnership(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
-      return successResponse.standard({ taskCount: numTasks });
+      return { taskCount: numTasks };
     }),
 
   getById: publicProcedure
@@ -47,7 +46,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.standard(task);
+      return task;
     }),
 
   create: publicProcedure
@@ -57,7 +56,7 @@ export const tasksRouter = router({
 
       const task = await Task.create(input);
 
-      return successResponse.standard(task);
+      return task;
     }),
 
   updateStatus: publicProcedure
@@ -73,7 +72,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.standard({ newStatus: result.status });
+      return { newStatus: result.status };
     }),
 
   delete: publicProcedure
@@ -89,7 +88,7 @@ export const tasksRouter = router({
         });
       }
 
-      return successResponse.standard(result);
+      return result;
     }),
 
   search: publicProcedure
@@ -99,7 +98,7 @@ export const tasksRouter = router({
 
       const results = await Task.search(input);
 
-      return successResponse.standard({ tasks: results });
+      return { tasks: results };
     }),
 
   updatePositions: publicProcedure
@@ -109,6 +108,6 @@ export const tasksRouter = router({
 
       await Task.updatePositions(input);
 
-      return successResponse.standard({ success: true });
+      return { success: true };
     }),
 });

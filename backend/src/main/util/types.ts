@@ -41,10 +41,3 @@ export type TaskSearchParams = z.infer<typeof BoardIdSchema> & {
 
 export type UpdatePositionsParams = z.infer<typeof UpdatePositionsSchema>;
 
-/* HTTP response wrapper types */
-export interface ApiResponse<T = any> {
-  data: T;
-}
-export interface ApiResponseWithMeta<T, U> extends ApiResponse<T> {
-  meta: U;
-}
