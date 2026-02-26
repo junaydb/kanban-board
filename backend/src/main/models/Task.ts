@@ -36,9 +36,7 @@ class Task {
         in_progress: allTasks.filter((t) => t.status === "IN_PROGRESS"),
         done: allTasks.filter((t) => t.status === "DONE"),
       };
-    }
-
-    if (sortBy === "dueDate") {
+    } else if (sortBy === "dueDate") {
       const allTasks = await db
         .select()
         .from(tasks)
@@ -55,9 +53,7 @@ class Task {
         in_progress: allTasks.filter((t) => t.status === "IN_PROGRESS"),
         done: allTasks.filter((t) => t.status === "DONE"),
       };
-    }
-
-    if (sortBy === "position") {
+    } else {
       const [positions] = await db
         .select()
         .from(taskPositions)
@@ -66,7 +62,18 @@ class Task {
       const allTasksUnordered = await db
         .select()
         .from(tasks)
-        .where(eq(tasks.boardId, boardId));
+        .where(eq(tasks.boardId, boardId))
+        .orderBy(desc(tasks.createdAt), desc(tasks.id));
+
+      if (!positions) {
+        return {
+          todo: allTasksUnordered.filter((t) => t.status === "TODO"),
+          in_progress: allTasksUnordered.filter(
+            (t) => t.status === "IN_PROGRESS",
+          ),
+          done: allTasksUnordered.filter((t) => t.status === "DONE"),
+        };
+      }
 
       const taskMap = new Map(allTasksUnordered.map((t) => [t.id, t]));
       const orderByPos = (posArray: number[]) =>
