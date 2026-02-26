@@ -2,7 +2,6 @@ import db from "../db/index.js";
 import { tasks, taskPositions } from "../db/schema.js";
 import { eq, and, desc, asc, count, sql, ilike } from "drizzle-orm";
 import type {
-  TTask,
   CreateTaskParams,
   UpdateStatusParams,
   UpdatePositionsParams,
