@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/react";
+import { CollisionPriority } from "@dnd-kit/abstract";
 
 export function Droppable({
   id,
@@ -11,6 +12,7 @@ export function Droppable({
 }) {
   const { ref } = useDroppable({
     id: id,
+    collisionPriority: CollisionPriority.Low,
   });
 
   return (
