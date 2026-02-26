@@ -5,7 +5,7 @@ import { useBoardLookup } from "@/trpc/board-hooks";
 import { toast } from "sonner";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   useGetAllTasks,
   useUpdateTaskStatus,
@@ -20,15 +20,6 @@ import type {
 import { Task } from "./Task";
 
 type TasksByStatus = Record<TaskStatusEnum, TTask[]>;
-
-function parseDates(tasks: TTask[]) {
-  return tasks.map((task) => ({
-    ...task,
-    createdAt: new Date(task.createdAt),
-    dueDate: task.dueDate ? new Date(task.dueDate) : null,
-    dueTime: task.dueTime ? new Date(task.dueTime) : null,
-  }));
-}
 
 export function Board({ boardId }: BoardIdParams) {
   const [tasks, setTasks] = useState<TasksByStatus>({
@@ -55,7 +46,7 @@ export function Board({ boardId }: BoardIdParams) {
   const { mutate: updateTaskPos } = useUpdateTaskPositions();
 
   const {
-    data: allTasksData,
+    data: fetchedTasks,
     isPending: isPending_tasks,
     isError: isError_tasks,
   } = useGetAllTasks({ boardId, sortBy, sortOrder });
@@ -65,18 +56,6 @@ export function Board({ boardId }: BoardIdParams) {
     isPending: isPending_boardLookUp,
     error,
   } = useBoardLookup({ boardId });
-
-  const fetchedTasks = useMemo(() => {
-    if (!allTasksData) return null;
-
-    const { todo, in_progress, done } = allTasksData.data.tasks;
-
-    return {
-      TODO: parseDates(todo),
-      IN_PROGRESS: parseDates(in_progress),
-      DONE: parseDates(done),
-    };
-  }, [allTasksData]);
 
   function findTaskContainer(
     taskId: number,
