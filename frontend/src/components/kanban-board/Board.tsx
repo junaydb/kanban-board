@@ -10,6 +10,7 @@ import {
   useGetAllTasks,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
+  removeAllTasksCache,
 } from "@/trpc/task-hooks";
 import type {
   TaskStatusEnum,
@@ -158,6 +159,7 @@ export function Board({ boardId }: BoardIdParams) {
 
             updateTaskPos(positionData, {
               onSuccess: () => {
+                removeAllTasksCache(boardId);
                 setSortBy("position");
               },
               onError: () => {

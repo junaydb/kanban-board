@@ -70,3 +70,9 @@ export function invalidateAllTasksCache(boardId: number) {
     queryKey: trpc.tasks.getAllFromBoard.queryKey({ boardId }),
   });
 }
+
+export function removeAllTasksCache(boardId: number) {
+  queryClient.removeQueries({
+    queryKey: trpc.tasks.getAllFromBoard.queryKey({ boardId }),
+  });
+}
