@@ -15,7 +15,10 @@ export function Column({ tasks, status, isPending }: Props) {
 
   return (
     <div className="h-fit">
-      <h2 className="font-medium text-lg p-1">{statusProps.text}</h2>
+      <div className="flex items-center justify-between p-1">
+        <h2 className="font-medium text-lg">{statusProps.text}</h2>
+        <span className="text-sm text-gray-500">{tasks.length}</span>
+      </div>
       <Droppable
         className="p-1 h-fit mb-4 rounded-sm bg-gray-50 border min-h-[100px]"
         id={status}
