@@ -88,8 +88,3 @@ export const BoardTitleSchema = z.object({
     .min(1, { message: "Title cannot be blank" })
     .max(50, { message: "Title cannot be over 50 characters" }),
 });
-
-export const TaskCountSchema = z.object({
-  boardId: IdSchema,
-  status: StatusEnum.optional(),
-});

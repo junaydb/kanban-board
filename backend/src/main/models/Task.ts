@@ -90,16 +90,11 @@ class Task {
   /**
    * Returns the total number of tasks for this board.
    */
-  static async getNumTasks({ boardId, status }: TaskCountParams) {
+  static async getNumTasks({ boardId }: BoardIdParams) {
     const result = await db
       .select({ count: count() })
       .from(tasks)
-      .where(
-        and(
-          eq(tasks.boardId, boardId),
-          status ? eq(tasks.status, status) : undefined,
-        ),
-      );
+      .where(eq(tasks.boardId, boardId));
 
     return result[0].count;
   }

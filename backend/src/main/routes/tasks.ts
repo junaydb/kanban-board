@@ -7,11 +7,12 @@ import {
   SortSchema,
   BoardIdSchema,
   TaskIdSchema,
-  TaskCountSchema,
 } from "./_validators.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
 import { verifyBoardExistenceAndOwnership } from "./_helpers.js";
+
+const MAX_TASK_COUNT = 50;
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
@@ -24,13 +25,14 @@ export const tasksRouter = router({
       return { tasks: allTasks };
     }),
 
-  getCount: publicProcedure
-    .input(BoardIdSchema.merge(TaskCountSchema))
+  getNumTasks: publicProcedure
+    .input(BoardIdSchema)
     .query(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 
       const numTasks = await Task.getNumTasks(input);
-      return { taskCount: numTasks };
+
+      return { taskCount: numTasks, taskCountLimit: MAX_TASK_COUNT };
     }),
 
   getById: publicProcedure
@@ -53,6 +55,15 @@ export const tasksRouter = router({
     .input(CreateTaskSchema)
     .mutation(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
+
+      const boardTaskCount = await Task.getNumTasks({ boardId: input.boardId });
+
+      if (boardTaskCount >= MAX_TASK_COUNT) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Maximum task limit reached. You can create up to ${MAX_TASK_COUNT} tasks per board.`,
+        });
+      }
 
       const task = await Task.create(input);
 

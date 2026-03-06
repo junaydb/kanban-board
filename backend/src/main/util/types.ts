@@ -9,7 +9,6 @@ import {
   UpdatePositionsSchema,
   BoardTitleSchema,
   UserIdSchema,
-  TaskCountSchema,
 } from "../routes/_validators.js";
 
 /* Types derived from drizzle schema */
@@ -28,7 +27,6 @@ export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
 export type TaskIdParams = z.infer<typeof TaskIdSchema>;
 export type BoardIdParams = z.infer<typeof BoardIdSchema>;
 export type UserIdParams = z.infer<typeof UserIdSchema>;
-export type TaskCountParams = z.infer<typeof TaskCountSchema>;
 export type UpdateBoardNameParams = z.infer<
   typeof BoardIdSchema & typeof BoardTitleSchema
 >;
