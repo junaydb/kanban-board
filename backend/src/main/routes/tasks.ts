@@ -4,9 +4,9 @@ import {
   CreateTaskSchema,
   UpdateStatusSchema,
   UpdatePositionsSchema,
-  SortSchema,
   BoardIdSchema,
   TaskIdSchema,
+  GetAllTasksFromBoardSchema,
 } from "./_validators.js";
 import { publicProcedure, router } from "../trpc/trpc.js";
 import { TRPCError } from "@trpc/server";
@@ -16,7 +16,7 @@ const MAX_TASK_COUNT = 50;
 
 export const tasksRouter = router({
   getAllFromBoard: publicProcedure
-    .input(BoardIdSchema.extend(SortSchema.shape))
+    .input(GetAllTasksFromBoardSchema)
     .query(async ({ ctx, input }) => {
       await verifyBoardExistenceAndOwnership(ctx, input);
 

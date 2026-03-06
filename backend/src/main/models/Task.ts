@@ -8,7 +8,6 @@ import type {
   UpdatePositionsParams,
   BoardIdParams,
   TaskIdParams,
-  TaskCountParams,
 } from "../util/types.js";
 
 class Task {

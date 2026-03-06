@@ -3,14 +3,18 @@ import { taskStatusEnum } from "../db/schema.js";
 
 // Could possibly use drizzle-zod in the future, but this works for now.
 
+export const IdSchema = z.coerce.number().int();
+
+export const BoardIdSchema = z.object({
+  boardId: IdSchema,
+});
+
 const StatusEnum = z.enum(taskStatusEnum.enumValues);
 
 const DateSchema = z
   .string()
   .datetime()
   .transform((str) => new Date(str));
-
-export const IdSchema = z.coerce.number().int();
 
 export const UserIdSchema = z.object({
   userId: z.string(),
@@ -20,8 +24,8 @@ export const TaskIdSchema = z.object({
   taskId: IdSchema,
 });
 
-export const CreateTaskSchema = z
-  .object({
+export const CreateTaskSchema = BoardIdSchema.merge(
+  z.object({
     title: z.string().min(1).max(100),
     description: z.string().max(10000).optional(),
     status: StatusEnum.default("TODO"),
@@ -32,8 +36,8 @@ export const CreateTaskSchema = z
       { message: "Due date must be in the future" },
     ).optional(),
     dueTime: DateSchema.optional(),
-    boardId: IdSchema,
-  })
+  }),
+)
   .refine(
     (data) => {
       // Validate: dueTime requires dueDate
@@ -61,26 +65,26 @@ export const CreateTaskSchema = z
     },
   );
 
-export const UpdateStatusSchema = z.object({
-  taskId: IdSchema,
-  newStatus: StatusEnum,
-});
+export const UpdateStatusSchema = TaskIdSchema.merge(
+  z.object({
+    newStatus: StatusEnum,
+  }),
+);
 
-export const SortSchema = z.object({
-  sortBy: z.enum(["created", "dueDate", "position"]),
-  sortOrder: z.enum(["ASC", "DESC"]),
-});
+export const GetAllTasksFromBoardSchema = BoardIdSchema.merge(
+  z.object({
+    sortBy: z.enum(["created", "dueDate", "position"]),
+    sortOrder: z.enum(["ASC", "DESC"]),
+  }),
+);
 
-export const UpdatePositionsSchema = z.object({
-  boardId: IdSchema,
-  todoPos: z.array(IdSchema),
-  inProgressPos: z.array(IdSchema),
-  donePos: z.array(IdSchema),
-});
-
-export const BoardIdSchema = z.object({
-  boardId: IdSchema,
-});
+export const UpdatePositionsSchema = BoardIdSchema.merge(
+  z.object({
+    todoPos: z.array(IdSchema),
+    inProgressPos: z.array(IdSchema),
+    donePos: z.array(IdSchema),
+  }),
+);
 
 export const BoardTitleSchema = z.object({
   title: z
