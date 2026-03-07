@@ -116,9 +116,9 @@ export function CreateBoardFormDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="w-full sm:max-w-md">
+      <DialogContent className="w-full sm:max-w-md" showCloseButton={false}>
+        <DialogTitle>Create a new board</DialogTitle>
         <VisuallyHidden>
-          <DialogTitle>Create a new board</DialogTitle>
           <DialogDescription>Enter a name for your new board</DialogDescription>
         </VisuallyHidden>
         <form id="create-board-form" onSubmit={handleSubmit(onSubmit)}>
@@ -128,9 +128,6 @@ export function CreateBoardFormDialog({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="create-board-form-title">
-                    Board title
-                  </FieldLabel>
                   <Input
                     {...field}
                     id="create-board-form-title"
