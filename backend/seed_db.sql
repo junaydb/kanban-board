@@ -44,15 +44,3 @@ FROM (VALUES
 CROSS JOIN (
   SELECT id FROM boards WHERE title LIKE 'Mock Board' ORDER BY created_at DESC LIMIT 1
 ) AS board_data(board_id);
-
--- Insert task positions for the mock board
-INSERT INTO task_positions (board_id, todo_pos, in_progress_pos, done_pos)
-SELECT
-  b.id,
-  ARRAY(SELECT t.id FROM tasks t WHERE t.board_id = b.id AND t.status = 'TODO' ORDER BY t.created_at),
-  ARRAY(SELECT t.id FROM tasks t WHERE t.board_id = b.id AND t.status = 'IN_PROGRESS' ORDER BY t.created_at),
-  ARRAY(SELECT t.id FROM tasks t WHERE t.board_id = b.id AND t.status = 'DONE' ORDER BY t.created_at)
-FROM boards b
-WHERE b.title LIKE 'Mock Board'
-ORDER BY b.created_at DESC
-LIMIT 1;
