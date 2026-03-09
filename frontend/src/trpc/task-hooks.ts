@@ -82,7 +82,13 @@ export function useUpdateTaskStatus() {
 }
 
 export function useUpdateTaskPositions() {
-  return useMutation(trpc.tasks.updatePositions.mutationOptions());
+  return useMutation(
+    trpc.tasks.updatePositions.mutationOptions({
+      onSettled: (_data, _error, variables) => {
+        removeBoardTasksCache(variables.boardId);
+      },
+    }),
+  );
 }
 
 export function invalidateBoardTasksCache(boardId: number) {

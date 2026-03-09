@@ -28,6 +28,7 @@ export const boards = pgTable("boards", {
 
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
+  position: serial("position").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   status: taskStatusEnum("status").default("TODO").notNull(),
@@ -39,15 +40,6 @@ export const tasks = pgTable("tasks", {
   boardId: integer("board_id")
     .references(() => boards.id, { onDelete: "cascade" })
     .notNull(),
-});
-
-export const taskPositions = pgTable("task_positions", {
-  boardId: integer("board_id")
-    .primaryKey()
-    .references(() => boards.id, { onDelete: "cascade" }),
-  todoPos: integer("todo_pos").array().notNull().default([]),
-  inProgressPos: integer("in_progress_pos").array().notNull().default([]),
-  donePos: integer("done_pos").array().notNull().default([]),
 });
 
 /*

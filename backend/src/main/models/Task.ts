@@ -1,5 +1,5 @@
 import db from "../db/index.js";
-import { tasks, taskPositions } from "../db/schema.js";
+import { tasks } from "../db/schema.js";
 import { eq, and, desc, asc, count, sql, ilike } from "drizzle-orm";
 import type {
   GetAllFromBoardParams,
@@ -53,35 +53,16 @@ class Task {
         done: allTasks.filter((t) => t.status === "DONE"),
       };
     } else {
-      const [positions] = await db
-        .select()
-        .from(taskPositions)
-        .where(eq(taskPositions.boardId, boardId));
-
-      const allTasksUnordered = await db
+      const allTasks = await db
         .select()
         .from(tasks)
         .where(eq(tasks.boardId, boardId))
-        .orderBy(desc(tasks.createdAt), desc(tasks.id));
-
-      if (!positions) {
-        return {
-          todo: allTasksUnordered.filter((t) => t.status === "TODO"),
-          in_progress: allTasksUnordered.filter(
-            (t) => t.status === "IN_PROGRESS",
-          ),
-          done: allTasksUnordered.filter((t) => t.status === "DONE"),
-        };
-      }
-
-      const taskMap = new Map(allTasksUnordered.map((t) => [t.id, t]));
-      const orderByPos = (posArray: number[]) =>
-        posArray.map((id) => taskMap.get(id)!).filter(Boolean);
+        .orderBy(asc(tasks.position));
 
       return {
-        todo: orderByPos(positions.todoPos),
-        in_progress: orderByPos(positions.inProgressPos),
-        done: orderByPos(positions.donePos),
+        todo: allTasks.filter((t) => t.status === "TODO"),
+        in_progress: allTasks.filter((t) => t.status === "IN_PROGRESS"),
+        done: allTasks.filter((t) => t.status === "DONE"),
       };
     }
   }
@@ -171,22 +152,20 @@ class Task {
   }
 
   /**
-   * Updates the position arrays for a board.
+   * Updates the position of tasks for a board.
    */
   static async updatePositions({
-    boardId,
     todoPos,
     inProgressPos,
     donePos,
   }: UpdatePositionsParams) {
-    await db
-      .update(taskPositions)
-      .set({
-        todoPos,
-        inProgressPos,
-        donePos,
-      })
-      .where(eq(taskPositions.boardId, boardId));
+    const allPositions = [...todoPos, ...inProgressPos, ...donePos];
+
+    await db.transaction(async (tx) => {
+      for (const { taskId, position } of allPositions) {
+        await tx.update(tasks).set({ position }).where(eq(tasks.id, taskId));
+      }
+    });
   }
 }
 

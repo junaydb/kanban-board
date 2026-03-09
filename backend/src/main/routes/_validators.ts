@@ -3,18 +3,18 @@ import { taskStatusEnum } from "../db/schema.js";
 
 // Could possibly use drizzle-zod in the future, but this works for now.
 
-export const IdSchema = z.coerce.number().int();
-
-export const BoardIdSchema = z.object({
-  boardId: IdSchema,
-});
-
 const StatusEnum = z.enum(taskStatusEnum.enumValues);
 
 const DateSchema = z
   .string()
   .datetime()
   .transform((str) => new Date(str));
+
+export const IdSchema = z.coerce.number().int();
+
+export const BoardIdSchema = z.object({
+  boardId: IdSchema,
+});
 
 export const UserIdSchema = z.object({
   userId: z.string(),
@@ -23,6 +23,12 @@ export const UserIdSchema = z.object({
 export const TaskIdSchema = z.object({
   taskId: IdSchema,
 });
+
+const TaskPositionArraySchema = TaskIdSchema.merge(
+  z.object({
+    position: z.number(),
+  }),
+).array();
 
 export const CreateTaskSchema = BoardIdSchema.merge(
   z.object({
@@ -80,9 +86,9 @@ export const GetAllTasksFromBoardSchema = BoardIdSchema.merge(
 
 export const UpdatePositionsSchema = BoardIdSchema.merge(
   z.object({
-    todoPos: z.array(IdSchema),
-    inProgressPos: z.array(IdSchema),
-    donePos: z.array(IdSchema),
+    todoPos: TaskPositionArraySchema,
+    inProgressPos: TaskPositionArraySchema,
+    donePos: TaskPositionArraySchema,
   }),
 );
 

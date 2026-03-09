@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import { tasks, boards, taskPositions } from "../db/schema.js";
+import { tasks, boards } from "../db/schema.js";
 import {
   BoardIdSchema,
   TaskIdSchema,
@@ -16,7 +16,6 @@ export type TTask = InferSelectModel<typeof tasks>;
 export type CreateTaskParams = InferInsertModel<typeof tasks>;
 export type TaskStatusEnum = TTask["status"];
 export type InsertBoardParams = InferInsertModel<typeof boards>;
-export type TTaskPositions = InferSelectModel<typeof taskPositions>;
 
 /* Types derived from Zod schemas */
 export type GetAllFromBoardParams = z.infer<typeof GetAllTasksFromBoardSchema>;

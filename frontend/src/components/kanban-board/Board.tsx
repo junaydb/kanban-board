@@ -10,7 +10,6 @@ import {
   useGetAllTasks,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
-  removeBoardTasksCache,
 } from "@/trpc/task-hooks";
 import type {
   TaskStatusEnum,
@@ -48,7 +47,7 @@ export function Board({ boardId }: BoardIdParams) {
     useState<GetAllFromBoardParams["sortOrder"]>("DESC");
 
   const { mutate: updateTaskStatus } = useUpdateTaskStatus();
-  const { mutate: updateTaskPos } = useUpdateTaskPositions();
+  const { mutate: updateTaskPositions } = useUpdateTaskPositions();
 
   const {
     data: fetchedTasks,
@@ -156,14 +155,28 @@ export function Board({ boardId }: BoardIdParams) {
 
             const positionData = {
               boardId,
-              todoPos: updatedTasks.TODO.map((t) => t.id),
-              inProgressPos: updatedTasks.IN_PROGRESS.map((t) => t.id),
-              donePos: updatedTasks.DONE.map((t) => t.id),
+              todoPos: updatedTasks.TODO.map((t) => {
+                return {
+                  taskId: t.id,
+                  position: updatedTasks.TODO.indexOf(t),
+                };
+              }),
+              inProgressPos: updatedTasks.IN_PROGRESS.map((t) => {
+                return {
+                  taskId: t.id,
+                  position: updatedTasks.IN_PROGRESS.indexOf(t),
+                };
+              }),
+              donePos: updatedTasks.DONE.map((t) => {
+                return {
+                  taskId: t.id,
+                  position: updatedTasks.DONE.indexOf(t),
+                };
+              }),
             };
 
-            updateTaskPos(positionData, {
+            updateTaskPositions(positionData, {
               onSuccess: () => {
-                removeBoardTasksCache(boardId);
                 setSortBy("position");
               },
               onError: () => {
