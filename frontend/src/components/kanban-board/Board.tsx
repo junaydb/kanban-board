@@ -10,11 +10,11 @@ import {
   useGetAllTasks,
   useUpdateTaskStatus,
   useUpdateTaskPositions,
-  removeAllTasksCache,
+  removeBoardTasksCache,
 } from "@/trpc/task-hooks";
 import type {
   TaskStatusEnum,
-  SortParams,
+  GetAllFromBoardParams,
   TTask,
   BoardIdParams,
 } from "@backend/util/types";
@@ -32,16 +32,20 @@ export function Board({ boardId }: BoardIdParams) {
   const [originalContainer, setOriginalContainer] =
     useState<TaskStatusEnum | null>(null);
 
-  const [sortBy, setSortBy] = useState<SortParams["sortBy"]>(() => {
+  const [sortBy, setSortBy] = useState<GetAllFromBoardParams["sortBy"]>(() => {
     const stored = localStorage.getItem("boardSortBy");
     if (stored) {
-      const parsed = JSON.parse(stored) as Record<string, SortParams["sortBy"]>;
+      const parsed = JSON.parse(stored) as Record<
+        string,
+        GetAllFromBoardParams["sortBy"]
+      >;
       return parsed[boardId] ?? "position";
     }
     return "position";
   });
 
-  const [sortOrder, setSortOrder] = useState<SortParams["sortOrder"]>("DESC");
+  const [sortOrder, setSortOrder] =
+    useState<GetAllFromBoardParams["sortOrder"]>("DESC");
 
   const { mutate: updateTaskStatus } = useUpdateTaskStatus();
   const { mutate: updateTaskPos } = useUpdateTaskPositions();
@@ -82,7 +86,7 @@ export function Board({ boardId }: BoardIdParams) {
 
   useEffect(() => {
     const stored = localStorage.getItem("boardSortBy");
-    const parsed: Record<string, SortParams["sortBy"]> = stored
+    const parsed: Record<string, GetAllFromBoardParams["sortBy"]> = stored
       ? JSON.parse(stored)
       : {};
     parsed[boardId] = sortBy;
@@ -159,7 +163,7 @@ export function Board({ boardId }: BoardIdParams) {
 
             updateTaskPos(positionData, {
               onSuccess: () => {
-                removeAllTasksCache(boardId);
+                removeBoardTasksCache(boardId);
                 setSortBy("position");
               },
               onError: () => {
@@ -199,16 +203,19 @@ export function Board({ boardId }: BoardIdParams) {
           <Column
             tasks={tasks.TODO}
             status="TODO"
+            boardId={boardId}
             isPending={showColumnLoading}
           />
           <Column
             tasks={tasks.IN_PROGRESS}
             status="IN_PROGRESS"
+            boardId={boardId}
             isPending={showColumnLoading}
           />
           <Column
             tasks={tasks.DONE}
             status="DONE"
+            boardId={boardId}
             isPending={showColumnLoading}
           />
           <DragOverlay dropAnimation={{ duration: 100 }}>

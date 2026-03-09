@@ -2,7 +2,11 @@ import { trpc, queryClient } from "./trpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { defaultRetry } from "./_helpers";
-import type { GetAllFromBoardParams, TTask } from "@backend/util/types";
+import type {
+  GetAllFromBoardParams,
+  TTask,
+  BoardIdParams,
+} from "@backend/util/types";
 import type { RouterOutput } from "./trpc";
 
 function parseDates(tasks: TTask[]) {
@@ -57,6 +61,22 @@ export function useGetAllTasks({
 //   );
 // }
 
+export function useGetNumTasks({ boardId }: BoardIdParams) {
+  return useQuery(
+    trpc.tasks.getNumTasks.queryOptions({ boardId }, { retry: defaultRetry }),
+  );
+}
+
+export function useCreateTask({ boardId }: BoardIdParams) {
+  return useMutation(
+    trpc.tasks.create.mutationOptions({
+      onSettled: () => {
+        invalidateBoardTasksCache(boardId);
+      },
+    }),
+  );
+}
+
 export function useUpdateTaskStatus() {
   return useMutation(trpc.tasks.updateStatus.mutationOptions());
 }
@@ -65,13 +85,16 @@ export function useUpdateTaskPositions() {
   return useMutation(trpc.tasks.updatePositions.mutationOptions());
 }
 
-export function invalidateAllTasksCache(boardId: number) {
+export function invalidateBoardTasksCache(boardId: number) {
   queryClient.invalidateQueries({
     queryKey: trpc.tasks.getAllFromBoard.queryKey({ boardId }),
   });
+  queryClient.invalidateQueries({
+    queryKey: trpc.tasks.getNumTasks.queryKey({ boardId }),
+  });
 }
 
-export function removeAllTasksCache(boardId: number) {
+export function removeBoardTasksCache(boardId: number) {
   queryClient.removeQueries({
     queryKey: trpc.tasks.getAllFromBoard.queryKey({ boardId }),
   });

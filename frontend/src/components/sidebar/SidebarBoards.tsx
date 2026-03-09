@@ -9,7 +9,7 @@ import {
 import { Banner } from "../Banners";
 import { SpinnerBar } from "../SpinnerBar";
 import { ErrorTooltip } from "../ErrorTooltip";
-import { CreateBoardFormDialog } from "../CreateBoardFormDialog";
+import { CreateBoardFormDialog } from "../form/CreateBoardFormDialog";
 import { SidebarBoardItem } from "./SidebarBoardItem";
 import { useGetAllBoardIdsAndTitles } from "@/trpc/board-hooks";
 import { authClient } from "@/auth/auth-client";
@@ -19,9 +19,7 @@ export function SidebarBoards() {
   const { data, isError, isPending, isEnabled } =
     useGetAllBoardIdsAndTitles(!!session);
 
-  const boardLimitReached = !!(
-    data && data.boardCount >= data.boardCountLimit
-  );
+  const boardLimitReached = !!(data && data.boardCount >= data.boardCountLimit);
 
   const boardData = data?.boards;
 
