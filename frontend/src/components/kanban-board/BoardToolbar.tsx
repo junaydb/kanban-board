@@ -10,13 +10,13 @@ import {
 import { Button } from "@/shadcn/ui/button";
 import { BrushCleaning } from "lucide-react";
 import { Skeleton } from "@/shadcn/ui/skeleton";
-import type { SortParams } from "@backend/util/types";
+import type { GetAllFromBoardParams } from "@backend/util/types";
 
-type SortBy = Exclude<SortParams["sortBy"], "position">;
+type SortBy = Exclude<GetAllFromBoardParams["sortBy"], "position">;
 
 interface BoardToolbarProps {
   setSortBy: (value: SortBy) => void;
-  setSortOrder: (value: SortParams["sortOrder"]) => void;
+  setSortOrder: (value: GetAllFromBoardParams["sortOrder"]) => void;
 }
 
 const sortByLabels: Record<SortBy, string> = {
@@ -27,7 +27,7 @@ const sortByLabels: Record<SortBy, string> = {
 export function BoardToolbar({ setSortBy, setSortOrder }: BoardToolbarProps) {
   function handleSortSelect(
     sortByValue: SortBy,
-    sortOrderValue: SortParams["sortOrder"],
+    sortOrderValue: GetAllFromBoardParams["sortOrder"],
   ) {
     setSortBy(sortByValue);
     setSortOrder(sortOrderValue);
