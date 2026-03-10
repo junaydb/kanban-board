@@ -12,21 +12,21 @@ import { BrushCleaning } from "lucide-react";
 import { Skeleton } from "@/shadcn/ui/skeleton";
 import type { GetAllFromBoardParams } from "@backend/util/types";
 
-type SortBy = Exclude<GetAllFromBoardParams["sortBy"], "position">;
+type ToolbarSortOptions = Exclude<GetAllFromBoardParams["sortBy"], "position">;
 
 interface BoardToolbarProps {
-  setSortBy: (value: SortBy) => void;
+  setSortBy: (value: GetAllFromBoardParams["sortBy"]) => void;
   setSortOrder: (value: GetAllFromBoardParams["sortOrder"]) => void;
 }
 
-const sortByLabels: Record<SortBy, string> = {
+const sortByLabels: Record<ToolbarSortOptions, string> = {
   dueDate: "Due date",
   created: "Created",
 };
 
 export function BoardToolbar({ setSortBy, setSortOrder }: BoardToolbarProps) {
   function handleSortSelect(
-    sortByValue: SortBy,
+    sortByValue: ToolbarSortOptions,
     sortOrderValue: GetAllFromBoardParams["sortOrder"],
   ) {
     setSortBy(sortByValue);
