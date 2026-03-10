@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { tasks } from "../db/schema.js";
-import { eq, and, desc, asc, count, sql, ilike } from "drizzle-orm";
+import { eq, and, desc, asc, count, min, sql, ilike } from "drizzle-orm";
 import type {
   GetAllFromBoardParams,
   CreateTaskParams,
@@ -132,9 +132,23 @@ class Task {
 
   /**
    * Inserts the task into the database and returns the inserted task.
+   * Assigns the lowest position so the new task appears first in its column.
    */
   static async create(params: CreateTaskParams) {
-    const result = await db.insert(tasks).values(params).returning();
+    const status = params.status ?? "TODO";
+
+    const [{ minPos }] = await db
+      .select({ minPos: min(tasks.position) })
+      .from(tasks)
+      .where(and(eq(tasks.boardId, params.boardId), eq(tasks.status, status)));
+
+    const position = minPos != null ? minPos - 1 : 0;
+
+    const result = await db
+      .insert(tasks)
+      .values({ ...params, position })
+      .returning();
+
     return result[0];
   }
 
