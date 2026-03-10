@@ -1,49 +1,28 @@
 import { trpc, queryClient } from "./trpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useMemo } from "react";
 import { defaultRetry } from "./_helpers";
-import type {
-  GetAllFromBoardParams,
-  TTask,
-  BoardIdParams,
-} from "@backend/util/types";
-import type { RouterOutput } from "./trpc";
-
-function parseDates(tasks: TTask[]) {
-  return tasks.map((task) => ({
-    ...task,
-    createdAt: new Date(task.createdAt),
-    dueDate: task.dueDate ? new Date(task.dueDate) : null,
-    dueTime: task.dueTime ? new Date(task.dueTime) : null,
-  }));
-}
+import type { GetAllFromBoardParams, BoardIdParams } from "@backend/util/types";
 
 export function useGetAllTasks({
   boardId,
   sortBy,
   sortOrder,
 }: GetAllFromBoardParams) {
-  const select = useCallback(
-    (data: RouterOutput["tasks"]["getAllFromBoard"]) => {
-      const { todo, in_progress, done } = data.tasks;
-      return {
-        TODO: parseDates(todo),
-        IN_PROGRESS: parseDates(in_progress),
-        DONE: parseDates(done),
-      };
-    },
-    [],
-  );
-
-  return useQuery(
+  const result = useQuery(
     trpc.tasks.getAllFromBoard.queryOptions(
       { boardId, sortBy, sortOrder },
-      {
-        retry: defaultRetry,
-        select,
-      },
+      { retry: defaultRetry },
     ),
   );
+
+  const tasks = useMemo(() => {
+    if (!result.data) return undefined;
+    const { todo, in_progress, done } = result.data.tasks;
+    return { TODO: todo, IN_PROGRESS: in_progress, DONE: done };
+  }, [result.data]);
+
+  return { ...result, data: tasks };
 }
 
 // export function useSearchTasks(
