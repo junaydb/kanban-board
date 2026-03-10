@@ -9,7 +9,7 @@ type SortableTaskProps = {
 };
 
 export function SortableTask({ task, index, group }: SortableTaskProps) {
-  const { ref, isDragging } = useSortable({
+  const { ref, handleRef, isDragging } = useSortable({
     id: task.id,
     index,
     group,
@@ -18,5 +18,5 @@ export function SortableTask({ task, index, group }: SortableTaskProps) {
     data: { task, status: task.status },
   });
 
-  return <Task ref={ref} task={task} isDragging={isDragging} />;
+  return <Task ref={ref} handleRef={handleRef} task={task} isDragging={isDragging} />;
 }
