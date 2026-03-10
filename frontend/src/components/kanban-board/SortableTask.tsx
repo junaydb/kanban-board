@@ -13,14 +13,10 @@ export function SortableTask({ task, index, group }: SortableTaskProps) {
     id: task.id,
     index,
     group,
-    data: { task },
+    type: "task",
+    accept: "task",
+    data: { task, status: task.status },
   });
 
-  return (
-    <Task
-      ref={ref}
-      task={task}
-      isDragging={isDragging}
-    />
-  );
+  return <Task ref={ref} task={task} isDragging={isDragging} />;
 }

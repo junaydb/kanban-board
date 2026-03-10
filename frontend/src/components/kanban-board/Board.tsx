@@ -12,9 +12,9 @@ import {
   useUpdateTaskPositions,
 } from "@/trpc/task-hooks";
 import type {
+  TTask,
   TaskStatusEnum,
   GetAllFromBoardParams,
-  TTask,
   BoardIdParams,
 } from "@backend/util/types";
 import { Task } from "./Task";
@@ -27,9 +27,6 @@ export function Board({ boardId }: BoardIdParams) {
     IN_PROGRESS: [],
     DONE: [],
   });
-
-  const [originalContainer, setOriginalContainer] =
-    useState<TaskStatusEnum | null>(null);
 
   const [sortBy, setSortBy] = useState<GetAllFromBoardParams["sortBy"]>(() => {
     const stored = localStorage.getItem("boardSortBy");
@@ -60,16 +57,6 @@ export function Board({ boardId }: BoardIdParams) {
     isSuccess: isSuccess_boardLookUp,
     error: boardLookupError,
   } = useBoardLookup({ boardId });
-
-  function findTaskContainer(
-    taskId: number,
-    tasksMap: TasksMap = tasks,
-  ): TaskStatusEnum | null {
-    if (tasksMap.TODO.some((t) => t.id === taskId)) return "TODO";
-    if (tasksMap.IN_PROGRESS.some((t) => t.id === taskId)) return "IN_PROGRESS";
-    if (tasksMap.DONE.some((t) => t.id === taskId)) return "DONE";
-    return null;
-  }
 
   const showColumnLoading =
     isPending_fetchedTasks &&
@@ -134,21 +121,13 @@ export function Board({ boardId }: BoardIdParams) {
       )}
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 ml-3 mr-2 mb-2 mt-3">
         <DragDropProvider
-          onDragStart={(event) => {
-            const { source } = event.operation;
-            if (!source) return;
-            setOriginalContainer(findTaskContainer(source.id as number));
-          }}
           onDragOver={(event) => {
-            setTasks((prev) => move(prev, event));
+            setTasks((tasks) => move(tasks, event));
           }}
           onDragEnd={(event) => {
-            const { source } = event.operation;
+            const { source, target } = event.operation;
 
-            if (event.canceled || !source) {
-              setOriginalContainer(null);
-              return;
-            }
+            if (event.canceled || !source || !target) return;
 
             const updatedTasks = move(tasks, event);
             setTasks(updatedTasks);
@@ -184,10 +163,14 @@ export function Board({ boardId }: BoardIdParams) {
               },
             });
 
-            const newContainer = findTaskContainer(
-              source.id as number,
-              updatedTasks,
+            const taskId = source.id as number;
+            const originalContainer = source.data.status as TTask["status"];
+            const newContainer = (
+              Object.keys(updatedTasks) as TTask["status"][]
+            ).find((status) =>
+              updatedTasks[status].some((t) => t.id === taskId),
             );
+
             if (
               originalContainer &&
               newContainer &&
@@ -209,8 +192,6 @@ export function Board({ boardId }: BoardIdParams) {
                 },
               );
             }
-
-            setOriginalContainer(null);
           }}
         >
           <Column

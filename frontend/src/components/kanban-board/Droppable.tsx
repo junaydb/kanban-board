@@ -13,6 +13,8 @@ export function Droppable({
   const { ref } = useDroppable({
     id: id,
     collisionPriority: CollisionPriority.Low,
+    type: "column",
+    accept: "task",
   });
 
   return (
